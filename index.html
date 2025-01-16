@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagram Creator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .no-select {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+    </style>
+</head>
+<body class="m-0 p-0 min-h-screen w-screen bg-gray-50">
+    <!-- Project Menu -->
+    <div class="absolute top-0 left-0 z-10">
+        <button id="menuBtn" class="m-2 p-2 bg-white rounded-lg shadow-lg hover:bg-gray-100">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
+        <div id="projectMenu" class="hidden absolute top-12 left-2 bg-white rounded-lg shadow-lg p-2 w-64">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="font-bold">Projects</h3>
+
+            </div>
+            <div id="projectList" class="max-h-96 overflow-y-auto"></div>
+        </div>
+    </div>
+    
+    <!-- Current Project Name -->
+    <div id="currentProject" class="absolute top-2 left-16 text-lg font-semibold no-select"></div>
+
+    <div id="canvas" class="relative w-full min-h-screen cursor-default">
+        <div id="helper-text" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-500 text-lg text-center pointer-events-none select-none">
+            Double click anywhere to add a box
+        </div>
+        <svg id="connections" class="absolute top-0 left-0 w-full h-full">
+            <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#2563eb"/>
+                </marker>
+                <marker id="arrowhead-selected" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#ef4444"/>
+                </marker>
+            </defs>
+            <path id="preview-connection" stroke="#2563eb" stroke-width="2" fill="none" marker-end="url(#arrowhead)" opacity="0.5" display="none" pointer-events="none"/>
+        </svg>
+    </div>
+
+<script>
+
+class NotificationManager {
+    constructor() {
+        this.container = this.createContainer();
+        document.body.appendChild(this.container);
+    }
+
+    createContainer() {
+        const container = document.createElement('div');
+        container.className = 'fixed top-4 right-4 z-50 flex flex-col gap-2';
+        return container;
+    }
+
+    show(message, type = 'info') {
+        const notification = document.createElement('div');
+        
+        // Base classes remain unchanged
+        const baseClasses = 'px-4 py-2 rounded-lg shadow-lg transform translate-x-0 transition-all duration-300 flex items-center gap-2 min-w-[200px] border-2';
+        
+        // Update just the color classes for softer backgrounds and dark outlines
+        const typeClasses = {
+            success: 'bg-green-50 text-green-800 border-green-600',
+            error: 'bg-red-50 text-red-800 border-red-600',
+            info: 'bg-blue-50 text-blue-800 border-blue-600',
+            warning: 'bg-yellow-50 text-yellow-800 border-yellow-600'
+        };
+
+        const icons = {
+            success: '<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>',
+            error: '<svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>',
+            info: '<svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+            warning: '<svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>'
+        };
+
+        notification.className = `${baseClasses} ${typeClasses[type] || typeClasses.info}`;
+        notification.innerHTML = `
+            ${icons[type] || icons.info}
+            <span class="flex-grow">${message}</span>
+        `;
+        
+        // Rest of the function remains unchanged
+        this.container.appendChild(notification);
+        requestAnimationFrame(() => {
+            notification.style.transform = 'translateX(0)';
+        });
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }, 2000);
+    }
+}
+
+class Box {
+    constructor(x, y, id, isEditing = true) {
+        this.id = id;
+        this.x = x;
+        this.y = y;
+        this.title = '';  // Separate title storage
+        this.content = ''; // Separate content storage
+        this.isEditing = isEditing;
+        this.isContentHidden = false;
+        this.element = this.createElement();
+        if (isEditing) {
+            this.startEditing();
+        }
+
+        // Track mousedown for drag detection
+        let isDragging = false;
+        this.element.addEventListener('mousedown', () => {
+            isDragging = false;
+        });
+
+        this.element.addEventListener('mousemove', () => {
+            isDragging = true;
+        });
+
+        this.element.addEventListener('click', (e) => {
+            if (isDragging) return; // Ignore clicks during drag
+            
+            if (e.shiftKey && !this.isEditing && this.hasContent()) {
+                e.stopPropagation();
+                this.isContentHidden = !this.isContentHidden;
+                this.updateContent();
+            }
+        });
+
+        this.element.addEventListener('dblclick', (e) => {
+            e.stopPropagation();
+            if (!this.isEditing) {
+                this.startEditing();
+            }
+        });
+
+        // Add ESC handler
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.isEditing) {
+                e.preventDefault();
+                this.cancelEdit();
+            }
+        });
+    }
+
+    cancelEdit() {
+        this.isEditing = false;
+        const contentDiv = this.element.querySelector('div');
+        
+        // If box is new/empty, remove it
+        if (!this.title.trim()) {
+            if (window.manager) {
+                window.manager.deleteBox(this);
+                window.manager.updateHelperText();
+            }
+            return;
+        }
+        
+        // Otherwise restore previous content
+        contentDiv.className = 'px-3 whitespace-pre-wrap break-words';
+        contentDiv.innerHTML = this.formatContent();
+        this.element.classList.add('cursor-move');
+    }
+
+    createElement() {
+        const div = document.createElement('div');
+        div.className = 'absolute bg-white border-2 border-blue-500 rounded-lg shadow-lg cursor-move no-select max-w-[200px] py-0.5 inline-block';
+        div.style.left = `${this.x}px`;
+        div.style.top = `${this.y}px`;
+        div.dataset.id = this.id;
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'px-3 whitespace-pre-wrap break-words leading-tight';
+        div.appendChild(contentDiv);
+
+        return div;
+    }
+
+    startEditing() {
+        // Store original content for potential cancellation
+        this.originalTitle = this.title;
+        this.originalContent = this.content;
+
+        this.isEditing = true;
+        this.element.classList.remove('cursor-move');
+        const contentDiv = this.element.querySelector('div');
+        contentDiv.innerHTML = '';
+        contentDiv.className = 'px-3';
+        
+        const textarea = document.createElement('textarea');
+        textarea.className = 'w-full border-none focus:outline-none bg-transparent resize-none text-center leading-tight';
+        // Combine title and content for editing, preserving line break
+        textarea.value = this.title + (this.content ? '\n' + this.content : '');
+        textarea.rows = 1;
+        
+        // Keep text in sync with textarea
+        const updateText = (e) => {
+            try {
+                const lines = e.target.value.split('\n');
+                this.title = lines[0] || '';
+                this.content = lines.slice(1).join('\n');
+                this.adjustTextareaHeight(textarea);
+            } catch (err) {
+                console.error('Error updating box text:', err);
+                this.title = '';
+                this.content = '';
+            }
+        };
+        
+        textarea.addEventListener('input', updateText);
+        
+        textarea.addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+                if (e.shiftKey) {
+                    e.preventDefault();
+                    const start = textarea.selectionStart;
+                    const end = textarea.selectionEnd;
+                    textarea.value = textarea.value.slice(0, start) + '\n' + textarea.value.slice(end);
+                    textarea.selectionStart = textarea.selectionEnd = start + 1;
+                    updateText(e);
+                } else {
+                    e.preventDefault();
+                    textarea.removeEventListener('input', updateText);
+                    this.commitEdit();
+                }
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                textarea.removeEventListener('input', updateText);
+                this.cancelEdit();
+            }
+        });
+        
+        textarea.addEventListener('click', e => {
+            if (!this.element.classList.contains('dragging')) {
+                e.stopPropagation();
+            }
+        });
+        
+        contentDiv.appendChild(textarea);
+        requestAnimationFrame(() => {
+            textarea.focus();
+            this.adjustTextareaHeight(textarea);
+        });
+    }
+
+    adjustTextareaHeight(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
+
+    hasContent() {
+        return this.content.trim().length > 0;
+    }
+
+    formatContent() {
+        let html = `<div class="font-bold text-center leading-tight">${this.escapeHtml(this.title)}</div>`;
+        
+        if (this.content && !this.isContentHidden) {
+            html += `<div class="leading-tight mt-[2px]">${this.escapeHtml(this.content)}</div>`;
+        } else if (this.content) {
+            html += `<div class="text-center text-gray-400 text-sm mt-[2px]">...</div>`;
+        }
+        
+        return html;
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    commitEdit() {
+        if (!this.isEditing) return;
+        
+        if (!this.title.trim()) {
+            this.cancelEdit();
+            return false;
+        }
+
+        this.isEditing = false;
+        const contentDiv = this.element.querySelector('div');
+        contentDiv.className = 'px-3 whitespace-pre-wrap break-words';
+        contentDiv.innerHTML = this.formatContent();
+        
+        this.element.classList.add('cursor-move');
+        return true;
+    }
+
+    commitEdit() {
+        if (!this.isEditing) return;
+        
+        if (!this.title.trim()) {
+            this.cancelEdit();
+            return false;
+        }
+
+        this.isEditing = false;
+        const contentDiv = this.element.querySelector('div');
+        contentDiv.className = 'px-3 whitespace-pre-wrap break-words';
+        contentDiv.innerHTML = this.formatContent();
+        
+        this.element.classList.add('cursor-move');
+
+        // Trigger save after edit is committed
+        if (window.manager) {
+            window.manager.saveCurrentProject();
+        }
+        
+        return true;
+    }
+
+    updateContent() {
+        if (!this.isEditing) {
+            const contentDiv = this.element.querySelector('div');
+            contentDiv.innerHTML = this.formatContent();
+        }
+    }
+
+    setPosition(x, y) {
+        this.x = x;
+        this.y = y;
+        this.element.style.left = `${x}px`;
+        this.element.style.top = `${y}px`;
+    }
+
+    getCenter() {
+        return {
+            x: this.x + this.element.offsetWidth / 2,
+            y: this.y + this.element.offsetHeight / 2
+        };
+    }
+
+    getBounds() {
+        return {
+            left: this.x,
+            right: this.x + this.element.offsetWidth,
+            top: this.y,
+            bottom: this.y + this.element.offsetHeight,
+            width: this.element.offsetWidth,
+            height: this.element.offsetHeight
+        };
+    }
+}
+class Connection {
+    constructor(startBox, endBox, id) {
+        this.id = id;
+        this.startBox = startBox;
+        this.endBox = endBox;
+        this.element = this.createElement();
+        this.selected = false;
+        this.bidirectional = false;
+        this.update();
+        this.setupEventListeners();
+    }
+
+    createElement() {
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('stroke', '#2563eb');
+        path.setAttribute('stroke-width', '2');
+        path.setAttribute('fill', 'none');
+        path.setAttribute('marker-end', 'url(#arrowhead)');
+        path.setAttribute('cursor', 'pointer');
+        path.dataset.id = this.id;
+        return path;
+    }
+
+    setupEventListeners() {
+        this.element.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (this.selected) {
+                this.deselect();
+            } else {
+                this.select();
+            }
+        });
+    }
+
+    select() {
+        this.selected = true;
+        this.element.setAttribute('stroke', '#ef4444');
+        this.element.setAttribute('marker-end', 'url(#arrowhead-selected)');
+    }
+
+    deselect() {
+        this.selected = false;
+        this.element.setAttribute('stroke', '#2563eb');
+        this.element.setAttribute('marker-end', 'url(#arrowhead)');
+    }
+
+    calculateIntersection(start, end, box) {
+        const bounds = box.getBounds();
+        const dx = end.x - start.x;
+        const dy = end.y - start.y;
+        const length = Math.sqrt(dx * dx + dy * dy) || 1;
+        const unitX = dx / length;
+        const unitY = dy / length;
+        
+        // Add consistent offset from box edge
+        const EDGE_OFFSET = 5;
+
+        const intersections = [];
+
+        for (const y of [bounds.top, bounds.bottom]) {
+            if (dy !== 0) {
+                const x = start.x + (y - start.y) * (dx / dy);
+                if (x >= bounds.left && x <= bounds.right) {
+                    const point = {
+                        x: x + (unitX * EDGE_OFFSET * (y === bounds.top ? 1 : -1)),
+                        y: y + (unitY * EDGE_OFFSET * (y === bounds.top ? 1 : -1))
+                    };
+                    intersections.push(point);
+                }
+            }
+        }
+
+        for (const x of [bounds.left, bounds.right]) {
+            if (dx !== 0) {
+                const y = start.y + (x - start.x) * (dy / dx);
+                if (y >= bounds.top && y <= bounds.bottom) {
+                    const point = {
+                        x: x + (unitX * EDGE_OFFSET * (x === bounds.left ? 1 : -1)),
+                        y: y + (unitY * EDGE_OFFSET * (x === bounds.left ? 1 : -1))
+                    };
+                    intersections.push(point);
+                }
+            }
+        }
+
+        let closestPoint = { x: bounds.left + bounds.width/2, y: bounds.top + bounds.height/2 };
+        let minDistance = Infinity;
+
+        for (const point of intersections) {
+            const distance = Math.hypot(point.x - start.x, point.y - start.y);
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestPoint = point;
+            }
+        }
+
+        return closestPoint;
+    }
+
+    update() {
+        const startCenter = this.startBox.getCenter();
+        const endCenter = this.endBox.getCenter();
+        const EDGE_OFFSET = 5;
+
+        // Calculate intersection points
+        const startPoint = this.calculateIntersection(endCenter, startCenter, this.startBox);
+        const endPoint = this.calculateIntersection(startPoint, endCenter, this.endBox);
+
+        if (!isNaN(startPoint.x) && !isNaN(startPoint.y) && !isNaN(endPoint.x) && !isNaN(endPoint.y)) {
+            // Create the path
+            let path = `M ${startPoint.x} ${startPoint.y} L ${endPoint.x} ${endPoint.y}`;
+            this.element.setAttribute('d', path);
+
+            if (this.bidirectional) {
+                this.element.setAttribute('marker-start', 'url(#arrowhead-start)');
+            }
+        }
+    }
+
+    setBidirectional(value) {
+       this.bidirectional = value;
+        if (value) {
+            this.element.setAttribute('marker-start', 'url(#arrowhead-start)');
+        } else {
+            this.element.removeAttribute('marker-start');
+        }
+    }
+}
+
+class DiagramManager {
+    constructor() {
+        window.manager = this;
+        this.boxes = new Map();
+        this.connections = new Map();
+        this.canvas = document.getElementById('canvas');
+        this.svg = document.getElementById('connections');
+        this.helperText = document.getElementById('helper-text');
+        this.nextBoxId = 1;
+        this.nextConnectionId = 1;
+        this.selectedBox = null;
+        this.selectedConnection = null;
+        this.connectionStart = null;
+        this.previewPath = document.getElementById('preview-connection');
+        
+        // Add storage handling
+        this.currentProject = '';
+        this.setupArrowMarker();
+        this.setupEventListeners();
+        this.setupStorage();
+        this.setupProjectUI();
+        this.updateHelperText();
+    }
+
+    setupStorage() {
+        // Initialize storage if needed
+        if (!localStorage.getItem('flowchartProjects')) {
+            localStorage.setItem('flowchartProjects', JSON.stringify({
+                'My First Project': {
+                    boxes: {},
+                    connections: {},
+                    lastBoxId: 1,
+                    lastConnectionId: 1
+                }
+            }));
+            this.currentProject = 'My First Project';
+        }
+        
+        // Load last active project
+        const projects = JSON.parse(localStorage.getItem('flowchartProjects'));
+        this.currentProject = localStorage.getItem('activeProject') || Object.keys(projects)[0];
+        this.loadProject(this.currentProject);
+    }
+
+    setupProjectUI() {
+        const menuBtn = document.getElementById('menuBtn');
+        const projectMenu = document.getElementById('projectMenu');
+        const currentProjectEl = document.getElementById('currentProject');
+
+        // Toggle menu
+        menuBtn.addEventListener('click', () => {
+            projectMenu.classList.toggle('hidden');
+            this.updateProjectList();
+        });
+
+        // Close menu when clicking outside, but not during input
+        document.addEventListener('click', (e) => {
+            if (!projectMenu.contains(e.target) && 
+                !menuBtn.contains(e.target) && 
+                !e.target.matches('input')) {
+                projectMenu.classList.add('hidden');
+            }
+        });
+
+        // Show current project
+        currentProjectEl.textContent = this.currentProject;
+    }
+
+    deleteProjectWithConfirmation(projectName) {
+        if (confirm(`Are you sure you want to delete "${projectName}"?`)) {
+            try {
+                const projects = JSON.parse(localStorage.getItem('flowchartProjects'));
+                
+                delete projects[projectName];
+                
+                if (projectName === this.currentProject) {
+                    const remainingProjects = Object.keys(projects);
+                    
+                    if (remainingProjects.length === 0) {
+                        projects['My First Project'] = {
+                            boxes: {},
+                            connections: {},
+                            lastBoxId: 1,
+                            lastConnectionId: 1
+                        };
+                        this.switchProject('My First Project');
+                    } else {
+                        this.switchProject(remainingProjects[0]);
+                    }
+                }
+                
+                localStorage.setItem('flowchartProjects', JSON.stringify(projects));
+                this.updateProjectList();
+                notificationManager.show('Project deleted successfully', 'success');
+            } catch (error) {
+                console.error('Error deleting project:', error);
+                notificationManager.show('Failed to delete project', 'error');
+            }
+        }
+    }
+
+    updateProjectList() {
+        const projectList = document.getElementById('projectList');
+        const projects = JSON.parse(localStorage.getItem('flowchartProjects'));
+        
+        projectList.innerHTML = '';
+        Object.keys(projects).forEach(project => {
+            const div = document.createElement('div');
+            div.className = `p-2 hover:bg-gray-100 rounded flex justify-between items-center group ${
+                project === this.currentProject ? 'bg-blue-100' : ''
+            }`;
+            
+            // Project title span
+            const titleSpan = document.createElement('span');
+            titleSpan.className = 'cursor-pointer flex-grow';
+            titleSpan.textContent = project;
+            titleSpan.addEventListener('click', () => this.switchProject(project));
+            
+            // Actions container
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'opacity-0 group-hover:opacity-100 transition-opacity flex gap-1';
+            
+            // Edit button
+            const editBtn = document.createElement('button');
+            editBtn.className = 'text-gray-500 hover:text-blue-600 p-1';
+            editBtn.innerHTML = `
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                </svg>
+            `;
+            editBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const input = this.createEditableTitle(project);
+                titleSpan.replaceWith(input);
+                input.focus();
+            });
+
+            // Delete button
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'text-gray-500 hover:text-red-600 p-1';
+            deleteBtn.innerHTML = `
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+            `;
+
+            // Create confirmation UI
+            const createConfirmationUI = () => {
+                const confirmDiv = document.createElement('div');
+                confirmDiv.className = 'flex items-center gap-2 p-2 bg-red-50 rounded mt-1';
+                confirmDiv.innerHTML = `
+                    <span class="text-sm text-red-600">Delete "${project}"?</span>
+                    <button class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">Yes</button>
+                    <button class="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100">No</button>
+                `;
+
+                // Handle confirmation buttons
+                const [yesBtn, noBtn] = confirmDiv.querySelectorAll('button');
+                
+                yesBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.deleteProject(project);
+                    confirmDiv.remove();
+                });
+
+                noBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    confirmDiv.remove();
+                });
+
+                // Insert confirmation UI after the project div
+                div.insertAdjacentElement('afterend', confirmDiv);
+
+                // Auto-remove after 5 seconds if no action taken
+                setTimeout(() => {
+                    if (confirmDiv.parentNode) {
+                        confirmDiv.remove();
+                    }
+                }, 5000);
+            };
+
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Remove any existing confirmation UIs
+                const existingConfirms = projectList.querySelectorAll('.bg-red-50');
+                existingConfirms.forEach(el => el.remove());
+                createConfirmationUI();
+            });
+
+            actionsDiv.appendChild(editBtn);
+            actionsDiv.appendChild(deleteBtn);
+            div.appendChild(titleSpan);
+            div.appendChild(actionsDiv);
+            projectList.appendChild(div);
+        });
+
+        // Add "New Project" item at bottom
+        const newProjectDiv = document.createElement('div');
+        newProjectDiv.className = 'p-2 hover:bg-gray-100 rounded cursor-pointer mt-2 border-t pt-3 text-blue-600 flex items-center gap-2';
+        
+        const newProjectContent = document.createElement('div');
+        newProjectContent.className = 'flex items-center gap-2 w-full';
+        newProjectContent.innerHTML = `
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            </svg>
+            <span>New Project</span>
+        `;
+        
+        const startNewProjectEdit = (e) => {
+            e.stopPropagation();
+            const input = this.createEditableTitle('', true);
+            newProjectContent.replaceWith(input);
+            input.focus();
+        };
+
+        newProjectContent.addEventListener('click', startNewProjectEdit);
+        newProjectDiv.appendChild(newProjectContent);
+        projectList.appendChild(newProjectDiv);
+    }
+
+    deleteProject(projectName) {
+        try {
+            const projects = JSON.parse(localStorage.getItem('flowchartProjects'));
+            
+            delete projects[projectName];
+            
+            if (projectName === this.currentProject) {
+                const remainingProjects = Object.keys(projects);
+                
+                if (remainingProjects.length === 0) {
+                    projects['My First Project'] = {
+                        boxes: {},
+                        connections: {},
+                        lastBoxId: 1,
+                        lastConnectionId: 1
+                    };
+                    this.switchProject('My First Project');
+                } else {
+                    this.switchProject(remainingProjects[0]);
+                }
+            }
+            
+            localStorage.setItem('flowchartProjects', JSON.stringify(projects));
+            this.updateProjectList();
+            notificationManager.show('Project deleted successfully', 'success');
+        } catch (error) {
+            console.error('Error deleting project:', error);
+            notificationManager.show('Failed to delete project', 'error');
+        }
+    }
+
+    createEditableTitle(initialTitle = '', isNew = false) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = initialTitle;
+        input.className = 'w-full px-1 py-0.5 border border-blue-500 rounded focus:outline-none bg-white';
+        
+        const cleanup = () => {
+            input.removeEventListener('blur', commitEdit);
+            input.removeEventListener('keydown', handleKeydown);
+        };
+        
+        const commitEdit = (e) => {
+            e.stopPropagation();
+            cleanup(); // Remove listeners first
+            
+            try {
+                const newTitle = (input.value || '').trim();
+                if (!newTitle) {
+                    this.updateProjectList();
+                    return;
+                }
+                
+                if (isNew) {
+                    this.createNewProject(newTitle);
+                } else if (newTitle !== initialTitle) {
+                    this.editProjectTitle(initialTitle, newTitle);
+                    this.updateProjectList();
+                }
+            } catch (error) {
+                console.error('Error during edit commit:', error);
+                this.updateProjectList(); // Ensure UI is updated even on error
+                notificationManager.show('Failed to save changes. Please try again.', 'error');
+            }
+        };
+        
+        const handleKeydown = (e) => {
+            e.stopPropagation();
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                commitEdit(e);
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                cleanup();
+                this.updateProjectList();
+            }
+        };
+
+        input.addEventListener('keydown', handleKeydown);
+        input.addEventListener('blur', commitEdit);
+        return input;
+    }
+
+    editProjectTitle(oldTitle, newTitle) {
+        if (!newTitle || newTitle.trim() === '' || newTitle === oldTitle) return;
+
+        const projects = JSON.parse(localStorage.getItem('flowchartProjects'));
+        
+        if (projects[newTitle]) {
+            notificationManager.show('A project with this name already exists', 'error');
+            return;
+        }
+
+        projects[newTitle] = projects[oldTitle];
+        delete projects[oldTitle];
+        localStorage.setItem('flowchartProjects', JSON.stringify(projects));
+
+        if (this.currentProject === oldTitle) {
+            this.currentProject = newTitle;
+            localStorage.setItem('activeProject', newTitle);
+            document.getElementById('currentProject').textContent = newTitle;
+        }
+        notificationManager.show('Project renamed successfully', 'success');
+    }
+
+    createNewProject(name) {
+        if (this.isCreatingProject) return;
+        this.isCreatingProject = true;
+        
+        const projects = JSON.parse(localStorage.getItem('flowchartProjects'));
+        if (projects[name]) {
+            notificationManager.show('Project already exists', 'error');
+            this.isCreatingProject = false;
+            return;
+        }
+
+        projects[name] = {
+            boxes: {},
+            connections: {},
+            lastBoxId: 1,
+            lastConnectionId: 1
+        };
+        localStorage.setItem('flowchartProjects', JSON.stringify(projects));
+        this.switchProject(name);
+        notificationManager.show('Project created successfully', 'success');
+        this.isCreatingProject = false;
+    }
+
+    switchProject(name) {
+        this.saveCurrentProject();
+        this.loadProject(name);
+        this.currentProject = name;
+        localStorage.setItem('activeProject', name);
+        document.getElementById('currentProject').textContent = name;
+        document.getElementById('projectMenu').classList.add('hidden');
+        this.updateProjectList();
+    }
+
+    saveCurrentProject() {
+        const projects = JSON.parse(localStorage.getItem('flowchartProjects'));
+        
+        projects[this.currentProject] = {
+            boxes: Object.fromEntries([...this.boxes].map(([id, box]) => {
+                return [
+                    id,
+                    {
+                        x: box.x,
+                        y: box.y,
+                        title: box.title || '',
+                        content: box.content || '',
+                        isContentHidden: box.isContentHidden
+                    }
+                ];
+            })),
+            connections: Object.fromEntries([...this.connections].map(([id, conn]) => {
+                const pathData = conn.element.getAttribute('d');
+                return [
+                    id,
+                    {
+                        startBoxId: conn.startBox.id,
+                        endBoxId: conn.endBox.id,
+                        bidirectional: conn.bidirectional,
+                        pathData: pathData
+                    }
+                ];
+            })),
+            lastBoxId: this.nextBoxId,
+            lastConnectionId: this.nextConnectionId
+        };
+
+        localStorage.setItem('flowchartProjects', JSON.stringify(projects));
+    }
+
+    loadProject(name) {
+        // Clear current diagram
+        this.boxes.forEach(box => box.element.remove());
+        this.connections.forEach(conn => conn.element.remove());
+        this.boxes.clear();
+        this.connections.clear();
+
+        // Load project data
+        const projects = JSON.parse(localStorage.getItem('flowchartProjects'));
+        const project = projects[name];
+
+        // Restore boxes
+        this.nextBoxId = project.lastBoxId;
+        Object.entries(project.boxes).forEach(([id, data]) => {
+            const box = new Box(data.x, data.y, parseInt(id), false);
+            box.title = data.title || '';
+            box.content = data.content || '';
+            box.isContentHidden = data.isContentHidden;
+            box.updateContent();
+            this.boxes.set(parseInt(id), box);
+            this.canvas.appendChild(box.element);
+        });
+
+        // Restore connections
+        this.nextConnectionId = project.lastConnectionId;
+        Object.entries(project.connections).forEach(([id, data]) => {
+            const startBox = this.boxes.get(data.startBoxId);
+            const endBox = this.boxes.get(data.endBoxId);
+            const connection = new Connection(startBox, endBox, parseInt(id));
+            connection.bidirectional = data.bidirectional;
+            if (data.pathData) {
+                connection.element.setAttribute('d', data.pathData);
+            }
+            if (data.bidirectional) {
+                connection.element.setAttribute('marker-start', 'url(#arrowhead-start)');
+            }
+            this.connections.set(parseInt(id), connection);
+            this.svg.appendChild(connection.element);
+        });
+
+        this.updateHelperText();
+    }
+
+    updateHelperText() {
+        this.helperText.style.display = this.boxes.size === 0 ? 'block' : 'none';
+    }
+
+    setupArrowMarker() {
+        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+
+        // End arrow
+        const markerEnd = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+        markerEnd.setAttribute('id', 'arrowhead');
+        markerEnd.setAttribute('markerWidth', '10');
+        markerEnd.setAttribute('markerHeight', '7');
+        markerEnd.setAttribute('refX', '9');
+        markerEnd.setAttribute('refY', '3.5');
+        markerEnd.setAttribute('orient', 'auto');
+
+        const polygonEnd = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        polygonEnd.setAttribute('points', '0 0, 10 3.5, 0 7');
+        polygonEnd.setAttribute('fill', '#2563eb');
+
+        // Start arrow (pointing opposite direction)
+        const markerStart = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+        markerStart.setAttribute('id', 'arrowhead-start');
+        markerStart.setAttribute('markerWidth', '10');
+        markerStart.setAttribute('markerHeight', '7');
+        markerStart.setAttribute('refX', '0');
+        markerStart.setAttribute('refY', '3.5');
+        markerStart.setAttribute('orient', 'auto');
+
+        const polygonStart = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        polygonStart.setAttribute('points', '10 0, 0 3.5, 10 7');
+        polygonStart.setAttribute('fill', '#2563eb');
+
+        markerEnd.appendChild(polygonEnd);
+        markerStart.appendChild(polygonStart);
+        defs.appendChild(markerEnd);
+        defs.appendChild(markerStart);
+        this.svg.appendChild(defs);
+    }
+
+    setupEventListeners() {
+        this.canvas.addEventListener('click', (e) => this.handleClick(e));
+        this.canvas.addEventListener('dblclick', (e) => this.handleCanvasDoubleClick(e));
+        this.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
+        this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+        this.canvas.addEventListener('mouseup', (e) => this.handleMouseUp(e));
+        document.addEventListener('click', (e) => {
+            if (this.selectedConnection && !e.target.closest('path')) {
+                this.selectedConnection.deselect();
+                this.selectedConnection = null;
+            }
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Delete') {
+                if (this.selectedConnection) {
+                    this.deleteConnection(this.selectedConnection);
+                    this.selectedConnection = null;
+                } else if (this.selectedBox) {
+                    this.deleteBox(this.selectedBox);
+                }
+            }
+        });
+    }
+
+    createBox(x, y) {
+        const box = new Box(x, y, this.nextBoxId++);
+        this.boxes.set(box.id, box);
+        this.canvas.appendChild(box.element);
+        this.updateHelperText();
+        // Don't save here since Box.commitEdit will trigger save
+        return box;
+    }
+
+    createConnection(startBox, endBox) {
+        if (startBox && endBox && startBox !== endBox) {
+            // Check for existing reverse connection
+            let existingConnection = null;
+            for (const conn of this.connections.values()) {
+                if (conn.startBox === endBox && conn.endBox === startBox) {
+                    conn.setBidirectional(true);
+                    this.saveCurrentProject();  // Auto-save
+                    return conn;
+                } else if (conn.startBox === startBox && conn.endBox === endBox) {
+                    existingConnection = conn;
+                }
+            }
+
+            if (!existingConnection) {
+                const connection = new Connection(startBox, endBox, this.nextConnectionId++);
+                this.connections.set(connection.id, connection);
+                this.svg.appendChild(connection.element);
+
+                connection.element.addEventListener('click', () => {
+                    if (this.selectedConnection) {
+                        this.selectedConnection.deselect();
+                    }
+                    this.selectedConnection = connection;
+                    connection.select();
+                });
+
+                this.saveCurrentProject();  // Auto-save
+                return connection;
+            }
+            return existingConnection;
+        }
+        return null;
+    }
+
+    handleCanvasDoubleClick(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left - 50;
+        const y = e.clientY - rect.top - 20;
+        this.createBox(x, y);
+    }
+
+    handleClick(e) {
+        const boxElement = e.target.closest('[data-id]');
+        const isClickOnInput = e.target.tagName === 'TEXTAREA';
+        
+        if (this.selectedConnection && !e.target.closest('path')) {
+            this.selectedConnection.deselect();
+            this.selectedConnection = null;
+        }
+
+        // Cancel edit mode for all boxes except the one being clicked
+        for (const box of this.boxes.values()) {
+            if (box.isEditing && (!isClickOnInput || box.element !== boxElement)) {
+                box.cancelEdit();
+            }
+        }
+
+        // Exit edit mode for all boxes except the one being edited
+        let editCommitted = false;
+        for (const box of this.boxes.values()) {
+            if (box.isEditing && (!isClickOnInput || box.element !== boxElement)) {
+                editCommitted = box.commitEdit();
+            }
+        }
+
+        // Only save if no edit was committed (since commitEdit now handles its own save)
+        if (!editCommitted && !isClickOnInput) {
+            this.saveCurrentProject();
+        }
+
+        if (!boxElement && this.selectedBox) {
+            this.selectedBox.element.classList.remove('border-red-500');
+            this.selectedBox = null;
+        }
+    }
+
+    handleMouseDown(e) {
+        const boxElement = e.target.closest('[data-id]');
+        if (boxElement) {
+            const box = this.boxes.get(parseInt(boxElement.dataset.id));
+
+            if (e.button === 2) { // Right click
+                e.preventDefault();
+                this.connectionStart = box;
+                const startPoint = box.getCenter();
+                this.previewPath.setAttribute('d', `M ${startPoint.x} ${startPoint.y} L ${e.clientX} ${e.clientY}`);
+                this.previewPath.setAttribute('display', 'block');
+            } else if (e.button === 0) { // Left click
+                this.startDragging(boxElement, e);
+                boxElement.classList.add('dragging');
+            }
+        }
+    }
+
+    handleMouseMove(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        if (this.draggingBox) {
+            const x = mouseX - this.dragOffset.x;
+            const y = mouseY - this.dragOffset.y;
+            const box = this.boxes.get(parseInt(this.draggingBox.dataset.id));
+            box.setPosition(x, y);
+            this.updateConnections();
+            this.saveCurrentProject();  // Auto-save on drag
+        }
+        
+        if (this.connectionStart) {
+            const startCenter = this.connectionStart.getCenter();
+            this.previewPath.setAttribute('d', `M ${startCenter.x} ${startCenter.y} L ${mouseX} ${mouseY}`);
+            this.previewPath.setAttribute('display', 'block');
+        }
+    }
+
+    handleMouseUp(e) {
+        if (this.draggingBox) {
+            this.draggingBox.classList.remove('dragging');
+            this.saveCurrentProject();  // Auto-save after drag
+        }
+        if (this.connectionStart && e.button === 2) {
+            const boxElement = e.target.closest('[data-id]');
+            if (boxElement) {
+                const endBox = this.boxes.get(parseInt(boxElement.dataset.id));
+                if (endBox !== this.connectionStart) {
+                    this.createConnection(this.connectionStart, endBox);
+                }
+            }
+            this.connectionStart = null;
+            this.previewPath.setAttribute('display', 'none');
+        }
+        this.draggingBox = null;
+    }
+
+    startDragging(boxElement, e) {
+        this.draggingBox = boxElement;
+        const box = this.boxes.get(parseInt(boxElement.dataset.id));
+        this.dragOffset = {
+            x: e.clientX - box.x,
+            y: e.clientY - box.y
+        };
+
+        if (this.selectedBox) {
+            this.selectedBox.element.classList.remove('border-red-500');
+        }
+        this.selectedBox = box;
+        box.element.classList.add('border-red-500');
+    }
+
+    updateConnections() {
+        for (const connection of this.connections.values()) {
+            connection.update();
+        }
+    }
+
+    deleteBox(box) {
+        // Remove connections involving this box
+        for (const [id, connection] of this.connections) {
+            if (connection.startBox === box || connection.endBox === box) {
+                connection.element.remove();
+                this.connections.delete(id);
+            }
+        }
+        // Remove the box
+        box.element.remove();
+        this.boxes.delete(box.id);
+        this.selectedBox = null;
+        this.updateHelperText();
+        this.saveCurrentProject();  // Auto-save after deletion
+    }
+
+    deleteConnection(connection) {
+        connection.element.remove();
+        this.connections.delete(connection.id);
+        this.saveCurrentProject();  // Auto-save after connection deletion
+    }
+}
+// Initialize notification manager
+const notificationManager = new NotificationManager();
+// Initialize the diagram manager
+const manager = new DiagramManager();
+
+// Prevent context menu from appearing
+document.addEventListener('contextmenu', e => e.preventDefault());
+
+// Add cleanup for preview line when mouse leaves window
+document.addEventListener('mouseleave', () => {
+    if (manager.previewPath) {
+        manager.previewPath.setAttribute('display', 'none');
+        manager.connectionStart = null;
+    }
+});
+</script>
+</body>
+</html>
