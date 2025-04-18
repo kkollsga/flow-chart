@@ -1,1193 +1,1120 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diagram Creator</title>
+    <title>Flow Chart</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Include marked.js for markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
     <style>
-        .no-select {
-            user-select: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
+        /* --- Base Setup --- */
+        html { height: 100%; }
+        .no-select { user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; }
+
+        /* --- SVG Connection Styles --- */
+        .connection-path { 
+            stroke-width: 2; 
+            fill: none; 
+            cursor: pointer; 
+            vector-effect: non-scaling-stroke; 
+            transition: stroke 0.2s ease, stroke-width 0.2s ease, opacity 0.2s ease; 
+        }
+        .connection-path:hover { 
+            stroke-width: 3; 
+            opacity: 0.85; 
+            filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.15));
+        }
+        .connection-style-normal { stroke-dasharray: none; }
+        .connection-style-bold { stroke-width: 4; }
+        .connection-style-dashed { stroke-dasharray: 10, 5; }
+        .connection-style-dotted { stroke-dasharray: 2, 4; }
+        .connection-style-thin { stroke-width: 1; }
+
+        /* --- Arrow hover effects --- */
+        .arrow-marker {
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+        .arrow-marker:hover {
+            transform: scale(1.2);
+            opacity: 0.8;
+        }
+
+        /* --- Custom box styles --- */
+        .box-default {
+            border: 1.5px solid #4b5563;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+            transform: translateY(0);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        
+        .box-default:hover {
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+        }
+
+        /* --- Markdown styling (single line) --- */
+        .markdown-content { font-size: 14px; line-height: 1.5; word-wrap: break-word; }
+        .markdown-content h1 { font-size: 1.5em; font-weight: bold; margin-top: 0.5em; margin-bottom: 0.3em; }
+        .markdown-content h2 { font-size: 1.3em; font-weight: bold; margin-top: 0.4em; margin-bottom: 0.2em; }
+        .markdown-content h3 { font-size: 1.1em; font-weight: bold; margin-top: 0.3em; margin-bottom: 0.1em; }
+        .markdown-content p { margin-bottom: 0.5em; }
+        .markdown-content ul, .markdown-content ol { padding-left: 1.5em; margin-bottom: 0.5em; }
+        .markdown-content code { background-color: #f3f4f6; padding: 0.1em 0.2em; border-radius: 0.2em; font-family: monospace; }
+        .markdown-content hr { margin: 0.5em 0; border: none; border-top: 1px solid #d1d5db; }
+        .markdown-content a { color: #8b5cf6; text-decoration: underline; }
+        
+        /* --- Textarea styling --- */
+        .edit-textarea { width: 100%; height: 100%; box-sizing: border-box; padding: 0.5rem; border: none; font-family: inherit; font-size: 14px; line-height: 1.5; resize: none; overflow: auto; background-color: transparent; }
+        .edit-textarea:focus { outline: none; }
+        
+        /* --- Transitions and Animations --- */
+        .box-transition { transition: width 0.2s ease, height 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease; }
+        #preview-connection { stroke-dasharray: 5, 5; animation: dash 15s linear infinite; stroke: #4b5563; }
+        @keyframes dash { to { stroke-dashoffset: -1000; } }
+        
+        /* --- Help button --- */
+        .help-button {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            width: 24px;
+            height: 24px;
+            background: #6b7280;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            opacity: 0.6;
+            transition: opacity 0.2s ease;
+            z-index: 50;
+        }
+        .help-button:hover {
+            opacity: 1;
+        }
+        .help-tooltip {
+            position: fixed;
+            bottom: 40px;
+            right: 10px;
+            background: white;
+            color: #333;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            max-width: 220px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            z-index: 51;
+            display: none;
         }
     </style>
 </head>
-<body class="m-0 p-0 min-h-screen w-screen bg-gray-50">
-    <!-- Project Menu -->
-    <div class="absolute top-0 left-0 z-10">
-        <button id="menuBtn" class="m-2 p-2 bg-white rounded-lg shadow-lg hover:bg-gray-100">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-            </svg>
-        </button>
-        <div id="projectMenu" class="hidden absolute top-12 left-2 bg-white rounded-lg shadow-lg p-2 w-64">
-            <div class="flex justify-between items-center mb-2">
-                <h3 class="font-bold">Projects</h3>
-
-            </div>
-            <div id="projectList" class="max-h-96 overflow-y-auto"></div>
-        </div>
-    </div>
-    
-    <!-- Current Project Name -->
-    <div id="currentProject" class="absolute top-2 left-16 text-lg font-semibold no-select"></div>
-
-    <div id="canvas" class="relative w-full min-h-screen cursor-default">
-        <div id="helper-text" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-500 text-lg text-center pointer-events-none select-none">
-            Double click anywhere to add a box
-        </div>
-        <svg id="connections" class="absolute top-0 left-0 w-full h-full">
-            <defs>
-                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                    <polygon points="0 0, 10 3.5, 0 7" fill="#2563eb"/>
-                </marker>
-                <marker id="arrowhead-selected" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                    <polygon points="0 0, 10 3.5, 0 7" fill="#ef4444"/>
-                </marker>
-            </defs>
-            <path id="preview-connection" stroke="#2563eb" stroke-width="2" fill="none" marker-end="url(#arrowhead)" opacity="0.5" display="none" pointer-events="none"/>
+<body class="h-screen w-screen m-0 p-0 overflow-hidden bg-gray-100">
+    <div id="canvas" class="relative w-full h-full cursor-default overflow-hidden">
+        <svg id="connections" class="absolute top-0 left-0 w-full h-full pointer-events-none z-10">
+             <defs>
+                 <marker id="arrowhead-end" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                     <polygon points="0 0, 10 3.5, 0 7" fill="#4b5563"/>
+                 </marker>
+                 <marker id="arrowhead-start" markerWidth="10" markerHeight="7" refX="1" refY="3.5" orient="auto">
+                     <polygon points="10 0, 0 3.5, 10 7" fill="#4b5563"/>
+                 </marker>
+             </defs>
+            <path id="preview-connection" stroke="#4b5563" stroke-width="2" fill="none" marker-end="url(#arrowhead-end)" opacity="0.5" display="none" stroke-dasharray="5, 5"/>
         </svg>
+        <div id="box-container" class="absolute top-0 left-0 w-full h-full z-20 pointer-events-none"></div>
+        <div id="helper-text" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-500 text-lg text-center pointer-events-none select-none z-0">
+             Double click anywhere to add a box<br>
+             <span class="text-sm">Use Markdown in boxes for rich formatting</span>
+         </div>
     </div>
 
 <script>
+// --- Constants ---
+const INITIAL_BOX_WIDTH = 200;
+const INITIAL_BOX_HEIGHT = 80;
+const LINE_HEIGHT = 23; // Height per line in pixels
+const PADDING_HEIGHT = 30; // Additional padding for box height
 
-class NotificationManager {
-    constructor() {
-        this.container = this.createContainer();
-        document.body.appendChild(this.container);
+// Width type constants
+const WIDTH_TYPES = { SMALL: 'small', MEDIUM: 'medium', LARGE: 'large' };
+const WIDTH_TYPE_VALUES = { [WIDTH_TYPES.SMALL]: 200, [WIDTH_TYPES.MEDIUM]: 350, [WIDTH_TYPES.LARGE]: 500 };
+
+// Connection style constants
+const CONNECTION_STYLES = { 
+    NORMAL: 'normal', 
+    BOLD: 'bold', 
+    DASHED: 'dashed', 
+    DOTTED: 'dotted', 
+    THIN: 'thin' 
+};
+
+// Color theme configuration - easy to add/modify themes
+const COLOR_THEMES = {
+    // Each theme has a unique key and defines background, border, and text colors
+    default: {
+        name: 'Default',
+        bg: 'bg-white',
+        border: 'border-gray-500',
+        text: 'text-gray-900',
+        stroke: '#4b5563' // Added stroke color for connections
+    },
+    red: {
+        name: 'Red',
+        bg: 'bg-red-100',
+        border: 'border-red-500',
+        text: 'text-red-900',
+        stroke: '#ef4444'
+    },
+    green: {
+        name: 'Green',
+        bg: 'bg-green-100',
+        border: 'border-green-500',
+        text: 'text-green-900',
+        stroke: '#10b981'
+    },
+    purple: {
+        name: 'Purple',
+        bg: 'bg-purple-100',
+        border: 'border-purple-500',
+        text: 'text-purple-900',
+        stroke: '#8b5cf6'
+    },
+    blue: {
+        name: 'Blue',
+        bg: 'bg-blue-100',
+        border: 'border-blue-500',
+        text: 'text-blue-900',
+        stroke: '#3b82f6'
+    },
+    grey: {
+        name: 'Grey',
+        bg: 'bg-gray-200',
+        border: 'border-black',
+        text: 'text-gray-900',
+        stroke: '#111827'
+    },
+    yellow: {
+        name: 'Yellow',
+        bg: 'bg-yellow-100',
+        border: 'border-yellow-500',
+        text: 'text-yellow-900',
+        stroke: '#f59e0b'
     }
+};
 
-    createContainer() {
-        const container = document.createElement('div');
-        container.className = 'fixed top-4 right-4 z-50 flex flex-col gap-2';
-        return container;
-    }
+// Get all theme keys for cycling
+const THEME_KEYS = Object.keys(COLOR_THEMES);
 
-    show(message, type = 'info') {
-        const notification = document.createElement('div');
-        
-        // Base classes remain unchanged
-        const baseClasses = 'px-4 py-2 rounded-lg shadow-lg transform translate-x-0 transition-all duration-300 flex items-center gap-2 min-w-[200px] border-2';
-        
-        // Update just the color classes for softer backgrounds and dark outlines
-        const typeClasses = {
-            success: 'bg-green-50 text-green-800 border-green-600',
-            error: 'bg-red-50 text-red-800 border-red-600',
-            info: 'bg-blue-50 text-blue-800 border-blue-600',
-            warning: 'bg-yellow-50 text-yellow-800 border-yellow-600'
-        };
+// Define base classes for reuse in JS - using Tailwind utility classes
+const BASE_BOX_CLASSES = 'absolute rounded-lg box-default bg-white cursor-move no-select py-2 px-3 pointer-events-auto overflow-hidden box-transition';
 
-        const icons = {
-            success: '<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>',
-            error: '<svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>',
-            info: '<svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
-            warning: '<svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>'
-        };
+// Simple fallback markdown renderer
+function simpleMarkdownParser(text) { if (!text) return ''; return text.replace(/\n/g, '<br>').replace(/### (.*?)(<br>|$)/g, '<h3>$1</h3>').replace(/## (.*?)(<br>|$)/g, '<h2>$1</h2>').replace(/# (.*?)(<br>|$)/g, '<h1>$1</h1>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/`(.*?)`/g, '<code>$1</code>').replace(/(<br>|^)- (.*?)(?=<br>|$)/g, '$1<ul><li>$2</li></ul>'); }
 
-        notification.className = `${baseClasses} ${typeClasses[type] || typeClasses.info}`;
-        notification.innerHTML = `
-            ${icons[type] || icons.info}
-            <span class="flex-grow">${message}</span>
-        `;
-        
-        // Rest of the function remains unchanged
-        this.container.appendChild(notification);
-        requestAnimationFrame(() => {
-            notification.style.transform = 'translateX(0)';
-        });
-        setTimeout(() => {
-            notification.style.opacity = '0';
-            notification.style.transform = 'translateX(100%)';
-            setTimeout(() => {
-                notification.remove();
-            }, 300);
-        }, 2000);
+// Helper to safely remove CSS classes
+function safeRemoveClass(element, className) {
+    if (element && className && className.trim() !== '') {
+        element.classList.remove(className);
     }
 }
 
+// --- Box Class ---
 class Box {
-    constructor(x, y, id, isEditing = true) {
-        this.id = id;
-        this.x = x;
-        this.y = y;
-        this.title = '';  // Separate title storage
-        this.content = ''; // Separate content storage
-        this.isEditing = isEditing;
-        this.isContentHidden = false;
-        this.element = this.createElement();
-        if (isEditing) {
-            this.startEditing();
-        }
-
-        // Track mousedown for drag detection
-        let isDragging = false;
-        this.element.addEventListener('mousedown', () => {
-            isDragging = false;
-        });
-
-        this.element.addEventListener('mousemove', () => {
-            isDragging = true;
-        });
-
-        this.element.addEventListener('click', (e) => {
-            if (isDragging) return; // Ignore clicks during drag
-            
-            if (e.shiftKey && !this.isEditing && this.hasContent()) {
-                e.stopPropagation();
-                this.isContentHidden = !this.isContentHidden;
-                this.updateContent();
-            }
-        });
-
-        this.element.addEventListener('dblclick', (e) => {
-            e.stopPropagation();
-            if (!this.isEditing) {
-                this.startEditing();
-            }
-        });
-
-        // Add ESC handler
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.isEditing) {
-                e.preventDefault();
-                this.cancelEdit();
-            }
-        });
-    }
-
-    cancelEdit() {
+    constructor(boxData, manager) {
+        this.data = boxData;
+        if (!this.data.widthType) { this.data.widthType = WIDTH_TYPES.MEDIUM; }
+        if (!this.data.markdown) { this.data.markdown = '# New Box\nUse **markdown** to format'; }
+        if (!this.data.themeKey) { this.data.themeKey = 'default'; }
+        this.manager = manager;
         this.isEditing = false;
-        const contentDiv = this.element.querySelector('div');
+        this.element = this.createElement();
+        this.contentDiv = this.element.firstChild;
+        this.textarea = null;
+        this.updateElementPosition();
+        this.applyColorTheme();
+        this.renderMarkdown();
+        this.setupEventListeners();
+    }
+
+    createElement() { 
+        const div = document.createElement('div'); 
+        div.className = BASE_BOX_CLASSES; 
+        div.dataset.id = this.data.id; 
+        const contentDiv = document.createElement('div'); 
+        contentDiv.className = 'markdown-content relative w-full h-full'; 
+        div.appendChild(contentDiv); 
+        return div; 
+    }
+    
+    setupEventListeners() {
+        let isDragging = false;
         
-        // If box is new/empty, remove it
-        if (!this.title.trim()) {
-            if (window.manager) {
-                window.manager.deleteBox(this);
-                window.manager.updateHelperText();
+        this.element.addEventListener('mouseenter', () => {
+            this.manager.hoveredElement = this;
+        });
+        
+        this.element.addEventListener('mouseleave', () => {
+            if (this.manager.hoveredElement === this) {
+                this.manager.hoveredElement = null;
             }
-            return;
+        });
+        
+        this.element.addEventListener('mousedown', (e) => { 
+            isDragging = false; 
+            // Start dragging on mousedown
+            if (e.button === 0 && !this.isEditing) {
+                this.manager.startDragging(this, e);
+            } else if (e.button === 2) {
+                // Right mouse button down - start connection or change width
+                this.manager.handleBoxRightMouseDown(e, this);
+            }
+        });
+        
+        this.element.addEventListener('mousemove', () => { 
+            if (this.manager.draggingBox === this) { 
+                isDragging = true; 
+            } 
+        });
+        
+        this.element.addEventListener('click', (e) => { 
+            if (isDragging || this.isEditing) return;
+            
+            // Left click - cycle color
+            if (e.button === 0) {
+                this.cycleColorTheme();
+            }
+            
+            isDragging = false; 
+        });
+        
+        this.element.addEventListener('dblclick', (e) => { 
+            e.stopPropagation(); 
+            if (!this.isEditing) { 
+                this.startEditing(); 
+            } 
+        });
+        
+        this.element.addEventListener('contextmenu', (e) => { 
+            e.preventDefault(); 
+            e.stopPropagation(); 
+            return false; 
+        });
+    }
+
+    // Updates the element's CSS position
+    updateElementPosition() {
+        const x = this.data.cx - this.data.width / 2;
+        const y = this.data.cy - this.data.height / 2;
+        this.element.style.left = `${Math.round(x)}px`;
+        this.element.style.top = `${Math.round(y)}px`;
+        this.element.style.width = `${this.data.width}px`;
+        this.element.style.height = `${this.data.height}px`;
+    }
+
+    // Updates position using center coordinates - for dragging
+    setCenterPosition(cx, cy) { this.data.cx = cx; this.data.cy = cy; this.updateElementPosition(); }
+    
+    // Apply color theme to the box
+    applyColorTheme() {
+        // Get the theme object (with fallback to default if not found)
+        const theme = COLOR_THEMES[this.data.themeKey] || COLOR_THEMES.default;
+        
+        // Remove all possible theme background classes
+        THEME_KEYS.forEach(key => {
+            const themeToRemove = COLOR_THEMES[key];
+            if (themeToRemove) {
+                safeRemoveClass(this.element, themeToRemove.bg);
+                safeRemoveClass(this.element, themeToRemove.border);
+                safeRemoveClass(this.contentDiv, themeToRemove.text);
+            }
+        });
+        
+        // Add new theme classes
+        if (theme.bg) this.element.classList.add(theme.bg);
+        if (theme.border) this.element.classList.add(theme.border);
+        if (theme.text) this.contentDiv.classList.add(theme.text);
+    }
+    
+    // Cycle to the next color theme
+    cycleColorTheme() {
+        const currentIndex = THEME_KEYS.indexOf(this.data.themeKey);
+        const nextIndex = (currentIndex + 1) % THEME_KEYS.length;
+        this.data.themeKey = THEME_KEYS[nextIndex];
+        this.applyColorTheme();
+    }
+
+    // Toggle between width types
+    toggleWidthType() {
+        const types = Object.values(WIDTH_TYPES);
+        const currentIndex = types.indexOf(this.data.widthType);
+        const nextIndex = (currentIndex + 1) % types.length;
+        this.data.widthType = types[nextIndex];
+        
+        // Set the new width directly
+        const width = WIDTH_TYPE_VALUES[this.data.widthType];
+        this.data.width = width;
+        
+        // Update size based on current mode
+        if (this.isEditing) {
+            this.updateEditModeSize();
+        } else {
+            this.renderMarkdown();
         }
         
-        // Otherwise restore previous content
-        contentDiv.className = 'px-3 whitespace-pre-wrap break-words';
-        contentDiv.innerHTML = this.formatContent();
-        this.element.classList.add('cursor-move');
+        this.manager.updateConnectionsForBox(this);
     }
 
-    createElement() {
-        const div = document.createElement('div');
-        div.className = 'absolute bg-white border-2 border-blue-500 rounded-lg shadow-lg cursor-move no-select max-w-[200px] py-0.5 inline-block';
-        div.style.left = `${this.x}px`;
-        div.style.top = `${this.y}px`;
-        div.dataset.id = this.id;
-
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'px-3 whitespace-pre-wrap break-words leading-tight';
-        div.appendChild(contentDiv);
-
-        return div;
+    // Renders markdown content to HTML and calculates size
+    renderMarkdown() {
+        if (!this.data.markdown) return;
+        
+        try {
+            // Use marked.js or fallback
+            this.contentDiv.innerHTML = typeof marked !== 'undefined' && typeof marked.parse === 'function' 
+                ? marked.parse(this.data.markdown) 
+                : simpleMarkdownParser(this.data.markdown);
+        } catch (e) {
+            console.error('Error parsing markdown:', e);
+            this.contentDiv.innerHTML = simpleMarkdownParser(this.data.markdown);
+        }
+        
+        // Update size after rendering
+        this.calculateRenderedSize();
     }
 
+    // Calculate size with fixed width based on type
+    calculateRenderedSize() {
+        // Clone for measurement
+        const clone = this.element.cloneNode(true);
+        document.body.appendChild(clone);
+        
+        // Reset styles for measurement
+        clone.style.position = 'absolute';
+        clone.style.visibility = 'hidden';
+        clone.style.left = '-9999px';
+        clone.style.top = '-9999px';
+        clone.style.height = 'auto';
+        clone.style.maxWidth = 'none';
+        clone.style.transition = 'none';
+        
+        // Use fixed width from width type directly
+        const fixedWidth = WIDTH_TYPE_VALUES[this.data.widthType];
+        clone.style.width = `${fixedWidth}px`;
+        
+        // Force reflow and measure height with the fixed width
+        clone.offsetHeight;
+        const newHeight = Math.max(clone.offsetHeight, 50);
+        
+        // Clean up
+        document.body.removeChild(clone);
+        
+        // Update size
+        this.data.width = fixedWidth;
+        this.data.height = newHeight;
+        this.updateElementPosition();
+        
+        return { width: fixedWidth, height: newHeight };
+    }
+
+    // Calculate box height based on line count
+    calculateHeightFromLineCount() {
+        if (!this.isEditing || !this.textarea) return 50;
+        
+        const lineCount = this.textarea.value.split('\n').length;
+        return PADDING_HEIGHT + (lineCount * LINE_HEIGHT);
+    }
+
+    // Updates box size based on text content during editing
+    updateEditModeSize() {
+        if (!this.isEditing || !this.textarea) return;
+        
+        // Always use fixed width from width type
+        const width = WIDTH_TYPE_VALUES[this.data.widthType];
+        
+        // Calculate height based on line count
+        const height = this.calculateHeightFromLineCount();
+        
+        // Update size
+        this.data.width = width;
+        this.data.height = height;
+        this.updateElementPosition();
+        this.manager.updateConnectionsForBox(this);
+    }
+
+    // Switches to editing mode
     startEditing() {
-        // Store original content for potential cancellation
-        this.originalTitle = this.title;
-        this.originalContent = this.content;
-
+        if (this.isEditing) return;
         this.isEditing = true;
         this.element.classList.remove('cursor-move');
-        const contentDiv = this.element.querySelector('div');
-        contentDiv.innerHTML = '';
-        contentDiv.className = 'px-3';
         
-        const textarea = document.createElement('textarea');
-        textarea.className = 'w-full border-none focus:outline-none bg-transparent resize-none text-center leading-tight';
-        // Combine title and content for editing, preserving line break
-        textarea.value = this.title + (this.content ? '\n' + this.content : '');
-        textarea.rows = 1;
+        // Clear and prepare container
+        this.contentDiv.innerHTML = '';
         
-        // Keep text in sync with textarea
-        const updateText = (e) => {
-            try {
-                const lines = e.target.value.split('\n');
-                this.title = lines[0] || '';
-                this.content = lines.slice(1).join('\n');
-                this.adjustTextareaHeight(textarea);
-            } catch (err) {
-                console.error('Error updating box text:', err);
-                this.title = '';
-                this.content = '';
-            }
-        };
+        // Create textarea
+        this.textarea = document.createElement('textarea');
+        this.textarea.className = 'edit-textarea';
+        this.textarea.value = this.data.markdown || '';
+        this.textarea.placeholder = 'Add markdown content...';
         
-        textarea.addEventListener('input', updateText);
+        // Set fixed width from width type
+        this.data.width = WIDTH_TYPE_VALUES[this.data.widthType];
         
-        textarea.addEventListener('keydown', e => {
-            if (e.key === 'Enter') {
-                if (e.shiftKey) {
-                    e.preventDefault();
-                    const start = textarea.selectionStart;
-                    const end = textarea.selectionEnd;
-                    textarea.value = textarea.value.slice(0, start) + '\n' + textarea.value.slice(end);
-                    textarea.selectionStart = textarea.selectionEnd = start + 1;
-                    updateText(e);
-                } else {
-                    e.preventDefault();
-                    textarea.removeEventListener('input', updateText);
-                    this.commitEdit();
-                }
-            } else if (e.key === 'Escape') {
+        // Add event listeners
+        this.textarea.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') { 
+                e.preventDefault(); 
+                this.cancelEdit(); 
+            } else if (e.ctrlKey && e.key === 'Enter') {
                 e.preventDefault();
-                textarea.removeEventListener('input', updateText);
-                this.cancelEdit();
+                this.commitEdit();
             }
+            
+            // Update size on next tick
+            setTimeout(() => this.updateEditModeSize(), 0);
         });
         
-        textarea.addEventListener('click', e => {
-            if (!this.element.classList.contains('dragging')) {
-                e.stopPropagation();
-            }
+        this.textarea.addEventListener('input', () => {
+            this.updateEditModeSize();
         });
         
-        contentDiv.appendChild(textarea);
+        // Prevent event propagation
+        this.textarea.addEventListener('mousedown', e => e.stopPropagation());
+        this.textarea.addEventListener('contextmenu', e => e.stopPropagation());
+        this.textarea.addEventListener('dblclick', e => e.stopPropagation());
+        this.textarea.addEventListener('click', e => e.stopPropagation());
+
+        this.contentDiv.appendChild(this.textarea);
+
+        // Focus and select text
         requestAnimationFrame(() => {
-            textarea.focus();
-            this.adjustTextareaHeight(textarea);
+            this.textarea.focus();
+            if (this.textarea.value) this.textarea.select();
+            this.updateEditModeSize();
         });
     }
 
-    adjustTextareaHeight(textarea) {
-        textarea.style.height = 'auto';
-        textarea.style.height = textarea.scrollHeight + 'px';
-    }
-
-    hasContent() {
-        return this.content.trim().length > 0;
-    }
-
-    formatContent() {
-        let html = `<div class="font-bold text-center leading-tight">${this.escapeHtml(this.title)}</div>`;
-        
-        if (this.content && !this.isContentHidden) {
-            html += `<div class="leading-tight mt-[2px]">${this.escapeHtml(this.content)}</div>`;
-        } else if (this.content) {
-            html += `<div class="text-center text-gray-400 text-sm mt-[2px]">...</div>`;
-        }
-        
-        return html;
-    }
-
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    commitEdit() {
-        if (!this.isEditing) return;
-        
-        if (!this.title.trim()) {
-            this.cancelEdit();
-            return false;
-        }
-
-        this.isEditing = false;
-        const contentDiv = this.element.querySelector('div');
-        contentDiv.className = 'px-3 whitespace-pre-wrap break-words';
-        contentDiv.innerHTML = this.formatContent();
-        
-        this.element.classList.add('cursor-move');
-        return true;
-    }
-
-    commitEdit() {
-        if (!this.isEditing) return;
-        
-        if (!this.title.trim()) {
-            this.cancelEdit();
-            return false;
-        }
-
-        this.isEditing = false;
-        const contentDiv = this.element.querySelector('div');
-        contentDiv.className = 'px-3 whitespace-pre-wrap break-words';
-        contentDiv.innerHTML = this.formatContent();
-        
-        this.element.classList.add('cursor-move');
-
-        // Trigger save after edit is committed
-        if (window.manager) {
-            window.manager.saveCurrentProject();
-        }
-        
-        return true;
-    }
-
-    updateContent() {
-        if (!this.isEditing) {
-            const contentDiv = this.element.querySelector('div');
-            contentDiv.innerHTML = this.formatContent();
-        }
-    }
-
-    setPosition(x, y) {
-        this.x = x;
-        this.y = y;
-        this.element.style.left = `${x}px`;
-        this.element.style.top = `${y}px`;
-    }
-
-    getCenter() {
-        return {
-            x: this.x + this.element.offsetWidth / 2,
-            y: this.y + this.element.offsetHeight / 2
-        };
-    }
-
-    getBounds() {
-        return {
-            left: this.x,
-            right: this.x + this.element.offsetWidth,
-            top: this.y,
-            bottom: this.y + this.element.offsetHeight,
-            width: this.element.offsetWidth,
-            height: this.element.offsetHeight
-        };
-    }
+    commitEdit() { if (!this.isEditing || !this.textarea) return false; const markdown = this.textarea.value.trim(); if (!markdown) { this.cancelEdit(); return false; } this.data.markdown = markdown; this.cleanupEdit(); this.renderMarkdown(); this.manager.updateConnectionsForBox(this); console.log('Box Edit Committed:', structuredClone(this.data)); return true; }
+    cancelEdit() { if (!this.isEditing) return; if (!this.data.markdown) { console.log('Box Edit Cancelled & Deleted:', this.data.id); this.manager.deleteBox(this); return; } this.cleanupEdit(); this.renderMarkdown(); console.log('Box Edit Cancelled:', structuredClone(this.data)); }
+    cleanupEdit() { this.isEditing = false; if (this.textarea && this.textarea.parentNode) { this.textarea.remove(); } this.textarea = null; this.element.classList.add('cursor-move'); }
+    getBounds() { const x = this.data.cx - this.data.width / 2; const y = this.data.cy - this.data.height / 2; return { left: x, right: x + this.data.width, top: y, bottom: y + this.data.height, width: this.data.width, height: this.data.height }; }
 }
+
+// --- Connection Class ---
 class Connection {
-    constructor(startBox, endBox, id) {
-        this.id = id;
-        this.startBox = startBox;
-        this.endBox = endBox;
-        this.element = this.createElement();
-        this.selected = false;
-        this.bidirectional = false;
-        this.update();
-        this.setupEventListeners();
-    }
-
-    createElement() {
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('stroke', '#2563eb');
-        path.setAttribute('stroke-width', '2');
-        path.setAttribute('fill', 'none');
-        path.setAttribute('marker-end', 'url(#arrowhead)');
-        path.setAttribute('cursor', 'pointer');
-        path.dataset.id = this.id;
-        return path;
-    }
-
-    setupEventListeners() {
-        this.element.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (this.selected) {
-                this.deselect();
-            } else {
-                this.select();
-            }
-        });
-    }
-
-    select() {
-        this.selected = true;
-        this.element.setAttribute('stroke', '#ef4444');
-        this.element.setAttribute('marker-end', 'url(#arrowhead-selected)');
-    }
-
-    deselect() {
-        this.selected = false;
-        this.element.setAttribute('stroke', '#2563eb');
-        this.element.setAttribute('marker-end', 'url(#arrowhead)');
-    }
-
-    calculateIntersection(start, end, box) {
-        const bounds = box.getBounds();
-        const dx = end.x - start.x;
-        const dy = end.y - start.y;
-        const length = Math.sqrt(dx * dx + dy * dy) || 1;
-        const unitX = dx / length;
-        const unitY = dy / length;
+    constructor(connectionData, startBox, endBox, manager) { 
+        this.data = connectionData; 
+        // Initialize data if needed
+        if (!this.data.themeKey) this.data.themeKey = 'default';
+        if (!this.data.style) this.data.style = CONNECTION_STYLES.NORMAL;
+        if (this.data.bidirectional === undefined) this.data.bidirectional = false;
         
-        // Add consistent offset from box edge
-        const EDGE_OFFSET = 5;
-
-        const intersections = [];
-
-        for (const y of [bounds.top, bounds.bottom]) {
-            if (dy !== 0) {
-                const x = start.x + (y - start.y) * (dx / dy);
-                if (x >= bounds.left && x <= bounds.right) {
-                    const point = {
-                        x: x + (unitX * EDGE_OFFSET * (y === bounds.top ? 1 : -1)),
-                        y: y + (unitY * EDGE_OFFSET * (y === bounds.top ? 1 : -1))
-                    };
-                    intersections.push(point);
-                }
-            }
+        this.startBox = startBox; 
+        this.endBox = endBox; 
+        this.manager = manager; 
+        this.element = this.createElement(); 
+        
+        // Create arrow overlay elements for hover effects
+        this.startArrow = null;
+        this.endArrow = null;
+        if (this.data.bidirectional) {
+            this.setupArrows(true, true);
+        } else {
+            this.setupArrows(false, true);
         }
-
-        for (const x of [bounds.left, bounds.right]) {
-            if (dx !== 0) {
-                const y = start.y + (x - start.x) * (dy / dx);
-                if (y >= bounds.top && y <= bounds.bottom) {
-                    const point = {
-                        x: x + (unitX * EDGE_OFFSET * (x === bounds.left ? 1 : -1)),
-                        y: y + (unitY * EDGE_OFFSET * (x === bounds.left ? 1 : -1))
-                    };
-                    intersections.push(point);
-                }
-            }
-        }
-
-        let closestPoint = { x: bounds.left + bounds.width/2, y: bounds.top + bounds.height/2 };
-        let minDistance = Infinity;
-
-        for (const point of intersections) {
-            const distance = Math.hypot(point.x - start.x, point.y - start.y);
-            if (distance < minDistance) {
-                minDistance = distance;
-                closestPoint = point;
-            }
-        }
-
-        return closestPoint;
+        
+        this.update(); 
+        this.setupEventListeners(); 
     }
-
-    update() {
-        const startCenter = this.startBox.getCenter();
-        const endCenter = this.endBox.getCenter();
-        const EDGE_OFFSET = 5;
-
-        // Calculate intersection points
-        const startPoint = this.calculateIntersection(endCenter, startCenter, this.startBox);
-        const endPoint = this.calculateIntersection(startPoint, endCenter, this.endBox);
-
-        if (!isNaN(startPoint.x) && !isNaN(startPoint.y) && !isNaN(endPoint.x) && !isNaN(endPoint.y)) {
-            // Create the path
-            let path = `M ${startPoint.x} ${startPoint.y} L ${endPoint.x} ${endPoint.y}`;
-            this.element.setAttribute('d', path);
-
-            if (this.bidirectional) {
-                this.element.setAttribute('marker-start', 'url(#arrowhead-start)');
-            }
+    
+    createElement() { 
+        const p = document.createElementNS('http://www.w3.org/2000/svg', 'path'); 
+        p.setAttribute('class', 'connection-path pointer-events-auto'); 
+        p.dataset.id = this.data.id; 
+        // Set marker-end based on if bidirectional
+        if (this.data.bidirectional) {
+            p.setAttribute('marker-start', 'url(#arrowhead-start)');
+        }
+        p.setAttribute('marker-end', 'url(#arrowhead-end)');
+        return p; 
+    }
+    
+    // Setup arrow overlay elements for hover effects
+    setupArrows(start, end) {
+        // Create start arrow if needed
+        if (start && !this.startArrow) {
+            this.startArrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            this.startArrow.setAttribute('class', 'arrow-marker');
+            this.startArrow.setAttribute('fill', COLOR_THEMES[this.data.themeKey].stroke);
+            this.startArrow.dataset.connection = this.data.id;
+            this.startArrow.dataset.end = 'start';
+            this.manager.svg.appendChild(this.startArrow);
+            
+            // Add event listeners to arrow
+            this.startArrow.addEventListener('mouseenter', () => {
+                this.manager.hoveredElement = this;
+            });
+            
+            this.startArrow.addEventListener('mouseleave', () => {
+                if (this.manager.hoveredElement === this) {
+                    this.manager.hoveredElement = null;
+                }
+            });
+            
+            this.startArrow.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Left-click - toggle bidirectionality
+                this.toggleBidirectional();
+            });
+        }
+        
+        // Create end arrow if needed
+        if (end && !this.endArrow) {
+            this.endArrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            this.endArrow.setAttribute('class', 'arrow-marker');
+            this.endArrow.setAttribute('fill', COLOR_THEMES[this.data.themeKey].stroke);
+            this.endArrow.dataset.connection = this.data.id;
+            this.endArrow.dataset.end = 'end';
+            this.manager.svg.appendChild(this.endArrow);
+            
+            // Add event listeners to arrow
+            this.endArrow.addEventListener('mouseenter', () => {
+                this.manager.hoveredElement = this;
+            });
+            
+            this.endArrow.addEventListener('mouseleave', () => {
+                if (this.manager.hoveredElement === this) {
+                    this.manager.hoveredElement = null;
+                }
+            });
+            
+            this.endArrow.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Left-click - toggle bidirectionality
+                this.toggleBidirectional();
+            });
         }
     }
-
-    setBidirectional(value) {
-       this.bidirectional = value;
-        if (value) {
+    
+    // Toggle bidirectionality of the connection
+    toggleBidirectional() {
+        this.data.bidirectional = !this.data.bidirectional;
+        
+        if (this.data.bidirectional) {
             this.element.setAttribute('marker-start', 'url(#arrowhead-start)');
+            this.setupArrows(true, true);
+            
+            // Change style to visualize the change
+            this.cycleStyle();
         } else {
             this.element.removeAttribute('marker-start');
+            
+            // Remove start arrow if exists
+            if (this.startArrow) {
+                this.startArrow.remove();
+                this.startArrow = null;
+            }
+        }
+        
+        // Update the connection
+        this.update();
+    }
+    
+    setupEventListeners() { 
+        this.element.addEventListener('mouseenter', () => {
+            this.manager.hoveredElement = this;
+        });
+        
+        this.element.addEventListener('mouseleave', () => {
+            if (this.manager.hoveredElement === this) {
+                this.manager.hoveredElement = null;
+            }
+        });
+        
+        this.element.addEventListener('click', (e) => { 
+            e.stopPropagation(); 
+            // Left-click - cycle color
+            this.cycleColorTheme();
+        }); 
+
+        this.element.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Right-click - cycle style
+            this.cycleStyle();
+            return false;
+        });
+    }
+    
+    // Apply the current theme to the connection
+    applyTheme() {
+        const theme = COLOR_THEMES[this.data.themeKey] || COLOR_THEMES.default;
+        if (this.element) {
+            this.element.setAttribute('stroke', theme.stroke);
+        }
+        
+        // Update arrows color if they exist
+        if (this.startArrow) {
+            this.startArrow.setAttribute('fill', theme.stroke);
+        }
+        
+        if (this.endArrow) {
+            this.endArrow.setAttribute('fill', theme.stroke);
+        }
+        
+        // Update arrowhead - safely
+        this.updateArrowheadColor(theme.stroke);
+    }
+    
+    // Update arrowhead color safely
+    updateArrowheadColor(color) {
+        // Update start arrowhead
+        try {
+            const startArrowhead = document.getElementById('arrowhead-start');
+            if (startArrowhead) {
+                const polygon = startArrowhead.querySelector('polygon');
+                if (polygon) {
+                    polygon.setAttribute('fill', color);
+                }
+            }
+        } catch (e) {
+            console.warn("Could not update start arrowhead color", e);
+        }
+        
+        // Update end arrowhead
+        try {
+            const endArrowhead = document.getElementById('arrowhead-end');
+            if (endArrowhead) {
+                const polygon = endArrowhead.querySelector('polygon');
+                if (polygon) {
+                    polygon.setAttribute('fill', color);
+                }
+            }
+        } catch (e) {
+            console.warn("Could not update end arrowhead color", e);
+        }
+    }
+    
+    // Cycle to the next color theme
+    cycleColorTheme() {
+        const currentIndex = THEME_KEYS.indexOf(this.data.themeKey);
+        const nextIndex = (currentIndex + 1) % THEME_KEYS.length;
+        this.data.themeKey = THEME_KEYS[nextIndex];
+        this.applyTheme();
+    }
+    
+    // Apply the current style to the connection
+    applyStyle() {
+        // Remove all style classes first
+        this.element.classList.remove(
+            'connection-style-normal',
+            'connection-style-bold', 
+            'connection-style-dashed', 
+            'connection-style-dotted', 
+            'connection-style-thin'
+        );
+        
+        // Add current style class
+        this.element.classList.add(`connection-style-${this.data.style}`);
+    }
+    
+    // Cycle to the next line style
+    cycleStyle() {
+        const styles = Object.values(CONNECTION_STYLES);
+        const currentIndex = styles.indexOf(this.data.style);
+        const nextIndex = (currentIndex + 1) % styles.length;
+        this.data.style = styles[nextIndex];
+        this.applyStyle();
+    }
+    
+    calculateIntersection(startPt, endPt, targetBox) { const bounds = targetBox.getBounds(); const dx = endPt.x - startPt.x; const dy = endPt.y - startPt.y; if (bounds.width <= 0 || bounds.height <= 0 || (dx === 0 && dy === 0)) { return { x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2 }; } let t = Infinity; let intersection = null; const tol = 0.1; const checkT = (newT, x, y, b) => { if (newT >= 0 && newT < t && x >= b.left - tol && x <= b.right + tol && y >= b.top - tol && y <= b.bottom + tol) { t = newT; return { x, y }; } return null; }; if (dx !== 0) { let tL = (bounds.left - startPt.x) / dx; let yL = startPt.y + tL * dy; intersection = checkT(tL, bounds.left, yL, bounds) || intersection; let tR = (bounds.right - startPt.x) / dx; let yR = startPt.y + tR * dy; intersection = checkT(tR, bounds.right, yR, bounds) || intersection; } if (dy !== 0) { let tT = (bounds.top - startPt.y) / dy; let xT = startPt.x + tT * dx; intersection = checkT(tT, xT, bounds.top, bounds) || intersection; let tB = (bounds.bottom - startPt.y) / dy; let xB = startPt.x + tB * dx; intersection = checkT(tB, xB, bounds.bottom, bounds) || intersection; } if (intersection) { const len = Math.sqrt(dx*dx + dy*dy) || 1; const ux = dx / len; const uy = dy / len; intersection.x -= ux * 2; intersection.y -= uy * 2; } return intersection || { x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2 }; }
+    
+    update() { 
+        if (!this.startBox || !this.endBox) return; 
+        const sC = { x: this.startBox.data.cx, y: this.startBox.data.cy }; 
+        const eC = { x: this.endBox.data.cx, y: this.endBox.data.cy }; 
+        const eP = this.calculateIntersection(sC, eC, this.endBox); 
+        const sP = this.calculateIntersection(eP, sC, this.startBox); 
+        
+        if (!isNaN(sP.x) && !isNaN(eP.x)) { 
+            this.element.setAttribute('d', `M ${sP.x} ${sP.y} L ${eP.x} ${eP.y}`); 
+            
+            // Update arrow positions
+            this.updateArrowPositions(sP, eP);
+        } else { 
+            this.element.setAttribute('d', ''); 
+        } 
+        
+        this.updateElementStyle(); 
+    }
+    
+    // Update custom arrow positions for hover
+    updateArrowPositions(startPoint, endPoint) {
+        // Calculate arrow points
+        const dx = endPoint.x - startPoint.x;
+        const dy = endPoint.y - startPoint.y;
+        const len = Math.sqrt(dx*dx + dy*dy);
+        if (len === 0) return;
+        
+        const ux = dx / len;
+        const uy = dy / len;
+        
+        if (this.endArrow) {
+            // Position for end arrow (10px from end)
+            const arrowEndX = endPoint.x - ux * 12;
+            const arrowEndY = endPoint.y - uy * 12;
+            
+            // Create an arrowhead polygon
+            const arrowSize = 7;
+            const arrowPoints = [
+                [arrowEndX - ux * arrowSize + uy * arrowSize, arrowEndY - uy * arrowSize - ux * arrowSize],
+                [arrowEndX, arrowEndY],
+                [arrowEndX - ux * arrowSize - uy * arrowSize, arrowEndY - uy * arrowSize + ux * arrowSize]
+            ];
+            
+            this.endArrow.setAttribute('points', arrowPoints.map(p => p.join(',')).join(' '));
+        }
+        
+        if (this.startArrow && this.data.bidirectional) {
+            // Position for start arrow (10px from start)
+            const arrowStartX = startPoint.x + ux * 12;
+            const arrowStartY = startPoint.y + uy * 12;
+            
+            // Create an arrowhead polygon
+            const arrowSize = 7;
+            const arrowPoints = [
+                [arrowStartX + ux * arrowSize + uy * arrowSize, arrowStartY + uy * arrowSize - ux * arrowSize],
+                [arrowStartX, arrowStartY],
+                [arrowStartX + ux * arrowSize - uy * arrowSize, arrowStartY + uy * arrowSize + ux * arrowSize]
+            ];
+            
+            this.startArrow.setAttribute('points', arrowPoints.map(p => p.join(',')).join(' '));
+        }
+    }
+    
+    updateElementStyle() { 
+        // Apply theme color and style
+        this.applyTheme();
+        this.applyStyle();
+    }
+    
+    // Clean up the connection by removing arrow elements
+    cleanup() {
+        if (this.startArrow) {
+            this.startArrow.remove();
+            this.startArrow = null;
+        }
+        
+        if (this.endArrow) {
+            this.endArrow.remove();
+            this.endArrow = null;
         }
     }
 }
 
+// --- Diagram Manager Class ---
 class DiagramManager {
     constructor() {
-        window.manager = this;
-        this.boxes = new Map();
-        this.connections = new Map();
         this.canvas = document.getElementById('canvas');
         this.svg = document.getElementById('connections');
+        this.boxContainer = document.getElementById('box-container');
         this.helperText = document.getElementById('helper-text');
-        this.nextBoxId = 1;
-        this.nextConnectionId = 1;
-        this.selectedBox = null;
-        this.selectedConnection = null;
-        this.connectionStart = null;
         this.previewPath = document.getElementById('preview-connection');
         
-        // Add storage handling
-        this.currentProject = '';
-        this.setupArrowMarker();
+        this.boxes = new Map();
+        this.connections = new Map();
+        this.nextBoxId = 1;
+        this.nextConnectionId = 1;
+        
+        this.draggingBox = null;
+        this.dragStartPos = { x: 0, y: 0 };
+        this.dragBoxStartCenter = { cx: 0, cy: 0 };
+        this.connectionStartBox = null;
+        this.hoveredElement = null; // Track currently hovered element
+        
         this.setupEventListeners();
-        this.setupStorage();
-        this.setupProjectUI();
         this.updateHelperText();
+        this.setupHelpButton();
     }
-
-    setupStorage() {
-        // Initialize storage if needed
-        if (!localStorage.getItem('flowchartProjects')) {
-            localStorage.setItem('flowchartProjects', JSON.stringify({
-                'My First Project': {
-                    boxes: {},
-                    connections: {},
-                    lastBoxId: 1,
-                    lastConnectionId: 1
-                }
-            }));
-            this.currentProject = 'My First Project';
-        }
+    
+    setupEventListeners() { 
+        this.canvas.addEventListener('dblclick', this.handleCanvasDoubleClick.bind(this)); 
+        this.canvas.addEventListener('mousedown', this.handleCanvasMouseDown.bind(this)); 
+        document.addEventListener('mousemove', this.handleMouseMove.bind(this)); 
+        document.addEventListener('mouseup', this.handleMouseUp.bind(this)); 
+        document.addEventListener('keydown', this.handleKeyDown.bind(this)); 
+        document.addEventListener('click', this.handleGlobalClick.bind(this), true); 
+        document.addEventListener('contextmenu', e => e.preventDefault()); 
+        document.addEventListener('mouseleave', () => { 
+            if (this.connectionStartBox) { 
+                this.previewPath.setAttribute('display', 'none'); 
+                this.connectionStartBox = null; 
+            } 
+        }); 
+    }
+    
+    setupHelpButton() {
+        const helpButton = document.createElement('div');
+        helpButton.className = 'help-button';
+        helpButton.textContent = '?';
+        helpButton.title = 'Help';
+        document.body.appendChild(helpButton);
         
-        // Load last active project
-        const projects = JSON.parse(localStorage.getItem('flowchartProjects'));
-        this.currentProject = localStorage.getItem('activeProject') || Object.keys(projects)[0];
-        this.loadProject(this.currentProject);
-    }
-
-    setupProjectUI() {
-        const menuBtn = document.getElementById('menuBtn');
-        const projectMenu = document.getElementById('projectMenu');
-        const currentProjectEl = document.getElementById('currentProject');
-
-        // Toggle menu
-        menuBtn.addEventListener('click', () => {
-            projectMenu.classList.toggle('hidden');
-            this.updateProjectList();
-        });
-
-        // Close menu when clicking outside, but not during input
-        document.addEventListener('click', (e) => {
-            if (!projectMenu.contains(e.target) && 
-                !menuBtn.contains(e.target) && 
-                !e.target.matches('input')) {
-                projectMenu.classList.add('hidden');
-            }
-        });
-
-        // Show current project
-        currentProjectEl.textContent = this.currentProject;
-    }
-
-    deleteProjectWithConfirmation(projectName) {
-        if (confirm(`Are you sure you want to delete "${projectName}"?`)) {
-            try {
-                const projects = JSON.parse(localStorage.getItem('flowchartProjects'));
-                
-                delete projects[projectName];
-                
-                if (projectName === this.currentProject) {
-                    const remainingProjects = Object.keys(projects);
-                    
-                    if (remainingProjects.length === 0) {
-                        projects['My First Project'] = {
-                            boxes: {},
-                            connections: {},
-                            lastBoxId: 1,
-                            lastConnectionId: 1
-                        };
-                        this.switchProject('My First Project');
-                    } else {
-                        this.switchProject(remainingProjects[0]);
-                    }
-                }
-                
-                localStorage.setItem('flowchartProjects', JSON.stringify(projects));
-                this.updateProjectList();
-                notificationManager.show('Project deleted successfully', 'success');
-            } catch (error) {
-                console.error('Error deleting project:', error);
-                notificationManager.show('Failed to delete project', 'error');
-            }
-        }
-    }
-
-    updateProjectList() {
-        const projectList = document.getElementById('projectList');
-        const projects = JSON.parse(localStorage.getItem('flowchartProjects'));
-        
-        projectList.innerHTML = '';
-        Object.keys(projects).forEach(project => {
-            const div = document.createElement('div');
-            div.className = `p-2 hover:bg-gray-100 rounded flex justify-between items-center group ${
-                project === this.currentProject ? 'bg-blue-100' : ''
-            }`;
-            
-            // Project title span
-            const titleSpan = document.createElement('span');
-            titleSpan.className = 'cursor-pointer flex-grow';
-            titleSpan.textContent = project;
-            titleSpan.addEventListener('click', () => this.switchProject(project));
-            
-            // Actions container
-            const actionsDiv = document.createElement('div');
-            actionsDiv.className = 'opacity-0 group-hover:opacity-100 transition-opacity flex gap-1';
-            
-            // Edit button
-            const editBtn = document.createElement('button');
-            editBtn.className = 'text-gray-500 hover:text-blue-600 p-1';
-            editBtn.innerHTML = `
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-                </svg>
-            `;
-            editBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const input = this.createEditableTitle(project);
-                titleSpan.replaceWith(input);
-                input.focus();
-            });
-
-            // Delete button
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'text-gray-500 hover:text-red-600 p-1';
-            deleteBtn.innerHTML = `
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                </svg>
-            `;
-
-            // Create confirmation UI
-            const createConfirmationUI = () => {
-                const confirmDiv = document.createElement('div');
-                confirmDiv.className = 'flex items-center gap-2 p-2 bg-red-50 rounded mt-1';
-                confirmDiv.innerHTML = `
-                    <span class="text-sm text-red-600">Delete "${project}"?</span>
-                    <button class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">Yes</button>
-                    <button class="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100">No</button>
-                `;
-
-                // Handle confirmation buttons
-                const [yesBtn, noBtn] = confirmDiv.querySelectorAll('button');
-                
-                yesBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    this.deleteProject(project);
-                    confirmDiv.remove();
-                });
-
-                noBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    confirmDiv.remove();
-                });
-
-                // Insert confirmation UI after the project div
-                div.insertAdjacentElement('afterend', confirmDiv);
-
-                // Auto-remove after 5 seconds if no action taken
-                setTimeout(() => {
-                    if (confirmDiv.parentNode) {
-                        confirmDiv.remove();
-                    }
-                }, 5000);
-            };
-
-            deleteBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                // Remove any existing confirmation UIs
-                const existingConfirms = projectList.querySelectorAll('.bg-red-50');
-                existingConfirms.forEach(el => el.remove());
-                createConfirmationUI();
-            });
-
-            actionsDiv.appendChild(editBtn);
-            actionsDiv.appendChild(deleteBtn);
-            div.appendChild(titleSpan);
-            div.appendChild(actionsDiv);
-            projectList.appendChild(div);
-        });
-
-        // Add "New Project" item at bottom
-        const newProjectDiv = document.createElement('div');
-        newProjectDiv.className = 'p-2 hover:bg-gray-100 rounded cursor-pointer mt-2 border-t pt-3 text-blue-600 flex items-center gap-2';
-        
-        const newProjectContent = document.createElement('div');
-        newProjectContent.className = 'flex items-center gap-2 w-full';
-        newProjectContent.innerHTML = `
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-            </svg>
-            <span>New Project</span>
+        const helpTooltip = document.createElement('div');
+        helpTooltip.className = 'help-tooltip';
+        helpTooltip.innerHTML = `
+            Left click: cycle colors<br>
+            Right click: change size/style<br>
+            Double click: edit content<br>
+            Right drag: create connection<br>
+            Click arrow: make bidirectional<br>
+            Delete: remove hovered item
         `;
+        document.body.appendChild(helpTooltip);
         
-        const startNewProjectEdit = (e) => {
-            e.stopPropagation();
-            const input = this.createEditableTitle('', true);
-            newProjectContent.replaceWith(input);
-            input.focus();
-        };
-
-        newProjectContent.addEventListener('click', startNewProjectEdit);
-        newProjectDiv.appendChild(newProjectContent);
-        projectList.appendChild(newProjectDiv);
-    }
-
-    deleteProject(projectName) {
-        try {
-            const projects = JSON.parse(localStorage.getItem('flowchartProjects'));
-            
-            delete projects[projectName];
-            
-            if (projectName === this.currentProject) {
-                const remainingProjects = Object.keys(projects);
-                
-                if (remainingProjects.length === 0) {
-                    projects['My First Project'] = {
-                        boxes: {},
-                        connections: {},
-                        lastBoxId: 1,
-                        lastConnectionId: 1
-                    };
-                    this.switchProject('My First Project');
-                } else {
-                    this.switchProject(remainingProjects[0]);
-                }
-            }
-            
-            localStorage.setItem('flowchartProjects', JSON.stringify(projects));
-            this.updateProjectList();
-            notificationManager.show('Project deleted successfully', 'success');
-        } catch (error) {
-            console.error('Error deleting project:', error);
-            notificationManager.show('Failed to delete project', 'error');
-        }
-    }
-
-    createEditableTitle(initialTitle = '', isNew = false) {
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.value = initialTitle;
-        input.className = 'w-full px-1 py-0.5 border border-blue-500 rounded focus:outline-none bg-white';
-        
-        const cleanup = () => {
-            input.removeEventListener('blur', commitEdit);
-            input.removeEventListener('keydown', handleKeydown);
-        };
-        
-        const commitEdit = (e) => {
-            e.stopPropagation();
-            cleanup(); // Remove listeners first
-            
-            try {
-                const newTitle = (input.value || '').trim();
-                if (!newTitle) {
-                    this.updateProjectList();
-                    return;
-                }
-                
-                if (isNew) {
-                    this.createNewProject(newTitle);
-                } else if (newTitle !== initialTitle) {
-                    this.editProjectTitle(initialTitle, newTitle);
-                    this.updateProjectList();
-                }
-            } catch (error) {
-                console.error('Error during edit commit:', error);
-                this.updateProjectList(); // Ensure UI is updated even on error
-                notificationManager.show('Failed to save changes. Please try again.', 'error');
-            }
-        };
-        
-        const handleKeydown = (e) => {
-            e.stopPropagation();
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                commitEdit(e);
-            } else if (e.key === 'Escape') {
-                e.preventDefault();
-                cleanup();
-                this.updateProjectList();
-            }
-        };
-
-        input.addEventListener('keydown', handleKeydown);
-        input.addEventListener('blur', commitEdit);
-        return input;
-    }
-
-    editProjectTitle(oldTitle, newTitle) {
-        if (!newTitle || newTitle.trim() === '' || newTitle === oldTitle) return;
-
-        const projects = JSON.parse(localStorage.getItem('flowchartProjects'));
-        
-        if (projects[newTitle]) {
-            notificationManager.show('A project with this name already exists', 'error');
-            return;
-        }
-
-        projects[newTitle] = projects[oldTitle];
-        delete projects[oldTitle];
-        localStorage.setItem('flowchartProjects', JSON.stringify(projects));
-
-        if (this.currentProject === oldTitle) {
-            this.currentProject = newTitle;
-            localStorage.setItem('activeProject', newTitle);
-            document.getElementById('currentProject').textContent = newTitle;
-        }
-        notificationManager.show('Project renamed successfully', 'success');
-    }
-
-    createNewProject(name) {
-        if (this.isCreatingProject) return;
-        this.isCreatingProject = true;
-        
-        const projects = JSON.parse(localStorage.getItem('flowchartProjects'));
-        if (projects[name]) {
-            notificationManager.show('Project already exists', 'error');
-            this.isCreatingProject = false;
-            return;
-        }
-
-        projects[name] = {
-            boxes: {},
-            connections: {},
-            lastBoxId: 1,
-            lastConnectionId: 1
-        };
-        localStorage.setItem('flowchartProjects', JSON.stringify(projects));
-        this.switchProject(name);
-        notificationManager.show('Project created successfully', 'success');
-        this.isCreatingProject = false;
-    }
-
-    switchProject(name) {
-        this.saveCurrentProject();
-        this.loadProject(name);
-        this.currentProject = name;
-        localStorage.setItem('activeProject', name);
-        document.getElementById('currentProject').textContent = name;
-        document.getElementById('projectMenu').classList.add('hidden');
-        this.updateProjectList();
-    }
-
-    saveCurrentProject() {
-        const projects = JSON.parse(localStorage.getItem('flowchartProjects'));
-        
-        projects[this.currentProject] = {
-            boxes: Object.fromEntries([...this.boxes].map(([id, box]) => {
-                return [
-                    id,
-                    {
-                        x: box.x,
-                        y: box.y,
-                        title: box.title || '',
-                        content: box.content || '',
-                        isContentHidden: box.isContentHidden
-                    }
-                ];
-            })),
-            connections: Object.fromEntries([...this.connections].map(([id, conn]) => {
-                const pathData = conn.element.getAttribute('d');
-                return [
-                    id,
-                    {
-                        startBoxId: conn.startBox.id,
-                        endBoxId: conn.endBox.id,
-                        bidirectional: conn.bidirectional,
-                        pathData: pathData
-                    }
-                ];
-            })),
-            lastBoxId: this.nextBoxId,
-            lastConnectionId: this.nextConnectionId
-        };
-
-        localStorage.setItem('flowchartProjects', JSON.stringify(projects));
-    }
-
-    loadProject(name) {
-        // Clear current diagram
-        this.boxes.forEach(box => box.element.remove());
-        this.connections.forEach(conn => conn.element.remove());
-        this.boxes.clear();
-        this.connections.clear();
-
-        // Load project data
-        const projects = JSON.parse(localStorage.getItem('flowchartProjects'));
-        const project = projects[name];
-
-        // Restore boxes
-        this.nextBoxId = project.lastBoxId;
-        Object.entries(project.boxes).forEach(([id, data]) => {
-            const box = new Box(data.x, data.y, parseInt(id), false);
-            box.title = data.title || '';
-            box.content = data.content || '';
-            box.isContentHidden = data.isContentHidden;
-            box.updateContent();
-            this.boxes.set(parseInt(id), box);
-            this.canvas.appendChild(box.element);
+        helpButton.addEventListener('mouseenter', () => {
+            helpTooltip.style.display = 'block';
         });
-
-        // Restore connections
-        this.nextConnectionId = project.lastConnectionId;
-        Object.entries(project.connections).forEach(([id, data]) => {
-            const startBox = this.boxes.get(data.startBoxId);
-            const endBox = this.boxes.get(data.endBoxId);
-            const connection = new Connection(startBox, endBox, parseInt(id));
-            connection.bidirectional = data.bidirectional;
-            if (data.pathData) {
-                connection.element.setAttribute('d', data.pathData);
-            }
-            if (data.bidirectional) {
-                connection.element.setAttribute('marker-start', 'url(#arrowhead-start)');
-            }
-            this.connections.set(parseInt(id), connection);
-            this.svg.appendChild(connection.element);
-        });
-
-        this.updateHelperText();
-    }
-
-    updateHelperText() {
-        this.helperText.style.display = this.boxes.size === 0 ? 'block' : 'none';
-    }
-
-    setupArrowMarker() {
-        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-
-        // End arrow
-        const markerEnd = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
-        markerEnd.setAttribute('id', 'arrowhead');
-        markerEnd.setAttribute('markerWidth', '10');
-        markerEnd.setAttribute('markerHeight', '7');
-        markerEnd.setAttribute('refX', '9');
-        markerEnd.setAttribute('refY', '3.5');
-        markerEnd.setAttribute('orient', 'auto');
-
-        const polygonEnd = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-        polygonEnd.setAttribute('points', '0 0, 10 3.5, 0 7');
-        polygonEnd.setAttribute('fill', '#2563eb');
-
-        // Start arrow (pointing opposite direction)
-        const markerStart = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
-        markerStart.setAttribute('id', 'arrowhead-start');
-        markerStart.setAttribute('markerWidth', '10');
-        markerStart.setAttribute('markerHeight', '7');
-        markerStart.setAttribute('refX', '0');
-        markerStart.setAttribute('refY', '3.5');
-        markerStart.setAttribute('orient', 'auto');
-
-        const polygonStart = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-        polygonStart.setAttribute('points', '10 0, 0 3.5, 10 7');
-        polygonStart.setAttribute('fill', '#2563eb');
-
-        markerEnd.appendChild(polygonEnd);
-        markerStart.appendChild(polygonStart);
-        defs.appendChild(markerEnd);
-        defs.appendChild(markerStart);
-        this.svg.appendChild(defs);
-    }
-
-    setupEventListeners() {
-        this.canvas.addEventListener('click', (e) => this.handleClick(e));
-        this.canvas.addEventListener('dblclick', (e) => this.handleCanvasDoubleClick(e));
-        this.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
-        this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
-        this.canvas.addEventListener('mouseup', (e) => this.handleMouseUp(e));
-        document.addEventListener('click', (e) => {
-            if (this.selectedConnection && !e.target.closest('path')) {
-                this.selectedConnection.deselect();
-                this.selectedConnection = null;
-            }
-        });
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Delete') {
-                if (this.selectedConnection) {
-                    this.deleteConnection(this.selectedConnection);
-                    this.selectedConnection = null;
-                } else if (this.selectedBox) {
-                    this.deleteBox(this.selectedBox);
-                }
-            }
+        
+        helpButton.addEventListener('mouseleave', () => {
+            helpTooltip.style.display = 'none';
         });
     }
-
-    createBox(x, y) {
-        const box = new Box(x, y, this.nextBoxId++);
-        this.boxes.set(box.id, box);
-        this.canvas.appendChild(box.element);
-        this.updateHelperText();
-        // Don't save here since Box.commitEdit will trigger save
-        return box;
+    
+    handleCanvasDoubleClick(e) { 
+        if (e.target === this.canvas || e.target === this.boxContainer) { 
+            const rect = this.boxContainer.getBoundingClientRect(); 
+            const cx = e.clientX - rect.left; 
+            const cy = e.clientY - rect.top; 
+            if (cx >= 0 && cy >= 0 && cx <= rect.width && cy <= rect.height) { 
+                this.createBox(cx, cy); 
+            } 
+        } 
     }
-
-    createConnection(startBox, endBox) {
-        if (startBox && endBox && startBox !== endBox) {
-            // Check for existing reverse connection
-            let existingConnection = null;
-            for (const conn of this.connections.values()) {
-                if (conn.startBox === endBox && conn.endBox === startBox) {
-                    conn.setBidirectional(true);
-                    this.saveCurrentProject();  // Auto-save
-                    return conn;
-                } else if (conn.startBox === startBox && conn.endBox === endBox) {
-                    existingConnection = conn;
+    
+    handleCanvasMouseDown(e) { 
+        if (e.target === this.canvas || e.target === this.boxContainer) { 
+            // No-op for now - we don't have selection state anymore
+        } 
+    }
+    
+    startDragging(box, e) {
+        if (!box || box.isEditing) return;
+        
+        this.draggingBox = box;
+        this.dragStartPos = { x: e.clientX, y: e.clientY };
+        this.dragBoxStartCenter = { cx: box.data.cx, cy: box.data.cy };
+    }
+    
+    handleBoxRightMouseDown(e, box) {
+        if (!box || box.isEditing) return;
+        
+        e.preventDefault();
+        
+        // Right-click for starting connection
+        this.connectionStartBox = box;
+        const sC = { cx: box.data.cx, cy: box.data.cy };
+        const r = this.svg.getBoundingClientRect();
+        const mX = e.clientX - r.left;
+        const mY = e.clientY - r.top;
+        this.previewPath.setAttribute('d', `M ${sC.cx} ${sC.cy} L ${mX} ${mY}`);
+        this.previewPath.setAttribute('display', 'block');
+        
+        // Also toggle width if mouse up on the same box
+        this.rightClickBox = box;
+    }
+    
+    handleMouseMove(e) { 
+        if (this.draggingBox) { 
+            const dx = e.clientX - this.dragStartPos.x; 
+            const dy = e.clientY - this.dragStartPos.y; 
+            const nCx = this.dragBoxStartCenter.cx + dx; 
+            const nCy = this.dragBoxStartCenter.cy + dy; 
+            this.draggingBox.setCenterPosition(nCx, nCy); 
+            this.updateConnectionsForBox(this.draggingBox); 
+        } else if (this.connectionStartBox) { 
+            const sC = { cx: this.connectionStartBox.data.cx, cy: this.connectionStartBox.data.cy }; 
+            const r = this.svg.getBoundingClientRect(); 
+            const mX = e.clientX - r.left; 
+            const mY = e.clientY - r.top; 
+            this.previewPath.setAttribute('d', `M ${sC.cx} ${sC.cy} L ${mX} ${mY}`); 
+        } 
+    }
+    
+    handleMouseUp(e) { 
+        if (this.draggingBox) { 
+            this.draggingBox = null; 
+        } else if (this.connectionStartBox && e.button === 2) { 
+            e.preventDefault(); 
+            this.previewPath.setAttribute('display', 'none'); 
+            let eTE = document.elementFromPoint(e.clientX, e.clientY); 
+            let eBE = eTE?.closest('.box-default'); 
+            
+            if (eBE) { 
+                const eB = this.boxes.get(eBE.dataset.id); 
+                if (eB && eB !== this.connectionStartBox) { 
+                    // Create or update connection between boxes
+                    this.createOrUpdateConnection(this.connectionStartBox, eB); 
+                } else if (eB === this.connectionStartBox) {
+                    // Change width if right-click and release on the same box
+                    eB.toggleWidthType();
                 }
+            } 
+            
+            this.connectionStartBox = null; 
+            this.rightClickBox = null;
+        } 
+        
+        if (e.button === 0) { 
+            this.draggingBox = null; 
+        } 
+    }
+    
+    handleGlobalClick(e) { 
+        const targetTextarea = e.target.closest('textarea'); 
+        
+        if (!targetTextarea) { 
+            // Check if any box is in edit mode
+            let editingBox = false;
+            this.boxes.forEach(box => { 
+                if (box.isEditing) { 
+                    editingBox = true; 
+                    box.commitEdit(); 
+                } 
+            }); 
+        } 
+    }
+    
+    handleKeyDown(e) { 
+        if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return; 
+        
+        if ((e.key === 'Delete' || e.key === 'Backspace') && this.hoveredElement) {
+            // Delete the hovered element
+            if (this.hoveredElement instanceof Box) {
+                this.deleteBox(this.hoveredElement);
+            } else if (this.hoveredElement instanceof Connection) {
+                this.deleteConnection(this.hoveredElement);
             }
-
-            if (!existingConnection) {
-                const connection = new Connection(startBox, endBox, this.nextConnectionId++);
-                this.connections.set(connection.id, connection);
-                this.svg.appendChild(connection.element);
-
-                connection.element.addEventListener('click', () => {
-                    if (this.selectedConnection) {
-                        this.selectedConnection.deselect();
-                    }
-                    this.selectedConnection = connection;
-                    connection.select();
-                });
-
-                this.saveCurrentProject();  // Auto-save
-                return connection;
+        }
+    }
+    
+    createBox(cx, cy) { 
+        const id = `box-${this.nextBoxId++}`; 
+        const bD = { 
+            id: id, 
+            cx: cx, 
+            cy: cy, 
+            width: INITIAL_BOX_WIDTH, 
+            height: INITIAL_BOX_HEIGHT, 
+            widthType: WIDTH_TYPES.MEDIUM,
+            themeKey: 'default',
+            markdown: '# Title\nUse **markdown** for formatting'
+        }; 
+        const b = new Box(bD, this); 
+        this.boxContainer.appendChild(b.element); 
+        this.boxes.set(id, b); 
+        this.updateHelperText(); 
+        b.startEditing(); 
+        return b; 
+    }
+    
+    // Create a new connection or update existing one to be bidirectional
+    createOrUpdateConnection(startBox, endBox) { 
+        if (!startBox || !endBox || startBox === endBox) return null; 
+        
+        // Check if there's already a connection in the opposite direction
+        let existingConnection = null;
+        this.connections.forEach(conn => {
+            if (conn.startBox === endBox && conn.endBox === startBox) {
+                existingConnection = conn;
             }
+        });
+        
+        // If there's an existing connection, make it bidirectional
+        if (existingConnection) {
+            existingConnection.data.bidirectional = true;
+            existingConnection.element.setAttribute('marker-start', 'url(#arrowhead-start)');
+            existingConnection.setupArrows(true, true);
+            existingConnection.cycleStyle(); // Change style to indicate change
+            existingConnection.update();
             return existingConnection;
         }
-        return null;
-    }
-
-    handleCanvasDoubleClick(e) {
-        const rect = this.canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left - 50;
-        const y = e.clientY - rect.top - 20;
-        this.createBox(x, y);
-    }
-
-    handleClick(e) {
-        const boxElement = e.target.closest('[data-id]');
-        const isClickOnInput = e.target.tagName === 'TEXTAREA';
         
-        if (this.selectedConnection && !e.target.closest('path')) {
-            this.selectedConnection.deselect();
-            this.selectedConnection = null;
-        }
-
-        // Cancel edit mode for all boxes except the one being clicked
-        for (const box of this.boxes.values()) {
-            if (box.isEditing && (!isClickOnInput || box.element !== boxElement)) {
-                box.cancelEdit();
-            }
-        }
-
-        // Exit edit mode for all boxes except the one being edited
-        let editCommitted = false;
-        for (const box of this.boxes.values()) {
-            if (box.isEditing && (!isClickOnInput || box.element !== boxElement)) {
-                editCommitted = box.commitEdit();
-            }
-        }
-
-        // Only save if no edit was committed (since commitEdit now handles its own save)
-        if (!editCommitted && !isClickOnInput) {
-            this.saveCurrentProject();
-        }
-
-        if (!boxElement && this.selectedBox) {
-            this.selectedBox.element.classList.remove('border-red-500');
-            this.selectedBox = null;
-        }
-    }
-
-    handleMouseDown(e) {
-        const boxElement = e.target.closest('[data-id]');
-        if (boxElement) {
-            const box = this.boxes.get(parseInt(boxElement.dataset.id));
-
-            if (e.button === 2) { // Right click
-                e.preventDefault();
-                this.connectionStart = box;
-                const startPoint = box.getCenter();
-                this.previewPath.setAttribute('d', `M ${startPoint.x} ${startPoint.y} L ${e.clientX} ${e.clientY}`);
-                this.previewPath.setAttribute('display', 'block');
-            } else if (e.button === 0) { // Left click
-                this.startDragging(boxElement, e);
-                boxElement.classList.add('dragging');
-            }
-        }
-    }
-
-    handleMouseMove(e) {
-        const rect = this.canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-
-        if (this.draggingBox) {
-            const x = mouseX - this.dragOffset.x;
-            const y = mouseY - this.dragOffset.y;
-            const box = this.boxes.get(parseInt(this.draggingBox.dataset.id));
-            box.setPosition(x, y);
-            this.updateConnections();
-            this.saveCurrentProject();  // Auto-save on drag
-        }
+        // Otherwise create a new connection
+        const id = `conn-${this.nextConnectionId++}`; 
+        const cD = { 
+            id: id, 
+            startBoxId: startBox.data.id, 
+            endBoxId: endBox.data.id,
+            themeKey: 'default',
+            style: CONNECTION_STYLES.NORMAL,
+            bidirectional: false
+        }; 
+        const c = new Connection(cD, startBox, endBox, this); 
+        this.connections.set(id, c); 
+        this.svg.appendChild(c.element); 
         
-        if (this.connectionStart) {
-            const startCenter = this.connectionStart.getCenter();
-            this.previewPath.setAttribute('d', `M ${startCenter.x} ${startCenter.y} L ${mouseX} ${mouseY}`);
-            this.previewPath.setAttribute('display', 'block');
+        // Apply theme after adding to DOM
+        c.applyTheme();
+        c.applyStyle();
+        
+        return c; 
+    }
+    
+    deleteBox(boxInstance) { 
+        if (!boxInstance) return; 
+        const bId = boxInstance.data.id; 
+        const cTR = []; 
+        this.connections.forEach(c => { 
+            if (c.startBox === boxInstance || c.endBox === boxInstance) cTR.push(c); 
+        }); 
+        cTR.forEach(c => this.deleteConnection(c)); 
+        boxInstance.element.remove(); 
+        this.boxes.delete(bId); 
+        this.updateHelperText(); 
+        
+        // Clear hovered element if needed
+        if (this.hoveredElement === boxInstance) {
+            this.hoveredElement = null;
         }
     }
-
-    handleMouseUp(e) {
-        if (this.draggingBox) {
-            this.draggingBox.classList.remove('dragging');
-            this.saveCurrentProject();  // Auto-save after drag
-        }
-        if (this.connectionStart && e.button === 2) {
-            const boxElement = e.target.closest('[data-id]');
-            if (boxElement) {
-                const endBox = this.boxes.get(parseInt(boxElement.dataset.id));
-                if (endBox !== this.connectionStart) {
-                    this.createConnection(this.connectionStart, endBox);
-                }
-            }
-            this.connectionStart = null;
-            this.previewPath.setAttribute('display', 'none');
-        }
-        this.draggingBox = null;
-    }
-
-    startDragging(boxElement, e) {
-        this.draggingBox = boxElement;
-        const box = this.boxes.get(parseInt(boxElement.dataset.id));
-        this.dragOffset = {
-            x: e.clientX - box.x,
-            y: e.clientY - box.y
-        };
-
-        if (this.selectedBox) {
-            this.selectedBox.element.classList.remove('border-red-500');
-        }
-        this.selectedBox = box;
-        box.element.classList.add('border-red-500');
-    }
-
-    updateConnections() {
-        for (const connection of this.connections.values()) {
-            connection.update();
+    
+    deleteConnection(connInstance) { 
+        if (!connInstance) return; 
+        
+        // Clean up arrow elements
+        connInstance.cleanup();
+        
+        const cId = connInstance.data.id; 
+        connInstance.element.remove(); 
+        this.connections.delete(cId); 
+        
+        // Clear hovered element if needed
+        if (this.hoveredElement === connInstance) {
+            this.hoveredElement = null;
         }
     }
-
-    deleteBox(box) {
-        // Remove connections involving this box
-        for (const [id, connection] of this.connections) {
-            if (connection.startBox === box || connection.endBox === box) {
-                connection.element.remove();
-                this.connections.delete(id);
-            }
-        }
-        // Remove the box
-        box.element.remove();
-        this.boxes.delete(box.id);
-        this.selectedBox = null;
-        this.updateHelperText();
-        this.saveCurrentProject();  // Auto-save after deletion
+    
+    updateConnectionsForBox(boxInstance) { 
+        this.connections.forEach(c => { 
+            if (c.startBox === boxInstance || c.endBox === boxInstance) c.update(); 
+        }); 
     }
-
-    deleteConnection(connection) {
-        connection.element.remove();
-        this.connections.delete(connection.id);
-        this.saveCurrentProject();  // Auto-save after connection deletion
+    
+    updateHelperText() { 
+        this.helperText.style.display = this.boxes.size === 0 ? 'block' : 'none'; 
     }
 }
-// Initialize notification manager
-const notificationManager = new NotificationManager();
-// Initialize the diagram manager
-const manager = new DiagramManager();
 
-// Prevent context menu from appearing
-document.addEventListener('contextmenu', e => e.preventDefault());
-
-// Add cleanup for preview line when mouse leaves window
-document.addEventListener('mouseleave', () => {
-    if (manager.previewPath) {
-        manager.previewPath.setAttribute('display', 'none');
-        manager.connectionStart = null;
-    }
+// --- Initialization ---
+document.addEventListener('DOMContentLoaded', () => {
+    window.diagramManager = new DiagramManager();
 });
 </script>
+
 </body>
 </html>
