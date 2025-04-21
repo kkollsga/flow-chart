@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flow Chart</title>
+    <title>Markdown Diagram Tool</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Include marked.js for markdown parsing -->
     <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
@@ -17,28 +17,32 @@
             stroke-width: 2; 
             fill: none; 
             cursor: pointer; 
-            vector-effect: non-scaling-stroke; 
             transition: stroke 0.2s ease, stroke-width 0.2s ease, opacity 0.2s ease; 
         }
         .connection-path:hover { 
-            stroke-width: 3; 
             opacity: 0.85; 
             filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.15));
         }
-        .connection-style-normal { stroke-dasharray: none; }
-        .connection-style-bold { stroke-width: 4; }
-        .connection-style-dashed { stroke-dasharray: 10, 5; }
-        .connection-style-dotted { stroke-dasharray: 2, 4; }
-        .connection-style-thin { stroke-width: 1; }
+        
+        /* Pattern styles */
+        .connection-pattern-normal { stroke-dasharray: none; }
+        .connection-pattern-dashed { stroke-dasharray: 10, 5; }
+        .connection-pattern-dotted { stroke-dasharray: 2, 4; }
+        
+        /* Thickness styles */
+        .connection-thickness-thin { stroke-width: 1; }
+        .connection-thickness-normal { stroke-width: 2; }
+        .connection-thickness-bold { stroke-width: 4; }
 
-        /* --- Arrow hover effects --- */
-        .arrow-marker {
+        /* --- Arrow hotspot styles --- */
+        .arrow-hotspot {
+            fill: transparent;
+            stroke: transparent;
             cursor: pointer;
-            transition: transform 0.2s ease, opacity 0.2s ease;
+            transition: opacity 0.2s ease;
         }
-        .arrow-marker:hover {
-            transform: scale(1.2);
-            opacity: 0.8;
+        .arrow-hotspot:hover {
+            fill: rgba(0, 0, 0, 0.05);
         }
 
         /* --- Custom box styles --- */
@@ -110,6 +114,20 @@
             z-index: 51;
             display: none;
         }
+        
+        /* --- Keyboard hint overlay --- */
+        .keys-hint {
+            position: fixed;
+            left: 10px;
+            bottom: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #4b5563;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            z-index: 40;
+        }
     </style>
 </head>
 <body class="h-screen w-screen m-0 p-0 overflow-hidden bg-gray-100">
@@ -131,6 +149,11 @@
              <span class="text-sm">Use Markdown in boxes for rich formatting</span>
          </div>
     </div>
+    <div class="keys-hint">
+        Hover + <kbd>c</kbd>: change color | 
+        Box: <kbd>s</kbd>: change width | 
+        <kbd>Delete</kbd>: remove
+    </div>
 
 <script>
 // --- Constants ---
@@ -143,13 +166,17 @@ const PADDING_HEIGHT = 30; // Additional padding for box height
 const WIDTH_TYPES = { SMALL: 'small', MEDIUM: 'medium', LARGE: 'large' };
 const WIDTH_TYPE_VALUES = { [WIDTH_TYPES.SMALL]: 200, [WIDTH_TYPES.MEDIUM]: 350, [WIDTH_TYPES.LARGE]: 500 };
 
-// Connection style constants
-const CONNECTION_STYLES = { 
-    NORMAL: 'normal', 
-    BOLD: 'bold', 
-    DASHED: 'dashed', 
-    DOTTED: 'dotted', 
-    THIN: 'thin' 
+// Separated connection style constants
+const CONNECTION_PATTERNS = {
+    NORMAL: 'normal',
+    DASHED: 'dashed',
+    DOTTED: 'dotted'
+};
+
+const CONNECTION_THICKNESSES = {
+    THIN: 'thin',
+    NORMAL: 'normal',
+    BOLD: 'bold'
 };
 
 // Color theme configuration - easy to add/modify themes
@@ -244,6 +271,7 @@ class Box {
         const div = document.createElement('div'); 
         div.className = BASE_BOX_CLASSES; 
         div.dataset.id = this.data.id; 
+        div.dataset.type = 'box';
         const contentDiv = document.createElement('div'); 
         contentDiv.className = 'markdown-content relative w-full h-full'; 
         div.appendChild(contentDiv); 
@@ -278,17 +306,6 @@ class Box {
             if (this.manager.draggingBox === this) { 
                 isDragging = true; 
             } 
-        });
-        
-        this.element.addEventListener('click', (e) => { 
-            if (isDragging || this.isEditing) return;
-            
-            // Left click - cycle color
-            if (e.button === 0) {
-                this.cycleColorTheme();
-            }
-            
-            isDragging = false; 
         });
         
         this.element.addEventListener('dblclick', (e) => { 
@@ -509,22 +526,21 @@ class Connection {
         this.data = connectionData; 
         // Initialize data if needed
         if (!this.data.themeKey) this.data.themeKey = 'default';
-        if (!this.data.style) this.data.style = CONNECTION_STYLES.NORMAL;
+        if (!this.data.pattern) this.data.pattern = CONNECTION_PATTERNS.NORMAL;
+        if (!this.data.thickness) this.data.thickness = CONNECTION_THICKNESSES.NORMAL;
         if (this.data.bidirectional === undefined) this.data.bidirectional = false;
         
         this.startBox = startBox; 
         this.endBox = endBox; 
         this.manager = manager; 
-        this.element = this.createElement(); 
         
-        // Create arrow overlay elements for hover effects
-        this.startArrow = null;
-        this.endArrow = null;
-        if (this.data.bidirectional) {
-            this.setupArrows(true, true);
-        } else {
-            this.setupArrows(false, true);
-        }
+        // Create main connection path
+        this.element = this.createElement();
+        
+        // Create invisible hotspots for better arrow interaction
+        this.startHotspot = null;
+        this.endHotspot = null;
+        this.createHotspots();
         
         this.update(); 
         this.setupEventListeners(); 
@@ -534,69 +550,65 @@ class Connection {
         const p = document.createElementNS('http://www.w3.org/2000/svg', 'path'); 
         p.setAttribute('class', 'connection-path pointer-events-auto'); 
         p.dataset.id = this.data.id; 
-        // Set marker-end based on if bidirectional
+        p.dataset.type = 'connection';
+        
+        // Set markers based on if bidirectional
         if (this.data.bidirectional) {
             p.setAttribute('marker-start', 'url(#arrowhead-start)');
         }
         p.setAttribute('marker-end', 'url(#arrowhead-end)');
+        
         return p; 
     }
     
-    // Setup arrow overlay elements for hover effects
-    setupArrows(start, end) {
-        // Create start arrow if needed
-        if (start && !this.startArrow) {
-            this.startArrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-            this.startArrow.setAttribute('class', 'arrow-marker');
-            this.startArrow.setAttribute('fill', COLOR_THEMES[this.data.themeKey].stroke);
-            this.startArrow.dataset.connection = this.data.id;
-            this.startArrow.dataset.end = 'start';
-            this.manager.svg.appendChild(this.startArrow);
-            
-            // Add event listeners to arrow
-            this.startArrow.addEventListener('mouseenter', () => {
-                this.manager.hoveredElement = this;
-            });
-            
-            this.startArrow.addEventListener('mouseleave', () => {
-                if (this.manager.hoveredElement === this) {
-                    this.manager.hoveredElement = null;
-                }
-            });
-            
-            this.startArrow.addEventListener('click', (e) => {
-                e.stopPropagation();
-                // Left-click - toggle bidirectionality
-                this.toggleBidirectional();
-            });
-        }
+    // Create invisible hotspots for better arrow interaction
+    createHotspots() {
+        // Create start hotspot
+        this.startHotspot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        this.startHotspot.setAttribute('class', 'arrow-hotspot');
+        this.startHotspot.setAttribute('r', '12');
+        this.startHotspot.dataset.connection = this.data.id;
+        this.startHotspot.dataset.end = 'start';
+        this.manager.svg.appendChild(this.startHotspot);
         
-        // Create end arrow if needed
-        if (end && !this.endArrow) {
-            this.endArrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-            this.endArrow.setAttribute('class', 'arrow-marker');
-            this.endArrow.setAttribute('fill', COLOR_THEMES[this.data.themeKey].stroke);
-            this.endArrow.dataset.connection = this.data.id;
-            this.endArrow.dataset.end = 'end';
-            this.manager.svg.appendChild(this.endArrow);
-            
-            // Add event listeners to arrow
-            this.endArrow.addEventListener('mouseenter', () => {
-                this.manager.hoveredElement = this;
-            });
-            
-            this.endArrow.addEventListener('mouseleave', () => {
-                if (this.manager.hoveredElement === this) {
-                    this.manager.hoveredElement = null;
-                }
-            });
-            
-            this.endArrow.addEventListener('click', (e) => {
-                e.stopPropagation();
-                // Left-click - toggle bidirectionality
-                this.toggleBidirectional();
-            });
-        }
+        // Create end hotspot
+        this.endHotspot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        this.endHotspot.setAttribute('class', 'arrow-hotspot');
+        this.endHotspot.setAttribute('r', '12');
+        this.endHotspot.dataset.connection = this.data.id;
+        this.endHotspot.dataset.end = 'end';
+        this.manager.svg.appendChild(this.endHotspot);
+        
+        // Add event listeners to hotspots
+        this.startHotspot.addEventListener('mouseenter', () => {
+            this.manager.hoveredElement = this;
+        });
+        
+        this.startHotspot.addEventListener('mouseleave', () => {
+            if (this.manager.hoveredElement === this) {
+                this.manager.hoveredElement = null;
+            }
+        });
+        
+        this.startHotspot.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleBidirectional();
+        });
+        
+        this.endHotspot.addEventListener('mouseenter', () => {
+            this.manager.hoveredElement = this;
+        });
+        
+        this.endHotspot.addEventListener('mouseleave', () => {
+            if (this.manager.hoveredElement === this) {
+                this.manager.hoveredElement = null;
+            }
+        });
+        
+        this.endHotspot.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleBidirectional();
+        });
     }
     
     // Toggle bidirectionality of the connection
@@ -605,18 +617,8 @@ class Connection {
         
         if (this.data.bidirectional) {
             this.element.setAttribute('marker-start', 'url(#arrowhead-start)');
-            this.setupArrows(true, true);
-            
-            // Change style to visualize the change
-            this.cycleStyle();
         } else {
             this.element.removeAttribute('marker-start');
-            
-            // Remove start arrow if exists
-            if (this.startArrow) {
-                this.startArrow.remove();
-                this.startArrow = null;
-            }
         }
         
         // Update the connection
@@ -634,19 +636,17 @@ class Connection {
             }
         });
         
-        this.element.addEventListener('click', (e) => { 
-            e.stopPropagation(); 
-            // Left-click - cycle color
-            this.cycleColorTheme();
-        }); 
-
+        // Add left-click event to toggle line pattern
+        this.element.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.cyclePattern();
+        });
+        
+        // Add right-click event to toggle thickness
         this.element.addEventListener('contextmenu', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            
-            // Right-click - cycle style
-            this.cycleStyle();
-            return false;
+            this.cycleThickness();
         });
     }
     
@@ -655,15 +655,6 @@ class Connection {
         const theme = COLOR_THEMES[this.data.themeKey] || COLOR_THEMES.default;
         if (this.element) {
             this.element.setAttribute('stroke', theme.stroke);
-        }
-        
-        // Update arrows color if they exist
-        if (this.startArrow) {
-            this.startArrow.setAttribute('fill', theme.stroke);
-        }
-        
-        if (this.endArrow) {
-            this.endArrow.setAttribute('fill', theme.stroke);
         }
         
         // Update arrowhead - safely
@@ -707,28 +698,48 @@ class Connection {
         this.applyTheme();
     }
     
-    // Apply the current style to the connection
-    applyStyle() {
-        // Remove all style classes first
+    // Apply current pattern to the connection
+    applyPattern() {
+        // Remove all pattern classes first
         this.element.classList.remove(
-            'connection-style-normal',
-            'connection-style-bold', 
-            'connection-style-dashed', 
-            'connection-style-dotted', 
-            'connection-style-thin'
+            'connection-pattern-normal',
+            'connection-pattern-dashed', 
+            'connection-pattern-dotted'
         );
         
-        // Add current style class
-        this.element.classList.add(`connection-style-${this.data.style}`);
+        // Add current pattern class
+        this.element.classList.add(`connection-pattern-${this.data.pattern}`);
     }
     
-    // Cycle to the next line style
-    cycleStyle() {
-        const styles = Object.values(CONNECTION_STYLES);
-        const currentIndex = styles.indexOf(this.data.style);
-        const nextIndex = (currentIndex + 1) % styles.length;
-        this.data.style = styles[nextIndex];
-        this.applyStyle();
+    // Apply current thickness to the connection
+    applyThickness() {
+        // Remove all thickness classes first
+        this.element.classList.remove(
+            'connection-thickness-thin',
+            'connection-thickness-normal',
+            'connection-thickness-bold'
+        );
+        
+        // Add current thickness class
+        this.element.classList.add(`connection-thickness-${this.data.thickness}`);
+    }
+    
+    // Cycle to the next line pattern (left click)
+    cyclePattern() {
+        const patterns = Object.values(CONNECTION_PATTERNS);
+        const currentIndex = patterns.indexOf(this.data.pattern);
+        const nextIndex = (currentIndex + 1) % patterns.length;
+        this.data.pattern = patterns[nextIndex];
+        this.applyPattern();
+    }
+    
+    // Cycle to the next thickness (right click)
+    cycleThickness() {
+        const thicknesses = Object.values(CONNECTION_THICKNESSES);
+        const currentIndex = thicknesses.indexOf(this.data.thickness);
+        const nextIndex = (currentIndex + 1) % thicknesses.length;
+        this.data.thickness = thicknesses[nextIndex];
+        this.applyThickness();
     }
     
     calculateIntersection(startPt, endPt, targetBox) { const bounds = targetBox.getBounds(); const dx = endPt.x - startPt.x; const dy = endPt.y - startPt.y; if (bounds.width <= 0 || bounds.height <= 0 || (dx === 0 && dy === 0)) { return { x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2 }; } let t = Infinity; let intersection = null; const tol = 0.1; const checkT = (newT, x, y, b) => { if (newT >= 0 && newT < t && x >= b.left - tol && x <= b.right + tol && y >= b.top - tol && y <= b.bottom + tol) { t = newT; return { x, y }; } return null; }; if (dx !== 0) { let tL = (bounds.left - startPt.x) / dx; let yL = startPt.y + tL * dy; intersection = checkT(tL, bounds.left, yL, bounds) || intersection; let tR = (bounds.right - startPt.x) / dx; let yR = startPt.y + tR * dy; intersection = checkT(tR, bounds.right, yR, bounds) || intersection; } if (dy !== 0) { let tT = (bounds.top - startPt.y) / dy; let xT = startPt.x + tT * dx; intersection = checkT(tT, xT, bounds.top, bounds) || intersection; let tB = (bounds.bottom - startPt.y) / dy; let xB = startPt.x + tB * dx; intersection = checkT(tB, xB, bounds.bottom, bounds) || intersection; } if (intersection) { const len = Math.sqrt(dx*dx + dy*dy) || 1; const ux = dx / len; const uy = dy / len; intersection.x -= ux * 2; intersection.y -= uy * 2; } return intersection || { x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2 }; }
@@ -743,8 +754,8 @@ class Connection {
         if (!isNaN(sP.x) && !isNaN(eP.x)) { 
             this.element.setAttribute('d', `M ${sP.x} ${sP.y} L ${eP.x} ${eP.y}`); 
             
-            // Update arrow positions
-            this.updateArrowPositions(sP, eP);
+            // Update hotspot positions
+            this.updateHotspotPositions(sP, eP);
         } else { 
             this.element.setAttribute('d', ''); 
         } 
@@ -752,9 +763,9 @@ class Connection {
         this.updateElementStyle(); 
     }
     
-    // Update custom arrow positions for hover
-    updateArrowPositions(startPoint, endPoint) {
-        // Calculate arrow points
+    // Update hotspot positions
+    updateHotspotPositions(startPoint, endPoint) {
+        // Calculate vector
         const dx = endPoint.x - startPoint.x;
         const dy = endPoint.y - startPoint.y;
         const len = Math.sqrt(dx*dx + dy*dy);
@@ -763,55 +774,39 @@ class Connection {
         const ux = dx / len;
         const uy = dy / len;
         
-        if (this.endArrow) {
-            // Position for end arrow (10px from end)
-            const arrowEndX = endPoint.x - ux * 12;
-            const arrowEndY = endPoint.y - uy * 12;
-            
-            // Create an arrowhead polygon
-            const arrowSize = 7;
-            const arrowPoints = [
-                [arrowEndX - ux * arrowSize + uy * arrowSize, arrowEndY - uy * arrowSize - ux * arrowSize],
-                [arrowEndX, arrowEndY],
-                [arrowEndX - ux * arrowSize - uy * arrowSize, arrowEndY - uy * arrowSize + ux * arrowSize]
-            ];
-            
-            this.endArrow.setAttribute('points', arrowPoints.map(p => p.join(',')).join(' '));
+        // Position hotspots
+        if (this.startHotspot) {
+            const startHotspotX = startPoint.x + ux * 12;
+            const startHotspotY = startPoint.y + uy * 12;
+            this.startHotspot.setAttribute('cx', startHotspotX);
+            this.startHotspot.setAttribute('cy', startHotspotY);
         }
         
-        if (this.startArrow && this.data.bidirectional) {
-            // Position for start arrow (10px from start)
-            const arrowStartX = startPoint.x + ux * 12;
-            const arrowStartY = startPoint.y + uy * 12;
-            
-            // Create an arrowhead polygon
-            const arrowSize = 7;
-            const arrowPoints = [
-                [arrowStartX + ux * arrowSize + uy * arrowSize, arrowStartY + uy * arrowSize - ux * arrowSize],
-                [arrowStartX, arrowStartY],
-                [arrowStartX + ux * arrowSize - uy * arrowSize, arrowStartY + uy * arrowSize + ux * arrowSize]
-            ];
-            
-            this.startArrow.setAttribute('points', arrowPoints.map(p => p.join(',')).join(' '));
+        if (this.endHotspot) {
+            const endHotspotX = endPoint.x - ux * 12;
+            const endHotspotY = endPoint.y - uy * 12;
+            this.endHotspot.setAttribute('cx', endHotspotX);
+            this.endHotspot.setAttribute('cy', endHotspotY);
         }
     }
     
     updateElementStyle() { 
-        // Apply theme color and style
+        // Apply theme, pattern and thickness
         this.applyTheme();
-        this.applyStyle();
+        this.applyPattern();
+        this.applyThickness();
     }
     
-    // Clean up the connection by removing arrow elements
+    // Clean up the connection by removing hotspot elements
     cleanup() {
-        if (this.startArrow) {
-            this.startArrow.remove();
-            this.startArrow = null;
+        if (this.startHotspot) {
+            this.startHotspot.remove();
+            this.startHotspot = null;
         }
         
-        if (this.endArrow) {
-            this.endArrow.remove();
-            this.endArrow = null;
+        if (this.endHotspot) {
+            this.endHotspot.remove();
+            this.endHotspot = null;
         }
     }
 }
@@ -867,11 +862,13 @@ class DiagramManager {
         const helpTooltip = document.createElement('div');
         helpTooltip.className = 'help-tooltip';
         helpTooltip.innerHTML = `
-            Left click: cycle colors<br>
-            Right click: change size/style<br>
             Double click: edit content<br>
             Right drag: create connection<br>
-            Click arrow: make bidirectional<br>
+            Left click line: change style<br>
+            Right click line: change thickness<br>
+            Hover + c: change color<br>
+            Box + s: change width<br>
+            Click arrow: bidirectional<br>
             Delete: remove hovered item
         `;
         document.body.appendChild(helpTooltip);
@@ -992,6 +989,7 @@ class DiagramManager {
     handleKeyDown(e) { 
         if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return; 
         
+        // Handle Delete/Backspace for removing hovered element
         if ((e.key === 'Delete' || e.key === 'Backspace') && this.hoveredElement) {
             // Delete the hovered element
             if (this.hoveredElement instanceof Box) {
@@ -999,6 +997,18 @@ class DiagramManager {
             } else if (this.hoveredElement instanceof Connection) {
                 this.deleteConnection(this.hoveredElement);
             }
+        }
+        
+        // Handle 'c' key for changing color of hovered element
+        if (e.key === 'c' && this.hoveredElement) {
+            if (this.hoveredElement instanceof Box || this.hoveredElement instanceof Connection) {
+                this.hoveredElement.cycleColorTheme();
+            }
+        }
+        
+        // Handle 's' key for changing width of hovered box (NOT connections)
+        if (e.key === 's' && this.hoveredElement instanceof Box) {
+            this.hoveredElement.toggleWidthType();
         }
     }
     
@@ -1038,8 +1048,7 @@ class DiagramManager {
         if (existingConnection) {
             existingConnection.data.bidirectional = true;
             existingConnection.element.setAttribute('marker-start', 'url(#arrowhead-start)');
-            existingConnection.setupArrows(true, true);
-            existingConnection.cycleStyle(); // Change style to indicate change
+            // No longer changing the style when making bidirectional
             existingConnection.update();
             return existingConnection;
         }
@@ -1051,7 +1060,8 @@ class DiagramManager {
             startBoxId: startBox.data.id, 
             endBoxId: endBox.data.id,
             themeKey: 'default',
-            style: CONNECTION_STYLES.NORMAL,
+            pattern: CONNECTION_PATTERNS.NORMAL,
+            thickness: CONNECTION_THICKNESSES.NORMAL,
             bidirectional: false
         }; 
         const c = new Connection(cD, startBox, endBox, this); 
@@ -1060,7 +1070,8 @@ class DiagramManager {
         
         // Apply theme after adding to DOM
         c.applyTheme();
-        c.applyStyle();
+        c.applyPattern();
+        c.applyThickness();
         
         return c; 
     }
@@ -1086,7 +1097,7 @@ class DiagramManager {
     deleteConnection(connInstance) { 
         if (!connInstance) return; 
         
-        // Clean up arrow elements
+        // Clean up hotspot elements
         connInstance.cleanup();
         
         const cId = connInstance.data.id; 
