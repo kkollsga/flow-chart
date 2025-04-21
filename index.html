@@ -3,11 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Markdown Diagram Tool</title>
+    <title>Flow Chart</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Include marked.js for markdown parsing -->
     <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
     <style>
+        /* --- Dark Mode Variables --- */
+        :root {
+            --bg-primary: #f3f4f6;
+            --bg-secondary: #fff;
+            --text-primary: #111827;
+            --text-secondary: #4b5563;
+            --text-muted: rgba(75, 85, 99, 0.4);
+            --border-color: #d1d5db;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+            --box-shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.12);
+        }
+
+        .dark-mode {
+            --bg-primary: #1f2937;
+            --bg-secondary: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-muted: rgba(209, 213, 219, 0.4);
+            --border-color: #4b5563;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            --box-shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.35);
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* --- Theme Toggle Icons --- */
+        .theme-toggle {
+            position: relative;
+        }
+
+        .theme-toggle svg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Hide both icons initially */
+        #sun-icon, #moon-icon {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.6);
+            display: block; /* Ensure SVGs are always in layout */
+        }
+
+        /* Show active icon based on theme */
+        body:not(.dark-mode) #sun-icon {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        body.dark-mode #moon-icon {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* Hover animations */
+        body:not(.dark-mode) .theme-toggle:hover #sun-icon {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.6) rotate(45deg);
+        }
+
+        body:not(.dark-mode) .theme-toggle:hover #moon-icon {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        body.dark-mode .theme-toggle:hover #moon-icon {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.6) rotate(-45deg);
+        }
+
+        body.dark-mode .theme-toggle:hover #sun-icon {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* Sun icon styles */
+        #sun-icon {
+            fill: #f59e0b; /* Yellow fill */
+            color: #f59e0b;
+        }
+
+        /* Moon icon styles */
+        #moon-icon {
+            fill: #2563eb; /* Dark blue fill */
+            color: #2563eb;
+        }
+
+        /* --- Project Title --- */
+        #project-title {
+            color: var(--text-muted);
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
         /* --- Base Setup --- */
         html { height: 100%; }
         .no-select { user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; }
@@ -17,18 +123,29 @@
             stroke-width: 2; 
             fill: none; 
             cursor: pointer; 
-            transition: stroke 0.2s ease, stroke-width 0.2s ease, opacity 0.2s ease; 
+            transition: stroke 0.2s ease, stroke-width 0.2s ease, opacity 0.2s ease;
+            pointer-events: none;
         }
+
+        /* Improved hitbox for all connections */
+        .connection-hitbox {
+            stroke-width: 12; /* Wide hit area for easier interaction */
+            stroke: transparent;
+            fill: none;
+            cursor: pointer;
+            pointer-events: stroke;
+        }
+
         .connection-path:hover { 
             opacity: 0.85; 
             filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.15));
         }
-        
+
         /* Pattern styles */
         .connection-pattern-normal { stroke-dasharray: none; }
         .connection-pattern-dashed { stroke-dasharray: 10, 5; }
         .connection-pattern-dotted { stroke-dasharray: 2, 4; }
-        
+
         /* Thickness styles */
         .connection-thickness-thin { stroke-width: 1; }
         .connection-thickness-normal { stroke-width: 2; }
@@ -47,101 +164,320 @@
 
         /* --- Custom box styles --- */
         .box-default {
-            border: 1.5px solid #4b5563;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+            border: 1.5px solid var(--border-color);
+            box-shadow: var(--box-shadow);
             transform: translateY(0);
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.3s ease, border-color 0.3s ease;
         }
-        
+
         .box-default:hover {
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.12);
+            box-shadow: var(--box-shadow-hover);
             transform: translateY(-2px);
         }
 
         /* --- Markdown styling (single line) --- */
-        .markdown-content { font-size: 14px; line-height: 1.5; word-wrap: break-word; }
+        .markdown-content { font-size: 14px; line-height: 1.5; word-wrap: break-word; color: var(--text-primary); }
         .markdown-content h1 { font-size: 1.5em; font-weight: bold; margin-top: 0.5em; margin-bottom: 0.3em; }
         .markdown-content h2 { font-size: 1.3em; font-weight: bold; margin-top: 0.4em; margin-bottom: 0.2em; }
         .markdown-content h3 { font-size: 1.1em; font-weight: bold; margin-top: 0.3em; margin-bottom: 0.1em; }
         .markdown-content p { margin-bottom: 0.5em; }
         .markdown-content ul, .markdown-content ol { padding-left: 1.5em; margin-bottom: 0.5em; }
-        .markdown-content code { background-color: #f3f4f6; padding: 0.1em 0.2em; border-radius: 0.2em; font-family: monospace; }
-        .markdown-content hr { margin: 0.5em 0; border: none; border-top: 1px solid #d1d5db; }
+        .markdown-content code { background-color: rgba(0, 0, 0, 0.05); padding: 0.1em 0.2em; border-radius: 0.2em; font-family: monospace; }
+        .markdown-content hr { margin: 0.5em 0; border: none; border-top: 1px solid var(--border-color); }
         .markdown-content a { color: #8b5cf6; text-decoration: underline; }
-        
+
         /* --- Textarea styling --- */
-        .edit-textarea { width: 100%; height: 100%; box-sizing: border-box; padding: 0.5rem; border: none; font-family: inherit; font-size: 14px; line-height: 1.5; resize: none; overflow: auto; background-color: transparent; }
+        .edit-textarea { 
+            width: 100%; 
+            height: 100%; 
+            box-sizing: border-box; 
+            padding: 0.5rem; 
+            border: none; 
+            font-family: inherit; 
+            font-size: 14px; 
+            line-height: 1.5; 
+            resize: none; 
+            overflow: auto; 
+            background-color: transparent;
+            color: var(--text-primary);
+        }
         .edit-textarea:focus { outline: none; }
-        
+
         /* --- Transitions and Animations --- */
         .box-transition { transition: width 0.2s ease, height 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease; }
-        #preview-connection { stroke-dasharray: 5, 5; animation: dash 15s linear infinite; stroke: #4b5563; }
+        #preview-connection { stroke-dasharray: 5, 5; animation: dash 15s linear infinite; stroke: var(--text-secondary); }
         @keyframes dash { to { stroke-dashoffset: -1000; } }
-        
-        /* --- Help button --- */
-        .help-button {
+
+        /* --- Settings button --- */
+        .settings-button {
             position: fixed;
             bottom: 10px;
             right: 10px;
-            width: 24px;
-            height: 24px;
-            background: #6b7280;
-            color: white;
+            width: 32px;
+            height: 32px;
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 14px;
-            opacity: 0.6;
-            transition: opacity 0.2s ease;
+            font-size: 18px;
+            box-shadow: 0 2px 4px var(--shadow-color);
+            transition: opacity 0.2s ease, background-color 0.3s ease, color 0.3s ease;
             z-index: 50;
         }
-        .help-button:hover {
-            opacity: 1;
+        .settings-button:hover {
+            opacity: 0.9;
+            box-shadow: 0 3px 6px var(--shadow-color);
         }
+
+        /* --- Theme toggle button --- */
+        .theme-toggle {
+            position: fixed;
+            bottom: 10px;
+            right: 50px;
+            width: 32px;
+            height: 32px;
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            box-shadow: 0 2px 4px var(--shadow-color);
+            transition: opacity 0.2s ease, background-color 0.3s ease, color 0.3s ease;
+            z-index: 50;
+        }
+        .theme-toggle:hover {
+            opacity: 0.9;
+            box-shadow: 0 3px 6px var(--shadow-color);
+        }
+
+        /* --- Modal styles --- */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .modal-container {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border-radius: 8px;
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 15px var(--shadow-color);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .modal-close {
+            cursor: pointer;
+            font-size: 22px;
+            line-height: 1;
+        }
+
+        .project-list {
+            margin-bottom: 16px;
+        }
+
+        .project-item {
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .project-item:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .project-item.active {
+            background: rgba(139, 92, 246, 0.2);
+        }
+
+        .project-form {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #8b5cf6;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #8b5cf6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #7c3aed;
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
         .help-tooltip {
             position: fixed;
             bottom: 40px;
             right: 10px;
-            background: white;
-            color: #333;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
             padding: 8px 12px;
             border-radius: 4px;
             font-size: 12px;
             max-width: 220px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            box-shadow: 0 2px 8px var(--shadow-color);
             z-index: 51;
             display: none;
         }
-        
-        /* --- Keyboard hint overlay --- */
-        .keys-hint {
-            position: fixed;
-            left: 10px;
-            bottom: 10px;
-            background: rgba(255, 255, 255, 0.8);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            color: #4b5563;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            z-index: 40;
-        }
+
+        /* Theme-specific box/text classes for light mode */
+        .light-default-bg { background-color: #ffffff; }
+        .light-default-text { color: #1f2937; }
+        .light-default-border { border-color: #6b7280; }
+
+        .light-red-bg { background-color: #fee2e2; }
+        .light-red-text { color: #7f1d1d; }
+        .light-red-border { border-color: #ef4444; }
+
+        .light-green-bg { background-color: #dcfce7; }
+        .light-green-text { color: #14532d; }
+        .light-green-border { border-color: #10b981; }
+
+        .light-blue-bg { background-color: #dbeafe; }
+        .light-blue-text { color: #1e3a8a; }
+        .light-blue-border { border-color: #3b82f6; }
+
+        .light-purple-bg { background-color: #ede9fe; }
+        .light-purple-text { color: #5b21b6; }
+        .light-purple-border { border-color: #8b5cf6; }
+
+        .light-yellow-bg { background-color: #fef9c3; }
+        .light-yellow-text { color: #713f12; }
+        .light-yellow-border { border-color: #f59e0b; }
+
+        .light-grey-bg { background-color: #e5e7eb; }
+        .light-grey-text { color: #111827; }
+        .light-grey-border { border-color: #111827; }
+
+        /* Theme-specific box/text classes for dark mode */
+        .dark-default-bg { background-color: #374151; }
+        .dark-default-text { color: #f9fafb; }
+        .dark-default-border { border-color: #9ca3af; }
+
+        .dark-red-bg { background-color: #7f1d1d; }
+        .dark-red-text { color: #fecaca; }
+        .dark-red-border { border-color: #ef4444; }
+
+        .dark-green-bg { background-color: #14532d; }
+        .dark-green-text { color: #a7f3d0; }
+        .dark-green-border { border-color: #10b981; }
+
+        .dark-blue-bg { background-color: #1e3a8a; }
+        .dark-blue-text { color: #bfdbfe; }
+        .dark-blue-border { border-color: #3b82f6; }
+
+        .dark-purple-bg { background-color: #5b21b6; }
+        .dark-purple-text { color: #ddd6fe; }
+        .dark-purple-border { border-color: #8b5cf6; }
+
+        .dark-yellow-bg { background-color: #713f12; }
+        .dark-yellow-text { color: #fef08a; }
+        .dark-yellow-border { border-color: #f59e0b; }
+
+        .dark-grey-bg { background-color: #1f2937; }
+        .dark-grey-text { color: #e5e7eb; }
+        .dark-grey-border { border-color: #9ca3af; }
     </style>
 </head>
-<body class="h-screen w-screen m-0 p-0 overflow-hidden bg-gray-100">
+<body class="h-screen w-screen m-0 p-0 overflow-hidden">
+    <!-- Project title header -->
+    <div id="project-title-container" class="absolute top-5 left-0 w-full text-center pointer-events-none z-0">
+        <h1 id="project-title" class="text-3xl tracking-wide"></h1>
+    </div>
+
     <div id="canvas" class="relative w-full h-full cursor-default overflow-hidden">
         <svg id="connections" class="absolute top-0 left-0 w-full h-full pointer-events-none z-10">
              <defs>
                  <marker id="arrowhead-end" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                     <polygon points="0 0, 10 3.5, 0 7" fill="#4b5563"/>
+                     <polygon points="0 0, 10 3.5, 0 7" fill="currentColor"/>
                  </marker>
                  <marker id="arrowhead-start" markerWidth="10" markerHeight="7" refX="1" refY="3.5" orient="auto">
-                     <polygon points="10 0, 0 3.5, 10 7" fill="#4b5563"/>
+                     <polygon points="10 0, 0 3.5, 10 7" fill="currentColor"/>
                  </marker>
              </defs>
-            <path id="preview-connection" stroke="#4b5563" stroke-width="2" fill="none" marker-end="url(#arrowhead-end)" opacity="0.5" display="none" stroke-dasharray="5, 5"/>
+            <path id="preview-connection" stroke="currentColor" stroke-width="2" fill="none" marker-end="url(#arrowhead-end)" opacity="0.5" display="none" stroke-dasharray="5, 5"/>
         </svg>
         <div id="box-container" class="absolute top-0 left-0 w-full h-full z-20 pointer-events-none"></div>
         <div id="helper-text" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-500 text-lg text-center pointer-events-none select-none z-0">
@@ -149,10 +485,65 @@
              <span class="text-sm">Use Markdown in boxes for rich formatting</span>
          </div>
     </div>
-    <div class="keys-hint">
-        Hover + <kbd>c</kbd>: change color | 
-        Box: <kbd>s</kbd>: change width | 
-        <kbd>Delete</kbd>: remove
+    
+    <!-- Theme toggle button with improved icons -->
+    <div class="theme-toggle" id="theme-toggle" title="Toggle dark/light mode">
+        <!-- Sun icon (filled, yellow) -->
+        <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        
+        <!-- Moon icon (filled, dark blue) -->
+        <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+    </div>
+    <!-- Settings button (gear icon) -->
+    <div class="settings-button" id="settings-button" title="Projects & Settings">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+    </div>
+    
+    <!-- Help tooltip -->
+    <div class="help-tooltip" id="help-tooltip">
+        Double click: edit content<br>
+        Right drag: create connection<br>
+        Left click line: change style<br>
+        Right click line: change thickness<br>
+        Click arrow: bidirectional<br>
+    </div>
+    
+    <!-- Project management modal -->
+    <div class="modal-backdrop" id="projects-modal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 class="modal-title">Project Manager</h2>
+                <span class="modal-close" id="close-modal">&times;</span>
+            </div>
+            
+            <div class="project-list" id="project-list">
+                <!-- Projects will be loaded here -->
+                <div class="text-center text-gray-500 py-3" id="no-projects-message">No projects yet</div>
+            </div>
+            
+            <div class="project-form">
+                <div class="form-group">
+                    <label class="form-label" for="project-name">New Project</label>
+                    <input type="text" id="project-name" class="form-input" placeholder="Enter project name">
+                </div>
+                <button id="create-project" class="btn btn-primary">Create New Project</button>
+            </div>
+        </div>
     </div>
 
 <script>
@@ -179,57 +570,112 @@ const CONNECTION_THICKNESSES = {
     BOLD: 'bold'
 };
 
-// Color theme configuration - easy to add/modify themes
+// Enhanced color theme configuration with light and dark variants
 const COLOR_THEMES = {
-    // Each theme has a unique key and defines background, border, and text colors
     default: {
         name: 'Default',
-        bg: 'bg-white',
-        border: 'border-gray-500',
-        text: 'text-gray-900',
-        stroke: '#4b5563' // Added stroke color for connections
+        light: {
+            bg: 'light-default-bg',
+            border: 'light-default-border',
+            text: 'light-default-text',
+            stroke: '#4b5563'
+        },
+        dark: {
+            bg: 'dark-default-bg',
+            border: 'dark-default-border',
+            text: 'dark-default-text',
+            stroke: '#9ca3af'
+        }
     },
     red: {
         name: 'Red',
-        bg: 'bg-red-100',
-        border: 'border-red-500',
-        text: 'text-red-900',
-        stroke: '#ef4444'
+        light: {
+            bg: 'light-red-bg',
+            border: 'light-red-border',
+            text: 'light-red-text',
+            stroke: '#ef4444'
+        },
+        dark: {
+            bg: 'dark-red-bg',
+            border: 'dark-red-border',
+            text: 'dark-red-text',
+            stroke: '#fca5a5'
+        }
     },
     green: {
         name: 'Green',
-        bg: 'bg-green-100',
-        border: 'border-green-500',
-        text: 'text-green-900',
-        stroke: '#10b981'
-    },
-    purple: {
-        name: 'Purple',
-        bg: 'bg-purple-100',
-        border: 'border-purple-500',
-        text: 'text-purple-900',
-        stroke: '#8b5cf6'
+        light: {
+            bg: 'light-green-bg',
+            border: 'light-green-border',
+            text: 'light-green-text',
+            stroke: '#10b981'
+        },
+        dark: {
+            bg: 'dark-green-bg',
+            border: 'dark-green-border',
+            text: 'dark-green-text',
+            stroke: '#34d399'
+        }
     },
     blue: {
         name: 'Blue',
-        bg: 'bg-blue-100',
-        border: 'border-blue-500',
-        text: 'text-blue-900',
-        stroke: '#3b82f6'
+        light: {
+            bg: 'light-blue-bg',
+            border: 'light-blue-border',
+            text: 'light-blue-text',
+            stroke: '#3b82f6'
+        },
+        dark: {
+            bg: 'dark-blue-bg',
+            border: 'dark-blue-border',
+            text: 'dark-blue-text',
+            stroke: '#60a5fa'
+        }
     },
-    grey: {
-        name: 'Grey',
-        bg: 'bg-gray-200',
-        border: 'border-black',
-        text: 'text-gray-900',
-        stroke: '#111827'
+    purple: {
+        name: 'Purple',
+        light: {
+            bg: 'light-purple-bg',
+            border: 'light-purple-border',
+            text: 'light-purple-text',
+            stroke: '#8b5cf6'
+        },
+        dark: {
+            bg: 'dark-purple-bg',
+            border: 'dark-purple-border',
+            text: 'dark-purple-text',
+            stroke: '#a78bfa'
+        }
     },
     yellow: {
         name: 'Yellow',
-        bg: 'bg-yellow-100',
-        border: 'border-yellow-500',
-        text: 'text-yellow-900',
-        stroke: '#f59e0b'
+        light: {
+            bg: 'light-yellow-bg',
+            border: 'light-yellow-border',
+            text: 'light-yellow-text',
+            stroke: '#f59e0b'
+        },
+        dark: {
+            bg: 'dark-yellow-bg',
+            border: 'dark-yellow-border',
+            text: 'dark-yellow-text',
+            stroke: '#fbbf24'
+        }
+    },
+    grey: {
+        name: 'Grey',
+        light: {
+            bg: 'light-grey-bg',
+            border: 'light-grey-border',
+            text: 'light-grey-text',
+            stroke: '#111827'
+        },
+        dark: {
+            bg: 'dark-grey-bg',
+            border: 'dark-grey-border',
+            text: 'dark-grey-text',
+            stroke: '#9ca3af'
+        }
     }
 };
 
@@ -237,7 +683,7 @@ const COLOR_THEMES = {
 const THEME_KEYS = Object.keys(COLOR_THEMES);
 
 // Define base classes for reuse in JS - using Tailwind utility classes
-const BASE_BOX_CLASSES = 'absolute rounded-lg box-default bg-white cursor-move no-select py-2 px-3 pointer-events-auto overflow-hidden box-transition';
+const BASE_BOX_CLASSES = 'absolute rounded-lg box-default cursor-move no-select py-2 px-3 pointer-events-auto overflow-hidden box-transition';
 
 // Simple fallback markdown renderer
 function simpleMarkdownParser(text) { if (!text) return ''; return text.replace(/\n/g, '<br>').replace(/### (.*?)(<br>|$)/g, '<h3>$1</h3>').replace(/## (.*?)(<br>|$)/g, '<h2>$1</h2>').replace(/# (.*?)(<br>|$)/g, '<h1>$1</h1>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/`(.*?)`/g, '<code>$1</code>').replace(/(<br>|^)- (.*?)(?=<br>|$)/g, '$1<ul><li>$2</li></ul>'); }
@@ -246,6 +692,237 @@ function simpleMarkdownParser(text) { if (!text) return ''; return text.replace(
 function safeRemoveClass(element, className) {
     if (element && className && className.trim() !== '') {
         element.classList.remove(className);
+    }
+}
+
+// --- Project Management ---
+class ProjectManager {
+    constructor(diagramManager) {
+        this.diagramManager = diagramManager;
+        this.projects = [];
+        this.currentProjectId = null;
+        this.storageKey = 'markdownDiagramProjects';
+        this.projectListEl = document.getElementById('project-list');
+        this.noProjectsMessage = document.getElementById('no-projects-message');
+        this.projectNameInput = document.getElementById('project-name');
+        this.createProjectBtn = document.getElementById('create-project');
+        this.projectTitleEl = document.getElementById('project-title');
+        
+        this.loadProjects();
+        this.setupEventListeners();
+    }
+    
+    setupEventListeners() {
+        this.createProjectBtn.addEventListener('click', () => {
+            this.createNewProject();
+        });
+        
+        this.projectNameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.createNewProject();
+            }
+        });
+    }
+    
+    loadProjects() {
+        try {
+            const storedProjects = localStorage.getItem(this.storageKey);
+            if (storedProjects) {
+                this.projects = JSON.parse(storedProjects);
+                this.renderProjectList();
+                
+                // Load last active project if exists
+                const lastActiveId = localStorage.getItem('lastActiveProject');
+                if (lastActiveId && this.projects.find(p => p.id === lastActiveId)) {
+                    this.loadProject(lastActiveId);
+                } else if (this.projects.length > 0) {
+                    // Load first project if no last active
+                    this.loadProject(this.projects[0].id);
+                }
+            }
+        } catch (error) {
+            console.error('Error loading projects:', error);
+            this.projects = [];
+        }
+        
+        this.updateProjectsVisibility();
+        this.updateProjectTitle();
+    }
+    
+    saveProjects() {
+        try {
+            localStorage.setItem(this.storageKey, JSON.stringify(this.projects));
+            if (this.currentProjectId) {
+                localStorage.setItem('lastActiveProject', this.currentProjectId);
+            }
+        } catch (error) {
+            console.error('Error saving projects:', error);
+        }
+    }
+    
+    updateProjectTitle() {
+        const currentProject = this.getCurrentProject();
+        
+        if (currentProject) {
+            // Update the H1 element
+            this.projectTitleEl.textContent = currentProject.name;
+            
+            // Update the page title
+            document.title = `${currentProject.name} - Markdown Diagram Tool`;
+        } else {
+            this.projectTitleEl.textContent = 'New Project';
+            document.title = 'Markdown Diagram Tool';
+        }
+    }
+    
+    createNewProject() {
+        const name = this.projectNameInput.value.trim();
+        if (!name) return;
+        
+        const newProject = {
+            id: 'project_' + Date.now(),
+            name: name,
+            dateCreated: new Date().toISOString(),
+            dateModified: new Date().toISOString(),
+            data: {
+                boxes: [],
+                connections: [],
+                nextBoxId: 1,
+                nextConnectionId: 1
+            }
+        };
+        
+        this.projects.push(newProject);
+        this.saveProjects();
+        this.renderProjectList();
+        this.loadProject(newProject.id);
+        this.projectNameInput.value = '';
+        this.updateProjectsVisibility();
+    }
+    
+    renderProjectList() {
+        // Clear existing projects except the "no projects" message
+        const children = Array.from(this.projectListEl.children);
+        children.forEach(child => {
+            if (child !== this.noProjectsMessage) {
+                child.remove();
+            }
+        });
+        
+        // Add project items
+        this.projects.forEach(project => {
+            const projectItem = document.createElement('div');
+            projectItem.className = 'project-item';
+            if (project.id === this.currentProjectId) {
+                projectItem.classList.add('active');
+            }
+            
+            const dateModified = new Date(project.dateModified);
+            const formattedDate = dateModified.toLocaleDateString();
+            
+            projectItem.innerHTML = `
+                <div>
+                    <div>${project.name}</div>
+                    <div class="text-xs opacity-60">Modified: ${formattedDate}</div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-danger delete-project" data-id="${project.id}">Delete</button>
+                </div>
+            `;
+            
+            // Add event listener to load the project
+            projectItem.addEventListener('click', (e) => {
+                // Don't load if clicking the delete button
+                if (!e.target.closest('.delete-project')) {
+                    this.loadProject(project.id);
+                }
+            });
+            
+            // Add event listener for delete button
+            const deleteBtn = projectItem.querySelector('.delete-project');
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.deleteProject(project.id);
+            });
+            
+            this.projectListEl.appendChild(projectItem);
+        });
+        
+        this.updateProjectsVisibility();
+    }
+    
+    updateProjectsVisibility() {
+        if (this.projects.length === 0) {
+            this.noProjectsMessage.style.display = 'block';
+        } else {
+            this.noProjectsMessage.style.display = 'none';
+        }
+    }
+    
+    deleteProject(projectId) {
+        const confirmDelete = window.confirm('Are you sure you want to delete this project?');
+        if (!confirmDelete) return;
+        
+        this.projects = this.projects.filter(project => project.id !== projectId);
+        this.saveProjects();
+        
+        // If deleted current project, load another one
+        if (projectId === this.currentProjectId) {
+            if (this.projects.length > 0) {
+                this.loadProject(this.projects[0].id);
+            } else {
+                // No projects left, clear diagram
+                this.diagramManager.clearDiagram();
+                this.currentProjectId = null;
+                this.updateProjectTitle();
+            }
+        }
+        
+        this.renderProjectList();
+        this.updateProjectsVisibility();
+    }
+    
+    loadProject(projectId) {
+        const project = this.projects.find(p => p.id === projectId);
+        if (!project) return;
+        
+        // Save current project if exists
+        this.saveCurrentProject();
+        
+        // Load new project
+        this.currentProjectId = projectId;
+        this.diagramManager.loadFromProjectData(project.data);
+        
+        // Update project title
+        this.updateProjectTitle();
+        
+        // Highlight active project
+        document.querySelectorAll('.project-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        
+        const activeItem = document.querySelector(`.project-item[data-id="${projectId}"]`);
+        if (activeItem) {
+            activeItem.classList.add('active');
+        }
+        
+        localStorage.setItem('lastActiveProject', projectId);
+    }
+    
+    saveCurrentProject() {
+        if (!this.currentProjectId) return;
+        
+        const projectIndex = this.projects.findIndex(p => p.id === this.currentProjectId);
+        if (projectIndex >= 0) {
+            const diagramData = this.diagramManager.exportData();
+            this.projects[projectIndex].data = diagramData;
+            this.projects[projectIndex].dateModified = new Date().toISOString();
+            this.saveProjects();
+        }
+    }
+    
+    getCurrentProject() {
+        return this.projects.find(p => p.id === this.currentProjectId);
     }
 }
 
@@ -272,6 +949,7 @@ class Box {
         div.className = BASE_BOX_CLASSES; 
         div.dataset.id = this.data.id; 
         div.dataset.type = 'box';
+        div.dataset.theme = this.data.themeKey;
         const contentDiv = document.createElement('div'); 
         contentDiv.className = 'markdown-content relative w-full h-full'; 
         div.appendChild(contentDiv); 
@@ -335,25 +1013,42 @@ class Box {
     // Updates position using center coordinates - for dragging
     setCenterPosition(cx, cy) { this.data.cx = cx; this.data.cy = cy; this.updateElementPosition(); }
     
+    // Get current mode (light or dark)
+    getMode() {
+        return document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+    }
+    
     // Apply color theme to the box
     applyColorTheme() {
-        // Get the theme object (with fallback to default if not found)
-        const theme = COLOR_THEMES[this.data.themeKey] || COLOR_THEMES.default;
+        const mode = this.getMode();
+        const themeKey = this.data.themeKey || 'default';
+        const theme = COLOR_THEMES[themeKey] || COLOR_THEMES.default;
         
-        // Remove all possible theme background classes
+        // Get the mode-specific theme
+        const modeTheme = theme[mode];
+        
+        // Remove all theme classes
         THEME_KEYS.forEach(key => {
-            const themeToRemove = COLOR_THEMES[key];
-            if (themeToRemove) {
-                safeRemoveClass(this.element, themeToRemove.bg);
-                safeRemoveClass(this.element, themeToRemove.border);
-                safeRemoveClass(this.contentDiv, themeToRemove.text);
-            }
+            const lightTheme = COLOR_THEMES[key].light;
+            const darkTheme = COLOR_THEMES[key].dark;
+            
+            // Remove both light and dark variants
+            safeRemoveClass(this.element, lightTheme.bg);
+            safeRemoveClass(this.element, lightTheme.border);
+            safeRemoveClass(this.contentDiv, lightTheme.text);
+            
+            safeRemoveClass(this.element, darkTheme.bg);
+            safeRemoveClass(this.element, darkTheme.border);
+            safeRemoveClass(this.contentDiv, darkTheme.text);
         });
         
-        // Add new theme classes
-        if (theme.bg) this.element.classList.add(theme.bg);
-        if (theme.border) this.element.classList.add(theme.border);
-        if (theme.text) this.contentDiv.classList.add(theme.text);
+        // Add current theme classes for the current mode
+        if (modeTheme.bg) this.element.classList.add(modeTheme.bg);
+        if (modeTheme.border) this.element.classList.add(modeTheme.border);
+        if (modeTheme.text) this.contentDiv.classList.add(modeTheme.text);
+        
+        // Update data attribute for theme identification
+        this.element.dataset.theme = themeKey;
     }
     
     // Cycle to the next color theme
@@ -514,10 +1209,66 @@ class Box {
         });
     }
 
-    commitEdit() { if (!this.isEditing || !this.textarea) return false; const markdown = this.textarea.value.trim(); if (!markdown) { this.cancelEdit(); return false; } this.data.markdown = markdown; this.cleanupEdit(); this.renderMarkdown(); this.manager.updateConnectionsForBox(this); console.log('Box Edit Committed:', structuredClone(this.data)); return true; }
-    cancelEdit() { if (!this.isEditing) return; if (!this.data.markdown) { console.log('Box Edit Cancelled & Deleted:', this.data.id); this.manager.deleteBox(this); return; } this.cleanupEdit(); this.renderMarkdown(); console.log('Box Edit Cancelled:', structuredClone(this.data)); }
-    cleanupEdit() { this.isEditing = false; if (this.textarea && this.textarea.parentNode) { this.textarea.remove(); } this.textarea = null; this.element.classList.add('cursor-move'); }
-    getBounds() { const x = this.data.cx - this.data.width / 2; const y = this.data.cy - this.data.height / 2; return { left: x, right: x + this.data.width, top: y, bottom: y + this.data.height, width: this.data.width, height: this.data.height }; }
+    commitEdit() { 
+        if (!this.isEditing || !this.textarea) return false; 
+        const markdown = this.textarea.value.trim(); 
+        if (!markdown) { 
+            this.cancelEdit(); 
+            return false; 
+        } 
+        this.data.markdown = markdown; 
+        this.cleanupEdit(); 
+        this.renderMarkdown(); 
+        this.manager.updateConnectionsForBox(this); 
+        this.manager.saveCurrentProject();
+        return true; 
+    }
+    
+    cancelEdit() { 
+        if (!this.isEditing) return; 
+        if (!this.data.markdown) { 
+            this.manager.deleteBox(this); 
+            return; 
+        } 
+        this.cleanupEdit(); 
+        this.renderMarkdown(); 
+    }
+    
+    cleanupEdit() { 
+        this.isEditing = false; 
+        if (this.textarea && this.textarea.parentNode) { 
+            this.textarea.remove(); 
+        } 
+        this.textarea = null; 
+        this.element.classList.add('cursor-move'); 
+    }
+    
+    getBounds() { 
+        const x = this.data.cx - this.data.width / 2; 
+        const y = this.data.cy - this.data.height / 2; 
+        return { 
+            left: x, 
+            right: x + this.data.width, 
+            top: y, 
+            bottom: y + this.data.height, 
+            width: this.data.width, 
+            height: this.data.height 
+        }; 
+    }
+    
+    // Export box data
+    exportData() {
+        return {
+            id: this.data.id,
+            cx: this.data.cx,
+            cy: this.data.cy,
+            width: this.data.width,
+            height: this.data.height,
+            widthType: this.data.widthType,
+            themeKey: this.data.themeKey,
+            markdown: this.data.markdown
+        };
+    }
 }
 
 // --- Connection Class ---
@@ -534,8 +1285,8 @@ class Connection {
         this.endBox = endBox; 
         this.manager = manager; 
         
-        // Create main connection path
-        this.element = this.createElement();
+        // Create connection group
+        this.createElements();
         
         // Create invisible hotspots for better arrow interaction
         this.startHotspot = null;
@@ -546,19 +1297,30 @@ class Connection {
         this.setupEventListeners(); 
     }
     
-    createElement() { 
-        const p = document.createElementNS('http://www.w3.org/2000/svg', 'path'); 
-        p.setAttribute('class', 'connection-path pointer-events-auto'); 
-        p.dataset.id = this.data.id; 
-        p.dataset.type = 'connection';
+    createElements() {
+        // Create the hitbox path with wide stroke for easier clicking
+        this.hitboxElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        this.hitboxElement.setAttribute('class', 'connection-hitbox');
+        this.hitboxElement.dataset.id = this.data.id;
+        this.hitboxElement.dataset.type = 'connection-hitbox';
+        
+        // Create the visible connection path
+        this.element = document.createElementNS('http://www.w3.org/2000/svg', 'path'); 
+        this.element.setAttribute('class', 'connection-path pointer-events-none'); 
+        this.element.dataset.id = this.data.id; 
+        this.element.dataset.type = 'connection';
+        this.element.dataset.theme = this.data.themeKey;
         
         // Set markers based on if bidirectional
         if (this.data.bidirectional) {
-            p.setAttribute('marker-start', 'url(#arrowhead-start)');
+            this.element.setAttribute('marker-start', 'url(#arrowhead-start)');
         }
-        p.setAttribute('marker-end', 'url(#arrowhead-end)');
-        
-        return p; 
+        this.element.setAttribute('marker-end', 'url(#arrowhead-end)');
+    }
+    
+    // Get current mode (light or dark)
+    getMode() {
+        return document.body.classList.contains('dark-mode') ? 'dark' : 'light';
     }
     
     // Create invisible hotspots for better arrow interaction
@@ -593,6 +1355,7 @@ class Connection {
         this.startHotspot.addEventListener('click', (e) => {
             e.stopPropagation();
             this.toggleBidirectional();
+            this.manager.saveCurrentProject();
         });
         
         this.endHotspot.addEventListener('mouseenter', () => {
@@ -608,6 +1371,7 @@ class Connection {
         this.endHotspot.addEventListener('click', (e) => {
             e.stopPropagation();
             this.toggleBidirectional();
+            this.manager.saveCurrentProject();
         });
     }
     
@@ -626,68 +1390,48 @@ class Connection {
     }
     
     setupEventListeners() { 
-        this.element.addEventListener('mouseenter', () => {
+        // Add interaction events to the hitbox element
+        this.hitboxElement.addEventListener('mouseenter', () => {
             this.manager.hoveredElement = this;
         });
         
-        this.element.addEventListener('mouseleave', () => {
+        this.hitboxElement.addEventListener('mouseleave', () => {
             if (this.manager.hoveredElement === this) {
                 this.manager.hoveredElement = null;
             }
         });
         
         // Add left-click event to toggle line pattern
-        this.element.addEventListener('click', (e) => {
+        this.hitboxElement.addEventListener('click', (e) => {
             e.stopPropagation();
             this.cyclePattern();
+            this.manager.saveCurrentProject();
         });
         
         // Add right-click event to toggle thickness
-        this.element.addEventListener('contextmenu', (e) => {
+        this.hitboxElement.addEventListener('contextmenu', (e) => {
             e.preventDefault();
             e.stopPropagation();
             this.cycleThickness();
+            this.manager.saveCurrentProject();
         });
     }
     
     // Apply the current theme to the connection
     applyTheme() {
-        const theme = COLOR_THEMES[this.data.themeKey] || COLOR_THEMES.default;
+        const mode = this.getMode();
+        const themeKey = this.data.themeKey || 'default';
+        const theme = COLOR_THEMES[themeKey] || COLOR_THEMES.default;
+        
+        // Get stroke color for current mode
+        const strokeColor = theme[mode].stroke;
+        
         if (this.element) {
-            this.element.setAttribute('stroke', theme.stroke);
+            this.element.setAttribute('stroke', strokeColor);
         }
         
-        // Update arrowhead - safely
-        this.updateArrowheadColor(theme.stroke);
-    }
-    
-    // Update arrowhead color safely
-    updateArrowheadColor(color) {
-        // Update start arrowhead
-        try {
-            const startArrowhead = document.getElementById('arrowhead-start');
-            if (startArrowhead) {
-                const polygon = startArrowhead.querySelector('polygon');
-                if (polygon) {
-                    polygon.setAttribute('fill', color);
-                }
-            }
-        } catch (e) {
-            console.warn("Could not update start arrowhead color", e);
-        }
-        
-        // Update end arrowhead
-        try {
-            const endArrowhead = document.getElementById('arrowhead-end');
-            if (endArrowhead) {
-                const polygon = endArrowhead.querySelector('polygon');
-                if (polygon) {
-                    polygon.setAttribute('fill', color);
-                }
-            }
-        } catch (e) {
-            console.warn("Could not update end arrowhead color", e);
-        }
+        // Update data attribute for theme identification
+        this.element.dataset.theme = themeKey;
     }
     
     // Cycle to the next color theme
@@ -696,6 +1440,7 @@ class Connection {
         const nextIndex = (currentIndex + 1) % THEME_KEYS.length;
         this.data.themeKey = THEME_KEYS[nextIndex];
         this.applyTheme();
+        this.manager.saveCurrentProject();
     }
     
     // Apply current pattern to the connection
@@ -752,12 +1497,17 @@ class Connection {
         const sP = this.calculateIntersection(eP, sC, this.startBox); 
         
         if (!isNaN(sP.x) && !isNaN(eP.x)) { 
-            this.element.setAttribute('d', `M ${sP.x} ${sP.y} L ${eP.x} ${eP.y}`); 
+            const pathData = `M ${sP.x} ${sP.y} L ${eP.x} ${eP.y}`;
+            
+            // Update both the visible path and hitbox path
+            this.element.setAttribute('d', pathData); 
+            this.hitboxElement.setAttribute('d', pathData);
             
             // Update hotspot positions
             this.updateHotspotPositions(sP, eP);
         } else { 
             this.element.setAttribute('d', ''); 
+            this.hitboxElement.setAttribute('d', '');
         } 
         
         this.updateElementStyle(); 
@@ -808,6 +1558,29 @@ class Connection {
             this.endHotspot.remove();
             this.endHotspot = null;
         }
+        
+        if (this.hitboxElement) {
+            this.hitboxElement.remove();
+            this.hitboxElement = null;
+        }
+        
+        if (this.element) {
+            this.element.remove();
+            this.element = null;
+        }
+    }
+    
+    // Export connection data
+    exportData() {
+        return {
+            id: this.data.id,
+            startBoxId: this.startBox.data.id,
+            endBoxId: this.endBox.data.id,
+            themeKey: this.data.themeKey,
+            pattern: this.data.pattern,
+            thickness: this.data.thickness,
+            bidirectional: this.data.bidirectional
+        };
     }
 }
 
@@ -831,9 +1604,25 @@ class DiagramManager {
         this.connectionStartBox = null;
         this.hoveredElement = null; // Track currently hovered element
         
+        // Initialize theme
+        this.initTheme();
+        
+        // Initialize UI
         this.setupEventListeners();
         this.updateHelperText();
-        this.setupHelpButton();
+        this.setupSettingsButton();
+        this.setupThemeToggle();
+        
+        // Initialize project manager
+        this.projectManager = new ProjectManager(this);
+    }
+    
+    initTheme() {
+        // Check for saved theme preference
+        const darkMode = localStorage.getItem('darkMode') === 'true';
+        if (darkMode) {
+            document.body.classList.add('dark-mode');
+        }
     }
     
     setupEventListeners() { 
@@ -850,35 +1639,62 @@ class DiagramManager {
                 this.connectionStartBox = null; 
             } 
         }); 
+        
+        // Setup project modal events
+        document.getElementById('settings-button').addEventListener('click', () => {
+            document.getElementById('projects-modal').style.display = 'flex';
+        });
+        
+        document.getElementById('close-modal').addEventListener('click', () => {
+            document.getElementById('projects-modal').style.display = 'none';
+        });
+        
+        // Close modal on outside click
+        document.getElementById('projects-modal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('projects-modal')) {
+                document.getElementById('projects-modal').style.display = 'none';
+            }
+        });
     }
     
-    setupHelpButton() {
-        const helpButton = document.createElement('div');
-        helpButton.className = 'help-button';
-        helpButton.textContent = '?';
-        helpButton.title = 'Help';
-        document.body.appendChild(helpButton);
+    setupSettingsButton() {
+        const settingsButton = document.getElementById('settings-button');
+        const helpTooltip = document.getElementById('help-tooltip');
         
-        const helpTooltip = document.createElement('div');
-        helpTooltip.className = 'help-tooltip';
-        helpTooltip.innerHTML = `
-            Double click: edit content<br>
-            Right drag: create connection<br>
-            Left click line: change style<br>
-            Right click line: change thickness<br>
-            Hover + c: change color<br>
-            Box + s: change width<br>
-            Click arrow: bidirectional<br>
-            Delete: remove hovered item
-        `;
-        document.body.appendChild(helpTooltip);
-        
-        helpButton.addEventListener('mouseenter', () => {
+        settingsButton.addEventListener('mouseenter', () => {
             helpTooltip.style.display = 'block';
         });
         
-        helpButton.addEventListener('mouseleave', () => {
+        settingsButton.addEventListener('mouseleave', () => {
             helpTooltip.style.display = 'none';
+        });
+    }
+    
+    setupThemeToggle() {
+        const toggleBtn = document.getElementById('theme-toggle');
+        
+        toggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            
+            // Store theme preference in localStorage
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode);
+            
+            // Update all box and connection themes
+            this.updateAllThemes();
+        });
+    }
+    
+    // Update themes for all boxes and connections when theme mode changes
+    updateAllThemes() {
+        // Update boxes
+        this.boxes.forEach(box => {
+            box.applyColorTheme();
+        });
+        
+        // Update connections
+        this.connections.forEach(conn => {
+            conn.applyTheme();
         });
     }
     
@@ -945,6 +1761,7 @@ class DiagramManager {
     handleMouseUp(e) { 
         if (this.draggingBox) { 
             this.draggingBox = null; 
+            this.saveCurrentProject();
         } else if (this.connectionStartBox && e.button === 2) { 
             e.preventDefault(); 
             this.previewPath.setAttribute('display', 'none'); 
@@ -955,10 +1772,14 @@ class DiagramManager {
                 const eB = this.boxes.get(eBE.dataset.id); 
                 if (eB && eB !== this.connectionStartBox) { 
                     // Create or update connection between boxes
-                    this.createOrUpdateConnection(this.connectionStartBox, eB); 
+                    const connection = this.createOrUpdateConnection(this.connectionStartBox, eB);
+                    if (connection) {
+                        this.saveCurrentProject();
+                    }
                 } else if (eB === this.connectionStartBox) {
                     // Change width if right-click and release on the same box
                     eB.toggleWidthType();
+                    this.saveCurrentProject();
                 }
             } 
             
@@ -997,18 +1818,21 @@ class DiagramManager {
             } else if (this.hoveredElement instanceof Connection) {
                 this.deleteConnection(this.hoveredElement);
             }
+            this.saveCurrentProject();
         }
         
         // Handle 'c' key for changing color of hovered element
         if (e.key === 'c' && this.hoveredElement) {
             if (this.hoveredElement instanceof Box || this.hoveredElement instanceof Connection) {
                 this.hoveredElement.cycleColorTheme();
+                this.saveCurrentProject();
             }
         }
         
         // Handle 's' key for changing width of hovered box (NOT connections)
         if (e.key === 's' && this.hoveredElement instanceof Box) {
             this.hoveredElement.toggleWidthType();
+            this.saveCurrentProject();
         }
     }
     
@@ -1064,16 +1888,19 @@ class DiagramManager {
             thickness: CONNECTION_THICKNESSES.NORMAL,
             bidirectional: false
         }; 
-        const c = new Connection(cD, startBox, endBox, this); 
-        this.connections.set(id, c); 
-        this.svg.appendChild(c.element); 
+        const conn = new Connection(cD, startBox, endBox, this); 
+        this.connections.set(id, conn); 
         
-        // Apply theme after adding to DOM
-        c.applyTheme();
-        c.applyPattern();
-        c.applyThickness();
+        // Add both hitbox and visible connection to SVG
+        this.svg.appendChild(conn.hitboxElement);
+        this.svg.appendChild(conn.element);
         
-        return c; 
+        // Apply theme and styles
+        conn.applyTheme();
+        conn.applyPattern();
+        conn.applyThickness();
+        
+        return conn; 
     }
     
     deleteBox(boxInstance) { 
@@ -1097,11 +1924,10 @@ class DiagramManager {
     deleteConnection(connInstance) { 
         if (!connInstance) return; 
         
-        // Clean up hotspot elements
+        // Clean up all connection elements
         connInstance.cleanup();
         
         const cId = connInstance.data.id; 
-        connInstance.element.remove(); 
         this.connections.delete(cId); 
         
         // Clear hovered element if needed
@@ -1118,6 +1944,99 @@ class DiagramManager {
     
     updateHelperText() { 
         this.helperText.style.display = this.boxes.size === 0 ? 'block' : 'none'; 
+    }
+    
+    // Clear the current diagram
+    clearDiagram() {
+        // Remove all connections
+        this.connections.forEach(conn => {
+            conn.cleanup();
+        });
+        this.connections.clear();
+        
+        // Remove all boxes
+        this.boxes.forEach(box => {
+            box.element.remove();
+        });
+        this.boxes.clear();
+        
+        // Reset counters
+        this.nextBoxId = 1;
+        this.nextConnectionId = 1;
+        
+        // Update helper text
+        this.updateHelperText();
+    }
+    
+    // Export the entire diagram data
+    exportData() {
+        const boxesData = [];
+        this.boxes.forEach(box => {
+            boxesData.push(box.exportData());
+        });
+        
+        const connectionsData = [];
+        this.connections.forEach(conn => {
+            connectionsData.push(conn.exportData());
+        });
+        
+        return {
+            boxes: boxesData,
+            connections: connectionsData,
+            nextBoxId: this.nextBoxId,
+            nextConnectionId: this.nextConnectionId
+        };
+    }
+    
+    // Load diagram from exported data
+    loadFromProjectData(data) {
+        // Clear current diagram
+        this.clearDiagram();
+        
+        // Set counters
+        this.nextBoxId = data.nextBoxId || 1;
+        this.nextConnectionId = data.nextConnectionId || 1;
+        
+        // Create boxes first
+        const boxMap = new Map(); // Map original IDs to new box instances
+        
+        if (data.boxes && Array.isArray(data.boxes)) {
+            data.boxes.forEach(boxData => {
+                const box = new Box(boxData, this);
+                this.boxContainer.appendChild(box.element);
+                this.boxes.set(boxData.id, box);
+                boxMap.set(boxData.id, box);
+            });
+        }
+        
+        // Then create connections
+        if (data.connections && Array.isArray(data.connections)) {
+            data.connections.forEach(connData => {
+                const startBox = boxMap.get(connData.startBoxId);
+                const endBox = boxMap.get(connData.endBoxId);
+                
+                if (startBox && endBox) {
+                    const conn = new Connection(connData, startBox, endBox, this);
+                    this.connections.set(connData.id, conn);
+                    
+                    // Add both hitbox and visible path to SVG
+                    this.svg.appendChild(conn.hitboxElement);
+                    this.svg.appendChild(conn.element);
+                    
+                    conn.update();
+                }
+            });
+        }
+        
+        // Update helper text
+        this.updateHelperText();
+    }
+    
+    // Save the current project through the project manager
+    saveCurrentProject() {
+        if (this.projectManager) {
+            this.projectManager.saveCurrentProject();
+        }
     }
 }
 
