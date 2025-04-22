@@ -1937,23 +1937,36 @@ class DiagramManager {
     
     // Update canvas size based on box positions with buffer zone
     updateCanvasSize() {
-        // Find the lowest box element
+        // Find the maximum bounds in all directions
+        let maxRight = 0;
         let maxBottom = 0;
+        
         this.boxes.forEach(box => {
             const bounds = box.getBounds();
+            maxRight = Math.max(maxRight, bounds.right);
             maxBottom = Math.max(maxBottom, bounds.bottom);
         });
         
-        // Add buffer (1/2 viewport height)
+        // Add buffer (half viewport dimensions)
+        const bufferWidth = window.innerWidth / 2;
         const bufferHeight = window.innerHeight / 2;
-        const minHeight = window.innerHeight; // At least show full viewport
         
-        // Set canvas height to max(lowest box + buffer, viewport height)
+        // Set minimum dimensions to viewport size
+        const minWidth = window.innerWidth;
+        const minHeight = window.innerHeight; 
+        
+        // Calculate new dimensions to include all boxes plus buffer
+        const newWidth = Math.max(maxRight + bufferWidth, minWidth);
         const newHeight = Math.max(maxBottom + bufferHeight, minHeight);
         
-        // Apply the new height to relevant elements
+        // Apply the new dimensions to relevant elements
+        this.canvas.style.width = `${newWidth}px`;
         this.canvas.style.height = `${newHeight}px`;
+        
+        this.svg.style.width = `${newWidth}px`;
         this.svg.style.height = `${newHeight}px`;
+        
+        this.boxContainer.style.width = `${newWidth}px`;
         this.boxContainer.style.height = `${newHeight}px`;
     }
     
