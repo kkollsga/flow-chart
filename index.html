@@ -1750,16 +1750,20 @@ class Connection {
         if (this.element) {
             // Set both stroke and color properties
             this.element.setAttribute('stroke', strokeColor);
-            this.element.style.color = strokeColor; // Set currentColor for markers
             
-            // Update both arrowheads to use the same color
+            // IMPORTANT: Set color property to match stroke
+            this.element.style.color = strokeColor;
+            
+            // Also set the currentColor explicitly for proper inheritance
+            document.documentElement.style.setProperty('--connection-color-'+this.data.id, strokeColor);
+            
+            // Update the marker reference with the specific URL
             if (this.data.bidirectional) {
                 this.element.setAttribute('marker-start', `url(#arrowhead-start)`);
             }
             this.element.setAttribute('marker-end', `url(#arrowhead-end)`);
         }
         
-        // Update data attribute for theme identification
         this.element.dataset.theme = themeKey;
     }
     
@@ -2006,24 +2010,30 @@ class DiagramManager {
     }
 
     ensureMarkerColorInheritance() {
-        // Get the marker elements
         const startMarker = document.getElementById('arrowhead-start');
         const endMarker = document.getElementById('arrowhead-end');
         
         if (startMarker && endMarker) {
-            // Add CSS to ensure color inheritance works
+            // Add this improved CSS to ensure color inheritance works
             const style = document.createElement('style');
             style.textContent = `
                 #arrowhead-start polygon, #arrowhead-end polygon {
                     fill: currentColor;
                 }
                 .connection-path {
-                    color: inherit; /* Ensure currentColor propagation */
+                    color: inherit; 
+                }
+                /* Force marker to use parent's color */
+                svg path.connection-path {
+                    marker-end: url(#arrowhead-end);
+                }
+                svg path.connection-path[marker-start] {
+                    marker-start: url(#arrowhead-start);
                 }
             `;
             document.head.appendChild(style);
             
-            // Make sure the marker polygons use currentColor
+            // Ensure polygons use currentColor
             const startPolygon = startMarker.querySelector('polygon');
             const endPolygon = endMarker.querySelector('polygon');
             
