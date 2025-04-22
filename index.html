@@ -1748,7 +1748,15 @@ class Connection {
         const strokeColor = theme[mode].stroke;
         
         if (this.element) {
+            // Set both stroke and color properties
             this.element.setAttribute('stroke', strokeColor);
+            this.element.style.color = strokeColor; // Set currentColor for markers
+            
+            // Update both arrowheads to use the same color
+            if (this.data.bidirectional) {
+                this.element.setAttribute('marker-start', `url(#arrowhead-start)`);
+            }
+            this.element.setAttribute('marker-end', `url(#arrowhead-end)`);
         }
         
         // Update data attribute for theme identification
@@ -1927,6 +1935,9 @@ class DiagramManager {
         
         // Initialize theme
         this.initTheme();
+
+        // Ensure marker colors work properly
+        this.ensureMarkerColorInheritance();
         
         // Initialize settings manager
         this.settingsManager = new SettingsManager();
@@ -1991,6 +2002,33 @@ class DiagramManager {
         const darkMode = localStorage.getItem('darkMode') === 'true';
         if (darkMode) {
             document.body.classList.add('dark-mode');
+        }
+    }
+
+    ensureMarkerColorInheritance() {
+        // Get the marker elements
+        const startMarker = document.getElementById('arrowhead-start');
+        const endMarker = document.getElementById('arrowhead-end');
+        
+        if (startMarker && endMarker) {
+            // Add CSS to ensure color inheritance works
+            const style = document.createElement('style');
+            style.textContent = `
+                #arrowhead-start polygon, #arrowhead-end polygon {
+                    fill: currentColor;
+                }
+                .connection-path {
+                    color: inherit; /* Ensure currentColor propagation */
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Make sure the marker polygons use currentColor
+            const startPolygon = startMarker.querySelector('polygon');
+            const endPolygon = endMarker.querySelector('polygon');
+            
+            if (startPolygon) startPolygon.setAttribute('fill', 'currentColor');
+            if (endPolygon) endPolygon.setAttribute('fill', 'currentColor');
         }
     }
     
