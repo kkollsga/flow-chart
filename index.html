@@ -20,6 +20,10 @@
             --box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
             --box-shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.12);
             --font-scale: 1; /* Default font scale */
+            /* Light mode scrollbar colors */
+            --scrollbar-track: #f1f1f1;
+            --scrollbar-thumb: #c1c1c1;
+            --scrollbar-thumb-hover: #a1a1a1;
         }
 
         .dark-mode {
@@ -32,6 +36,10 @@
             --shadow-color: rgba(0, 0, 0, 0.3);
             --box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
             --box-shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.35);
+            /* Dark mode scrollbar colors */
+            --scrollbar-track: #2d3748;
+            --scrollbar-thumb: #4a5568;
+            --scrollbar-thumb-hover: #718096;
         }
 
         #canvas {
@@ -52,7 +60,44 @@
             transition: background-color 0.3s ease, color 0.3s ease;
             overflow-x: auto;
             overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
         }
+
+        /* Scrollbar width */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        
+        /* Scrollbar track */
+        ::-webkit-scrollbar-track {
+            background-color: var(--scrollbar-track);
+            border-radius: 6px;
+        }
+        
+        /* Scrollbar thumb */
+        ::-webkit-scrollbar-thumb {
+            background-color: var(--scrollbar-thumb);
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: var(--scrollbar-thumb-hover);
+        }
+        
+        /* Scrollbar corner */
+        ::-webkit-scrollbar-corner {
+            background-color: var(--scrollbar-track);
+        }
+        
+        /* Firefox scrollbar styling */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+        }
+
 
         /* --- Theme Toggle Icons --- */
         .theme-toggle {
@@ -1964,14 +2009,14 @@ class DiagramManager {
         // Add buffer only for height (half viewport height)
         const bufferHeight = window.innerHeight / 2;
         
-        // Set minimum dimensions to viewport size
-        const minWidth = window.innerWidth;
-        const minHeight = window.innerHeight; 
+        // Get visible viewport dimensions (accounts for scrollbar presence)
+        const viewportWidth = document.documentElement.clientWidth;
+        const viewportHeight = window.innerHeight;
         
         // For width: use exactly the content width or viewport width, whichever is larger
         // For height: add buffer for more natural vertical scrolling
-        const newWidth = Math.max(maxRight, minWidth);
-        const newHeight = Math.max(maxBottom + bufferHeight, minHeight);
+        const newWidth = Math.max(maxRight, viewportWidth);
+        const newHeight = Math.max(maxBottom + bufferHeight, viewportHeight);
         
         // Apply the new dimensions to relevant elements
         this.canvas.style.width = `${newWidth}px`;
