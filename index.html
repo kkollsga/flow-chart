@@ -1961,16 +1961,16 @@ class DiagramManager {
             maxBottom = Math.max(maxBottom, bounds.bottom);
         });
         
-        // Add buffer (half viewport dimensions)
-        const bufferWidth = window.innerWidth / 2;
+        // Add buffer only for height (half viewport height)
         const bufferHeight = window.innerHeight / 2;
         
         // Set minimum dimensions to viewport size
         const minWidth = window.innerWidth;
         const minHeight = window.innerHeight; 
         
-        // Calculate new dimensions to include all boxes plus buffer
-        const newWidth = Math.max(maxRight + bufferWidth, minWidth);
+        // For width: use exactly the content width or viewport width, whichever is larger
+        // For height: add buffer for more natural vertical scrolling
+        const newWidth = Math.max(maxRight, minWidth);
         const newHeight = Math.max(maxBottom + bufferHeight, minHeight);
         
         // Apply the new dimensions to relevant elements
