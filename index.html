@@ -977,7 +977,8 @@ function safeRemoveClass(element, className) {
 
 // --- Settings Manager ---
 class SettingsManager {
-    constructor() {
+    constructor(diagramManager) {
+        this.diagramManager = diagramManager; // Store reference to diagram manager
         this.settings = {
             textScale: 1.0
         };
@@ -1000,6 +1001,10 @@ class SettingsManager {
     saveSettings() {
         try {
             localStorage.setItem('markdownDiagramSettings', JSON.stringify(this.settings));
+            // Update all boxes after saving settings
+            if (this.diagramManager) {
+                this.diagramManager.updateAllBoxSizes();
+            }
         } catch (error) {
             console.error('Error saving settings:', error);
         }
@@ -1015,6 +1020,14 @@ class SettingsManager {
         
         if (textScaleSlider) textScaleSlider.value = this.settings.textScale;
         if (textScaleValue) textScaleValue.textContent = `${this.settings.textScale.toFixed(1)}x`;
+        
+        // Update all box sizes when settings are applied (e.g. on page load)
+        if (this.diagramManager) {
+            // Use setTimeout to ensure DOM is ready
+            setTimeout(() => {
+                this.diagramManager.updateAllBoxSizes();
+            }, 100);
+        }
     }
     
     setupEventListeners() {
@@ -1028,6 +1041,15 @@ class SettingsManager {
                 textScaleValue.textContent = `${value.toFixed(1)}x`;
                 this.settings.textScale = value;
                 document.documentElement.style.setProperty('--font-scale', value);
+                
+                // Update box sizes in real-time when slider changes
+                if (this.diagramManager) {
+                    // Use debounce to prevent too many updates
+                    clearTimeout(this._resizeTimeout);
+                    this._resizeTimeout = setTimeout(() => {
+                        this.diagramManager.updateAllBoxSizes();
+                    }, 50);
+                }
             });
         }
         
@@ -1973,8 +1995,8 @@ class DiagramManager {
         // Initialize theme
         this.initTheme();
         
-        // Initialize settings manager
-        this.settingsManager = new SettingsManager();
+        // Initialize settings manager with reference to this diagram manager
+        this.settingsManager = new SettingsManager(this);
         
         // Initialize UI
         this.setupEventListeners();
