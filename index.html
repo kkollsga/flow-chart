@@ -2050,6 +2050,22 @@ class DiagramManager {
         this.boxContainer.style.width = `${newWidth}px`;
         this.boxContainer.style.height = `${newHeight}px`;
     }
+
+    updateAllBoxSizes() {
+        // Recalculate and update the size of all boxes
+        this.boxes.forEach(box => {
+            // Force box to recalculate its size with current text scale
+            box.renderMarkdown();
+        });
+        
+        // Update all connections after box sizes change
+        this.connections.forEach(connection => {
+            connection.update();
+        });
+        
+        // Update canvas size to accommodate new box sizes
+        this.updateCanvasSize();
+    }
     
     initTheme() {
         // Check for saved theme preference
