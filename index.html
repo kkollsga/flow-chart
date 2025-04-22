@@ -19,6 +19,7 @@
             --shadow-color: rgba(0, 0, 0, 0.1);
             --box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
             --box-shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.12);
+            --font-scale: 1; /* Default font scale */
         }
 
         .dark-mode {
@@ -175,16 +176,72 @@
             transform: translateY(-2px);
         }
 
-        /* --- Markdown styling (single line) --- */
-        .markdown-content { font-size: 14px; line-height: 1.5; word-wrap: break-word; color: var(--text-primary); }
-        .markdown-content h1 { font-size: 1.5em; font-weight: bold; margin-top: 0.5em; margin-bottom: 0.3em; }
-        .markdown-content h2 { font-size: 1.3em; font-weight: bold; margin-top: 0.4em; margin-bottom: 0.2em; }
-        .markdown-content h3 { font-size: 1.1em; font-weight: bold; margin-top: 0.3em; margin-bottom: 0.1em; }
+        /* --- Markdown styling (enhanced) --- */
+        .markdown-content { 
+            font-size: calc(14px * var(--font-scale)); 
+            line-height: 1.5; 
+            word-wrap: break-word; 
+            color: var(--text-primary); 
+        }
+        .markdown-content h1 { 
+            font-size: calc(1.5em * var(--font-scale)); 
+            font-weight: bold; 
+            margin-top: 0.5em; 
+            margin-bottom: 0.3em; 
+        }
+        .markdown-content h2 { 
+            font-size: calc(1.3em * var(--font-scale)); 
+            font-weight: bold; 
+            margin-top: 0.4em; 
+            margin-bottom: 0.2em; 
+        }
+        .markdown-content h3 { 
+            font-size: calc(1.1em * var(--font-scale)); 
+            font-weight: bold; 
+            margin-top: 0.3em; 
+            margin-bottom: 0.1em; 
+        }
         .markdown-content p { margin-bottom: 0.5em; }
-        .markdown-content ul, .markdown-content ol { padding-left: 1.5em; margin-bottom: 0.5em; }
-        .markdown-content code { background-color: rgba(0, 0, 0, 0.05); padding: 0.1em 0.2em; border-radius: 0.2em; font-family: monospace; }
+        .markdown-content ul, .markdown-content ol { 
+            padding-left: 1.5em; 
+            margin-bottom: 0.5em; 
+            list-style-position: outside; 
+        }
+        .markdown-content ul { list-style-type: disc; }
+        .markdown-content ol { list-style-type: decimal; }
+        .markdown-content li { margin-bottom: 0.2em; }
+        .markdown-content li > ul, .markdown-content li > ol { margin-top: 0.2em; }
+        .markdown-content code { 
+            background-color: rgba(0, 0, 0, 0.05); 
+            padding: 0.1em 0.2em; 
+            border-radius: 0.2em; 
+            font-family: monospace; 
+            font-size: calc(0.9em * var(--font-scale));
+        }
         .markdown-content hr { margin: 0.5em 0; border: none; border-top: 1px solid var(--border-color); }
         .markdown-content a { color: #8b5cf6; text-decoration: underline; }
+        
+        /* Table styles */
+        .markdown-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 0.8em;
+            font-size: calc(0.9em * var(--font-scale));
+        }
+        .markdown-content table th {
+            background-color: rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+            padding: 0.3em 0.5em;
+            text-align: left;
+            font-weight: bold;
+        }
+        .markdown-content table td {
+            border: 1px solid var(--border-color);
+            padding: 0.3em 0.5em;
+        }
+        .markdown-content table tr:nth-child(even) {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
 
         /* --- Textarea styling --- */
         .edit-textarea { 
@@ -194,7 +251,7 @@
             padding: 0.5rem; 
             border: none; 
             font-family: inherit; 
-            font-size: 14px; 
+            font-size: calc(14px * var(--font-scale)); 
             line-height: 1.5; 
             resize: none; 
             overflow: auto; 
@@ -302,6 +359,32 @@
             line-height: 1;
         }
 
+        .modal-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 16px;
+        }
+
+        .modal-tab {
+            padding: 8px 16px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        .modal-tab.active {
+            border-bottom-color: #8b5cf6;
+            font-weight: 500;
+        }
+
+        .modal-tab-content {
+            display: none;
+        }
+
+        .modal-tab-content.active {
+            display: block;
+        }
+
         .project-list {
             margin-bottom: 16px;
         }
@@ -353,6 +436,17 @@
         .form-input:focus {
             outline: none;
             border-color: #8b5cf6;
+        }
+        
+        .form-slider {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .form-slider-value {
+            display: inline-block;
+            margin-left: 10px;
+            font-weight: 500;
         }
 
         .btn {
@@ -482,7 +576,7 @@
         <div id="box-container" class="absolute top-0 left-0 w-full z-20 pointer-events-none"></div>
         <div id="helper-text" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-500 text-lg text-center pointer-events-none select-none z-0">
              Double click anywhere to add a box<br>
-             <span class="text-sm">Use Markdown in boxes for rich formatting</span>
+             <span class="text-sm">Use Markdown in boxes for formatting</span>
          </div>
     </div>
     
@@ -531,17 +625,42 @@
                 <span class="modal-close" id="close-modal">&times;</span>
             </div>
             
-            <div class="project-list" id="project-list">
-                <!-- Projects will be loaded here -->
-                <div class="text-center text-gray-500 py-3" id="no-projects-message">No projects yet</div>
+            <!-- Tabs navigation -->
+            <div class="modal-tabs">
+                <div class="modal-tab active" data-tab="projects">Projects</div>
+                <div class="modal-tab" data-tab="settings">Settings</div>
             </div>
             
-            <div class="project-form">
-                <div class="form-group">
-                    <label class="form-label" for="project-name">New Project</label>
-                    <input type="text" id="project-name" class="form-input" placeholder="Enter project name">
+            <!-- Projects tab content -->
+            <div class="modal-tab-content active" id="projects-tab">
+                <div class="project-list" id="project-list">
+                    <!-- Projects will be loaded here -->
+                    <div class="text-center text-gray-500 py-3" id="no-projects-message">No projects yet</div>
                 </div>
-                <button id="create-project" class="btn btn-primary">Create New Project</button>
+                
+                <div class="project-form">
+                    <div class="form-group">
+                        <label class="form-label" for="project-name">New Project</label>
+                        <input type="text" id="project-name" class="form-input" placeholder="Enter project name">
+                    </div>
+                    <button id="create-project" class="btn btn-primary">Create New Project</button>
+                </div>
+            </div>
+            
+            <!-- Settings tab content -->
+            <div class="modal-tab-content" id="settings-tab">
+                <div class="form-group">
+                    <label class="form-label" for="text-scale">Text Size Scale</label>
+                    <div class="flex items-center">
+                        <input type="range" id="text-scale" class="form-slider" min="0.8" max="1.5" step="0.1" value="1">
+                        <span class="form-slider-value" id="text-scale-value">1.0x</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">Adjust the size of text in all boxes</p>
+                </div>
+                
+                <div class="form-group mt-4">
+                    <button id="save-settings" class="btn btn-primary">Save Settings</button>
+                </div>
             </div>
         </div>
     </div>
@@ -685,13 +804,182 @@ const THEME_KEYS = Object.keys(COLOR_THEMES);
 // Define base classes for reuse in JS - using Tailwind utility classes
 const BASE_BOX_CLASSES = 'absolute rounded-lg box-default cursor-move no-select py-2 px-3 pointer-events-auto overflow-hidden box-transition';
 
-// Simple fallback markdown renderer
-function simpleMarkdownParser(text) { if (!text) return ''; return text.replace(/\n/g, '<br>').replace(/### (.*?)(<br>|$)/g, '<h3>$1</h3>').replace(/## (.*?)(<br>|$)/g, '<h2>$1</h2>').replace(/# (.*?)(<br>|$)/g, '<h1>$1</h1>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/`(.*?)`/g, '<code>$1</code>').replace(/(<br>|^)- (.*?)(?=<br>|$)/g, '$1<ul><li>$2</li></ul>'); }
+// Enhanced markdown parser with better support for lists and tables
+function simpleMarkdownParser(text) {
+    if (!text) return '';
+    
+    // Store code blocks so they don't get processed
+    const codeBlocks = [];
+    text = text.replace(/```([\s\S]*?)```/g, function(match) {
+        codeBlocks.push(match);
+        return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+    });
+    
+    // Process text
+    text = text
+        // Headers
+        .replace(/### (.*?)(\n|$)/g, '<h3>$1</h3>\n')
+        .replace(/## (.*?)(\n|$)/g, '<h2>$1</h2>\n')
+        .replace(/# (.*?)(\n|$)/g, '<h1>$1</h1>\n')
+        
+        // Bold and italic
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        
+        // Inline code
+        .replace(/`([^`]*)`/g, '<code>$1</code>')
+        
+        // Horizontal rule
+        .replace(/^---+$/gm, '<hr>')
+        
+        // Tables - this is a simplified implementation
+        .replace(/^\|(.+)\|$/gm, function(match, content) {
+            // Split the table row into cells
+            const cells = content.split('|').map(cell => cell.trim());
+            
+            // Check if this is a header separator row (contains only dashes and colons)
+            if (cells.every(cell => /^:?-+:?$/.test(cell))) {
+                return match; // Return unchanged, we'll remove these later
+            }
+            
+            // Create table cells
+            const cellsHtml = cells.map(cell => `<td>${cell}</td>`).join('');
+            return `<tr>${cellsHtml}</tr>`;
+        })
+        // Process tables by finding consecutive table rows
+        .replace(/(<tr>.*?<\/tr>)\n\|([-:\s|]+)\|\n(<tr>.*?<\/tr>(\n<tr>.*?<\/tr>)*)/g, function(match, headerRow, separatorRow, bodyRows) {
+            // Convert the header row's cells to <th> instead of <td>
+            const tableHeader = headerRow.replace(/<td>(.*?)<\/td>/g, '<th>$1</th>');
+            return `<table><thead>${tableHeader}</thead><tbody>${bodyRows}</tbody></table>`;
+        })
+        // Handle tables without headers
+        .replace(/(<tr>.*?<\/tr>(\n<tr>.*?<\/tr>)*)/g, function(match, rows) {
+            // Only convert to a table if it's not already in a table
+            if (!match.includes('<table>')) {
+                return `<table><tbody>${rows}</tbody></table>`;
+            }
+            return match;
+        })
+        
+        // Ordered lists - look for consecutive lines starting with numbers
+        .replace(/^(\d+\. .+\n)+/gm, function(match) {
+            // Split the list items
+            const items = match.trim().split('\n');
+            const listItems = items.map(item => {
+                // Remove the number and period, then trim
+                const content = item.replace(/^\d+\.\s*/, '');
+                return `<li>${content}</li>`;
+            }).join('');
+            return `<ol>${listItems}</ol>\n`;
+        })
+        
+        // Unordered lists - handle multiple list markers
+        .replace(/^([\*\-\+] .+\n)+/gm, function(match) {
+            // Split the list items
+            const items = match.trim().split('\n');
+            const listItems = items.map(item => {
+                // Remove the list marker, then trim
+                const content = item.replace(/^[\*\-\+]\s*/, '');
+                return `<li>${content}</li>`;
+            }).join('');
+            return `<ul>${listItems}</ul>\n`;
+        })
+        
+        // Paragraphs (lines not already processed)
+        .replace(/^([^\n<][^\n]*?)(?:\n|$)/gm, function(match, content) {
+            // Don't wrap empty lines in <p> tags
+            if (content.trim() === '') return '\n';
+            // Don't wrap lines that are likely part of lists or other block elements
+            if (/^<\/(ol|ul|table|h[1-6])>/.test(content)) return content + '\n';
+            return `<p>${content}</p>\n`;
+        })
+        
+        // Clean up extra newlines
+        .replace(/\n+/g, '\n');
+    
+    // Restore code blocks
+    text = text.replace(/__CODE_BLOCK_(\d+)__/g, function(match, index) {
+        const code = codeBlocks[parseInt(index)]
+            .replace(/```(?:\w+)?\n([\s\S]*?)```/g, '$1')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+        return `<pre><code>${code}</code></pre>`;
+    });
+    
+    return text;
+}
 
 // Helper to safely remove CSS classes
 function safeRemoveClass(element, className) {
     if (element && className && className.trim() !== '') {
         element.classList.remove(className);
+    }
+}
+
+// --- Settings Manager ---
+class SettingsManager {
+    constructor() {
+        this.settings = {
+            textScale: 1.0
+        };
+        this.loadSettings();
+        this.setupEventListeners();
+    }
+    
+    loadSettings() {
+        try {
+            const storedSettings = localStorage.getItem('markdownDiagramSettings');
+            if (storedSettings) {
+                this.settings = { ...this.settings, ...JSON.parse(storedSettings) };
+            }
+            this.applySettings();
+        } catch (error) {
+            console.error('Error loading settings:', error);
+        }
+    }
+    
+    saveSettings() {
+        try {
+            localStorage.setItem('markdownDiagramSettings', JSON.stringify(this.settings));
+        } catch (error) {
+            console.error('Error saving settings:', error);
+        }
+    }
+    
+    applySettings() {
+        // Apply text scale
+        document.documentElement.style.setProperty('--font-scale', this.settings.textScale);
+        
+        // Update UI
+        const textScaleSlider = document.getElementById('text-scale');
+        const textScaleValue = document.getElementById('text-scale-value');
+        
+        if (textScaleSlider) textScaleSlider.value = this.settings.textScale;
+        if (textScaleValue) textScaleValue.textContent = `${this.settings.textScale.toFixed(1)}x`;
+    }
+    
+    setupEventListeners() {
+        // Text scale slider
+        const textScaleSlider = document.getElementById('text-scale');
+        const textScaleValue = document.getElementById('text-scale-value');
+        
+        if (textScaleSlider) {
+            textScaleSlider.addEventListener('input', (e) => {
+                const value = parseFloat(e.target.value);
+                textScaleValue.textContent = `${value.toFixed(1)}x`;
+                this.settings.textScale = value;
+                document.documentElement.style.setProperty('--font-scale', value);
+            });
+        }
+        
+        // Save settings button
+        const saveSettingsBtn = document.getElementById('save-settings');
+        if (saveSettingsBtn) {
+            saveSettingsBtn.addEventListener('click', () => {
+                this.saveSettings();
+                alert('Settings saved successfully!');
+            });
+        }
     }
 }
 
@@ -721,6 +1009,24 @@ class ProjectManager {
             if (e.key === 'Enter') {
                 this.createNewProject();
             }
+        });
+        
+        // Tab navigation in modal
+        const tabs = document.querySelectorAll('.modal-tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.dataset.tab;
+                
+                // Update active tab
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Show active content
+                document.querySelectorAll('.modal-tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
         });
     }
     
@@ -1608,6 +1914,9 @@ class DiagramManager {
         // Initialize theme
         this.initTheme();
         
+        // Initialize settings manager
+        this.settingsManager = new SettingsManager();
+        
         // Initialize UI
         this.setupEventListeners();
         this.updateHelperText();
@@ -1890,7 +2199,7 @@ class DiagramManager {
         return b; 
     }
     
-    // Create a new connection or update existing one to be bidirectional
+    //// Create a new connection or update existing one to be bidirectional
     createOrUpdateConnection(startBox, endBox) { 
         if (!startBox || !endBox || startBox === endBox) return null; 
         
@@ -2085,7 +2394,45 @@ class DiagramManager {
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
+    // Configure marked.js for better rendering
+    if (window.marked) {
+        marked.setOptions({
+            gfm: true,       // GitHub flavored markdown
+            breaks: true,    // Add <br> on single line breaks
+            headerIds: false,
+            mangle: false    // Don't escape HTML
+        });
+    }
+    
     window.diagramManager = new DiagramManager();
+    
+    // Add example content to the first box if needed
+    setTimeout(() => {
+        if (window.diagramManager.boxes.size === 0) {
+            const exampleBox = window.diagramManager.createBox(window.innerWidth / 2, window.innerHeight * 0.3);
+            exampleBox.data.markdown = `# Welcome to FlowChart
+
+This is an enhanced diagram tool with **improved markdown** support.
+
+## Features:
+* Ordered and unordered lists
+* Tables support
+* Adjustable text size
+
+1. Double-click anywhere to add boxes
+2. Right-drag to connect boxes
+3. Press 'c' to change colors
+4. Press 's' to change sizes
+
+### Example Table:
+| Feature | Description |
+|---------|-------------|
+| Lists | Both ordered and unordered |
+| Tables | Markdown table support |
+| Text Size | Adjustable text scaling |`;
+            exampleBox.commitEdit();
+        }
+    }, 100);
 });
 </script>
 
