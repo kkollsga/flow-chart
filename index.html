@@ -461,14 +461,14 @@
         .dark-grey-border { border-color: #9ca3af; }
     </style>
 </head>
-<body class="h-screen w-screen m-0 p-0 overflow-hidden">
+<body class="h-screen m-0 p-0">
     <!-- Project title header -->
-    <div id="project-title-container" class="absolute top-5 left-0 w-full text-center pointer-events-none z-0">
+    <div id="project-title-container" class="fixed top-5 left-0 w-full text-center pointer-events-none z-0">
         <h1 id="project-title" class="text-3xl tracking-wide"></h1>
     </div>
 
-    <div id="canvas" class="relative w-full h-full cursor-default overflow-hidden">
-        <svg id="connections" class="absolute top-0 left-0 w-full h-full pointer-events-none z-10">
+    <div id="canvas" class="relative w-full cursor-default">
+        <svg id="connections" class="absolute top-0 left-0 w-full pointer-events-none z-10">
              <defs>
                  <marker id="arrowhead-end" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
                      <polygon points="0 0, 10 3.5, 0 7" fill="currentColor"/>
@@ -479,7 +479,7 @@
              </defs>
             <path id="preview-connection" stroke="currentColor" stroke-width="2" fill="none" marker-end="url(#arrowhead-end)" opacity="0.5" display="none" stroke-dasharray="5, 5"/>
         </svg>
-        <div id="box-container" class="absolute top-0 left-0 w-full h-full z-20 pointer-events-none"></div>
+        <div id="box-container" class="absolute top-0 left-0 w-full z-20 pointer-events-none"></div>
         <div id="helper-text" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-500 text-lg text-center pointer-events-none select-none z-0">
              Double click anywhere to add a box<br>
              <span class="text-sm">Use Markdown in boxes for rich formatting</span>
@@ -768,10 +768,10 @@ class ProjectManager {
             this.projectTitleEl.textContent = currentProject.name;
             
             // Update the page title
-            document.title = `${currentProject.name} - Markdown Diagram Tool`;
+            document.title = `${currentProject.name} - Flow Chart`;
         } else {
             this.projectTitleEl.textContent = 'New Project';
-            document.title = 'Markdown Diagram Tool';
+            document.title = 'Flow Chart';
         }
     }
     
@@ -1221,6 +1221,7 @@ class Box {
         this.renderMarkdown(); 
         this.manager.updateConnectionsForBox(this); 
         this.manager.saveCurrentProject();
+        this.manager.updateCanvasSize(); // Update canvas size after edit
         return true; 
     }
     
@@ -1615,6 +1616,36 @@ class DiagramManager {
         
         // Initialize project manager
         this.projectManager = new ProjectManager(this);
+        
+        // Set initial canvas size
+        this.updateCanvasSize();
+        
+        // Add window resize listener
+        window.addEventListener('resize', () => {
+            this.updateCanvasSize();
+        });
+    }
+    
+    // Update canvas size based on box positions with buffer zone
+    updateCanvasSize() {
+        // Find the lowest box element
+        let maxBottom = 0;
+        this.boxes.forEach(box => {
+            const bounds = box.getBounds();
+            maxBottom = Math.max(maxBottom, bounds.bottom);
+        });
+        
+        // Add buffer (1/2 viewport height)
+        const bufferHeight = window.innerHeight / 2;
+        const minHeight = window.innerHeight; // At least show full viewport
+        
+        // Set canvas height to max(lowest box + buffer, viewport height)
+        const newHeight = Math.max(maxBottom + bufferHeight, minHeight);
+        
+        // Apply the new height to relevant elements
+        this.canvas.style.height = `${newHeight}px`;
+        this.svg.style.height = `${newHeight}px`;
+        this.boxContainer.style.height = `${newHeight}px`;
     }
     
     initTheme() {
@@ -1762,6 +1793,7 @@ class DiagramManager {
         if (this.draggingBox) { 
             this.draggingBox = null; 
             this.saveCurrentProject();
+            this.updateCanvasSize(); // Update canvas size after drag
         } else if (this.connectionStartBox && e.button === 2) { 
             e.preventDefault(); 
             this.previewPath.setAttribute('display', 'none'); 
@@ -1819,6 +1851,7 @@ class DiagramManager {
                 this.deleteConnection(this.hoveredElement);
             }
             this.saveCurrentProject();
+            this.updateCanvasSize(); // Update canvas size after deletion
         }
         
         // Handle 'c' key for changing color of hovered element
@@ -1853,6 +1886,7 @@ class DiagramManager {
         this.boxes.set(id, b); 
         this.updateHelperText(); 
         b.startEditing(); 
+        this.updateCanvasSize(); // Update canvas size after adding a box
         return b; 
     }
     
@@ -1919,6 +1953,9 @@ class DiagramManager {
         if (this.hoveredElement === boxInstance) {
             this.hoveredElement = null;
         }
+        
+        // Update canvas size after deletion
+        this.updateCanvasSize();
     }
     
     deleteConnection(connInstance) { 
@@ -1966,6 +2003,9 @@ class DiagramManager {
         
         // Update helper text
         this.updateHelperText();
+        
+        // Update canvas size
+        this.updateCanvasSize();
     }
     
     // Export the entire diagram data
@@ -2030,6 +2070,9 @@ class DiagramManager {
         
         // Update helper text
         this.updateHelperText();
+        
+        // Update canvas size
+        this.updateCanvasSize();
     }
     
     // Save the current project through the project manager
