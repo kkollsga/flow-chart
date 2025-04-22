@@ -34,10 +34,24 @@
             --box-shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.35);
         }
 
+        #canvas {
+            overflow: visible;
+        }
+        
+        #connections {
+            overflow: visible;
+        }
+        
+        #box-container {
+            overflow: visible;
+        }
+
         body {
             background-color: var(--bg-primary);
             color: var(--text-primary);
             transition: background-color 0.3s ease, color 0.3s ease;
+            overflow-x: auto;
+            overflow-y: auto;
         }
 
         /* --- Theme Toggle Icons --- */
@@ -562,7 +576,7 @@
     </div>
 
     <div id="canvas" class="relative w-full cursor-default">
-        <svg id="connections" class="absolute top-0 left-0 w-full pointer-events-none z-10">
+        <svg id="connections" class="absolute top-0 left-0 w-full h-full pointer-events-none z-10" style="overflow: visible;">
              <defs>
                  <marker id="arrowhead-end" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
                      <polygon points="0 0, 10 3.5, 0 7" fill="currentColor"/>
@@ -1981,11 +1995,77 @@ class DiagramManager {
     setupEventListeners() { 
         this.canvas.addEventListener('dblclick', this.handleCanvasDoubleClick.bind(this)); 
         this.canvas.addEventListener('mousedown', this.handleCanvasMouseDown.bind(this)); 
-        document.addEventListener('mousemove', this.handleMouseMove.bind(this)); 
-        document.addEventListener('mouseup', this.handleMouseUp.bind(this)); 
+        
+        // Use separate event handlers for better scroll position management
+        document.addEventListener('mousemove', (e) => {
+            // Handle box dragging
+            if (this.draggingBox) { 
+                const dx = e.clientX - this.dragStartPos.x; 
+                const dy = e.clientY - this.dragStartPos.y; 
+                const nCx = this.dragBoxStartCenter.cx + dx; 
+                const nCy = this.dragBoxStartCenter.cy + dy; 
+                this.draggingBox.setCenterPosition(nCx, nCy); 
+                this.updateConnectionsForBox(this.draggingBox); 
+            } 
+            // Handle connection preview drawing
+            else if (this.connectionStartBox) { 
+                const sC = { cx: this.connectionStartBox.data.cx, cy: this.connectionStartBox.data.cy }; 
+                
+                // Get scroll position for accurate coordinates
+                const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+                const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+                
+                // Get mouse position relative to canvas with scroll offsets
+                const r = this.svg.getBoundingClientRect(); 
+                const mX = e.clientX - r.left + scrollX; 
+                const mY = e.clientY - r.top + scrollY; 
+                
+                this.previewPath.setAttribute('d', `M ${sC.cx} ${sC.cy} L ${mX} ${mY}`); 
+            }
+        }); 
+        
+        document.addEventListener('mouseup', (e) => {
+            if (this.draggingBox) { 
+                this.draggingBox = null; 
+                this.saveCurrentProject();
+                this.updateCanvasSize(); // Update canvas size after drag
+            } else if (this.connectionStartBox && e.button === 2) { 
+                e.preventDefault(); 
+                this.previewPath.setAttribute('display', 'none'); 
+                
+                // Get correct element at mouse position
+                let eTE = document.elementFromPoint(e.clientX, e.clientY); 
+                let eBE = eTE?.closest('.box-default'); 
+                
+                if (eBE) { 
+                    const eB = this.boxes.get(eBE.dataset.id); 
+                    if (eB && eB !== this.connectionStartBox) { 
+                        // Create or update connection between boxes
+                        const connection = this.createOrUpdateConnection(this.connectionStartBox, eB);
+                        if (connection) {
+                            this.saveCurrentProject();
+                        }
+                    } else if (eB === this.connectionStartBox) {
+                        // Change width if right-click and release on the same box
+                        eB.toggleWidthType();
+                        this.saveCurrentProject();
+                    }
+                } 
+                
+                this.connectionStartBox = null; 
+                this.rightClickBox = null;
+            } 
+            
+            if (e.button === 0) { 
+                this.draggingBox = null; 
+            } 
+        }); 
+        
         document.addEventListener('keydown', this.handleKeyDown.bind(this)); 
         document.addEventListener('click', this.handleGlobalClick.bind(this), true); 
         document.addEventListener('contextmenu', e => e.preventDefault()); 
+        
+        // Handle mouse leaving the window
         document.addEventListener('mouseleave', () => { 
             if (this.connectionStartBox) { 
                 this.previewPath.setAttribute('display', 'none'); 
@@ -2007,6 +2087,14 @@ class DiagramManager {
             if (e.target === document.getElementById('projects-modal')) {
                 document.getElementById('projects-modal').style.display = 'none';
             }
+        });
+        
+        // Add scroll event handling to ensure connections update during scrolling
+        window.addEventListener('scroll', () => {
+            // Update all connections when scrolling to ensure they remain accurate
+            this.connections.forEach(connection => {
+                connection.update();
+            });
         });
     }
     
@@ -2104,9 +2192,15 @@ class DiagramManager {
             this.updateConnectionsForBox(this.draggingBox); 
         } else if (this.connectionStartBox) { 
             const sC = { cx: this.connectionStartBox.data.cx, cy: this.connectionStartBox.data.cy }; 
+            
+            // Calculate the correct mouse position with scroll offsets
+            const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+            const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+            
             const r = this.svg.getBoundingClientRect(); 
-            const mX = e.clientX - r.left; 
-            const mY = e.clientY - r.top; 
+            const mX = e.clientX - r.left + scrollX; 
+            const mY = e.clientY - r.top + scrollY; 
+            
             this.previewPath.setAttribute('d', `M ${sC.cx} ${sC.cy} L ${mX} ${mY}`); 
         } 
     }
