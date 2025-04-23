@@ -10,63 +10,295 @@
     <!-- Add Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
-        /* --- Dark Mode Variables --- */
+        /* --- Color Palette Variables --- */
         :root {
-            --bg-primary: #f3f4f6;
-            --bg-secondary: #fff;
-            --text-primary: #111827;
-            --text-secondary: #4b5563;
+            /* --- Base Colors --- */
+            /* Gray/Default Scale */
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            
+            /* Red Scale */
+            --red-50: #fef2f2;
+            --red-100: #fee2e2;
+            --red-200: #fecaca;
+            --red-300: #fca5a5;
+            --red-400: #f87171;
+            --red-500: #ef4444;
+            --red-600: #dc2626;
+            --red-700: #b91c1c;
+            --red-800: #991b1b;
+            --red-900: #7f1d1d;
+            
+            /* Green Scale */
+            --green-50: #f0fdf4;
+            --green-100: #dcfce7;
+            --green-200: #bbf7d0;
+            --green-300: #86efac;
+            --green-400: #34d399;
+            --green-500: #10b981;
+            --green-600: #059669;
+            --green-700: #047857;
+            --green-800: #065f46;
+            --green-900: #14532d;
+            --green-950: #064e3b;
+            
+            /* Blue Scale */
+            --blue-50: #eff6ff;
+            --blue-100: #dbeafe;
+            --blue-200: #bfdbfe;
+            --blue-300: #93c5fd;
+            --blue-400: #60a5fa;
+            --blue-500: #3b82f6;
+            --blue-600: #2563eb;
+            --blue-700: #1d4ed8;
+            --blue-800: #1e40af;
+            --blue-900: #1e3a8a;
+            
+            /* Purple Scale */
+            --purple-50: #faf5ff;
+            --purple-100: #f3e8ff;
+            --purple-200: #e9d5ff;
+            --purple-300: #d8b4fe;
+            --purple-400: #c084fc;
+            --purple-500: #a855f7;
+            --purple-600: #9333ea;
+            --purple-700: #7e22ce;
+            --purple-800: #6b21a8;
+            --purple-900: #581c87;
+            --purple-950: #4c1d95;
+            
+            /* Yellow Scale */
+            --yellow-50: #fefce8;
+            --yellow-100: #fef9c3;
+            --yellow-200: #fef08a;
+            --yellow-300: #fde047;
+            --yellow-400: #facc15;
+            --yellow-500: #eab308;
+            --yellow-600: #ca8a04;
+            --yellow-700: #a16207;
+            --yellow-800: #854d0e;
+            --yellow-900: #713f12;
+            --yellow-950: #78350f;
+            
+            /* Amber/Orange Scale */
+            --amber-400: #fbbf24;
+            --amber-500: #f59e0b;
+            --amber-600: #d97706;
+            --amber-700: #b45309;
+            
+            /* Black, White, and Transparent */
+            --black: #000000;
+            --white: #ffffff;
+            --transparent-black-5: rgba(0, 0, 0, 0.05);
+            --transparent-black-8: rgba(0, 0, 0, 0.08);
+            --transparent-black-10: rgba(0, 0, 0, 0.1);
+            --transparent-black-12: rgba(0, 0, 0, 0.12);
+            --transparent-black-15: rgba(0, 0, 0, 0.15);
+            --transparent-black-20: rgba(0, 0, 0, 0.2);
+            --transparent-black-30: rgba(0, 0, 0, 0.3);
+            --transparent-black-35: rgba(0, 0, 0, 0.35);
+            --transparent-white-5: rgba(255, 255, 255, 0.05);
+            --transparent-white-7: rgba(255, 255, 255, 0.07);
+            --transparent-white-10: rgba(255, 255, 255, 0.1);
+            
+            /* --- Theme Variables (Light Mode) --- */
+            --bg-primary: var(--gray-100);
+            --bg-secondary: var(--white);
+            --text-primary: var(--gray-900);
+            --text-secondary: var(--gray-600);
             --text-muted: rgba(75, 85, 99, 0.4);
-            --border-color: #d1d5db;
-            --shadow-color: rgba(0, 0, 0, 0.1);
-            --box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
-            --box-shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.12);
-            --font-scale: 1; /* Default font scale */
-            /* Light mode scrollbar colors */
+            --border-color: var(--gray-300);
+            --shadow-color: var(--transparent-black-10);
+            --box-shadow: 0 2px 5px var(--transparent-black-8);
+            --box-shadow-hover: 0 8px 15px var(--transparent-black-12);
+            --font-scale: 1;
+            
+            /* Scrollbar Colors - Light Mode */
             --scrollbar-track: #f1f1f1;
             --scrollbar-thumb: #c1c1c1;
             --scrollbar-thumb-hover: #a1a1a1;
-            /* Table specific variables */
-            --table-header-bg: #4b5563;
-            --table-header-text: #ffffff;
+            
+            /* Table Variables - Light Mode */
+            --table-header-bg: var(--gray-600);
+            --table-header-text: var(--white);
             --table-row-odd: transparent;
-            --table-row-even: rgba(0, 0, 0, 0.04);
+            --table-row-even: var(--transparent-black-5);
             --table-border: var(--border-color);
+            
+            /* Theme Colors - Light Mode */
+            --theme-default-bg: var(--white);
+            --theme-default-text: var(--gray-800);
+            --theme-default-border: var(--gray-500);
+            --theme-default-stroke: var(--gray-600);
+            
+            --theme-red-bg: var(--red-100);
+            --theme-red-text: var(--red-900);
+            --theme-red-border: var(--red-500);
+            --theme-red-stroke: var(--red-500);
+            
+            --theme-green-bg: var(--green-100);
+            --theme-green-text: var(--green-900);
+            --theme-green-border: var(--green-500);
+            --theme-green-stroke: var(--green-500);
+            
+            --theme-blue-bg: var(--blue-100);
+            --theme-blue-text: var(--blue-900);
+            --theme-blue-border: var(--blue-500);
+            --theme-blue-stroke: var(--blue-500);
+            
+            --theme-purple-bg: var(--purple-100);
+            --theme-purple-text: var(--purple-800);
+            --theme-purple-border: var(--purple-500);
+            --theme-purple-stroke: var(--purple-500);
+            
+            --theme-yellow-bg: var(--yellow-100);
+            --theme-yellow-text: var(--yellow-900);
+            --theme-yellow-border: var(--amber-500);
+            --theme-yellow-stroke: var(--amber-500);
+            
+            --theme-grey-bg: var(--gray-200);
+            --theme-grey-text: var(--gray-900);
+            --theme-grey-border: var(--gray-900);
+            --theme-grey-stroke: var(--gray-900);
+            
+            /* Table Header Theming - Light Mode */
+            --table-header-default-bg: var(--gray-500);
+            --table-header-default-text: var(--white);
+            --table-header-default-border: var(--gray-500);
+            
+            --table-header-red-bg: var(--red-400);
+            --table-header-red-text: var(--red-900);
+            --table-header-red-border: var(--red-500);
+            
+            --table-header-green-bg: var(--green-400);
+            --table-header-green-text: var(--green-950);
+            --table-header-green-border: var(--green-500);
+            
+            --table-header-blue-bg: var(--blue-400);
+            --table-header-blue-text: var(--blue-900);
+            --table-header-blue-border: var(--blue-500);
+            
+            --table-header-purple-bg: var(--purple-400);
+            --table-header-purple-text: var(--purple-950);
+            --table-header-purple-border: var(--purple-500);
+            
+            --table-header-yellow-bg: var(--amber-400);
+            --table-header-yellow-text: var(--yellow-950);
+            --table-header-yellow-border: var(--amber-500);
+            
+            --table-header-grey-bg: var(--gray-600);
+            --table-header-grey-text: var(--gray-50);
+            --table-header-grey-border: var(--gray-500);
+            
+            /* Icon Colors */
+            --sun-icon-color: var(--amber-500);
+            --moon-icon-color: var(--blue-600);
+            
+            /* Link Colors */
+            --link-color: var(--purple-500);
         }
 
         .dark-mode {
-            --bg-primary: #1f2937;
-            --bg-secondary: #374151;
-            --text-primary: #f9fafb;
-            --text-secondary: #d1d5db;
+            /* --- Theme Variables (Dark Mode) --- */
+            --bg-primary: var(--gray-800);
+            --bg-secondary: var(--gray-700);
+            --text-primary: var(--gray-50);
+            --text-secondary: var(--gray-300);
             --text-muted: rgba(209, 213, 219, 0.4);
-            --border-color: #4b5563;
-            --shadow-color: rgba(0, 0, 0, 0.3);
-            --box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            --box-shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.35);
-            /* Dark mode scrollbar colors */
-            --scrollbar-track: #2d3748;
-            --scrollbar-thumb: #4a5568;
-            --scrollbar-thumb-hover: #718096;
-            /* Table specific variables */
-            --table-header-bg: #6366f1;
-            --table-header-text: #ffffff;
+            --border-color: var(--gray-600);
+            --shadow-color: var(--transparent-black-30);
+            --box-shadow: 0 2px 5px var(--transparent-black-20);
+            --box-shadow-hover: 0 8px 15px var(--transparent-black-35);
+            
+            /* Scrollbar Colors - Dark Mode */
+            --scrollbar-track: var(--gray-700);
+            --scrollbar-thumb: var(--gray-600);
+            --scrollbar-thumb-hover: var(--gray-500);
+            
+            /* Table Variables - Dark Mode */
+            --table-header-bg: var(--purple-600);
+            --table-header-text: var(--white);
             --table-row-odd: transparent;
-            --table-row-even: rgba(255, 255, 255, 0.05);
+            --table-row-even: var(--transparent-white-5);
             --table-border: var(--border-color);
+            
+            /* Theme Colors - Dark Mode */
+            --theme-default-bg: var(--gray-700);
+            --theme-default-text: var(--gray-50);
+            --theme-default-border: var(--gray-400);
+            --theme-default-stroke: var(--gray-400);
+            
+            --theme-red-bg: var(--red-900);
+            --theme-red-text: var(--red-200);
+            --theme-red-border: var(--red-500);
+            --theme-red-stroke: var(--red-300);
+            
+            --theme-green-bg: var(--green-900);
+            --theme-green-text: var(--green-200);
+            --theme-green-border: var(--green-500);
+            --theme-green-stroke: var(--green-400);
+            
+            --theme-blue-bg: var(--blue-900);
+            --theme-blue-text: var(--blue-200);
+            --theme-blue-border: var(--blue-500);
+            --theme-blue-stroke: var(--blue-400);
+            
+            --theme-purple-bg: var(--purple-800);
+            --theme-purple-text: var(--purple-200);
+            --theme-purple-border: var(--purple-500);
+            --theme-purple-stroke: var(--purple-400);
+            
+            --theme-yellow-bg: var(--yellow-900);
+            --theme-yellow-text: var(--yellow-200);
+            --theme-yellow-border: var(--amber-500);
+            --theme-yellow-stroke: var(--amber-400);
+            
+            --theme-grey-bg: var(--gray-800);
+            --theme-grey-text: var(--gray-200);
+            --theme-grey-border: var(--gray-400);
+            --theme-grey-stroke: var(--gray-400);
+            
+            /* Table Header Theming - Dark Mode */
+            --table-header-default-bg: var(--gray-600);
+            --table-header-default-text: var(--gray-100);
+            --table-header-default-border: var(--gray-500);
+            
+            --table-header-red-bg: var(--red-700);
+            --table-header-red-text: var(--red-100);
+            --table-header-red-border: var(--red-500);
+            
+            --table-header-green-bg: var(--green-700);
+            --table-header-green-text: var(--green-100);
+            --table-header-green-border: var(--green-500);
+            
+            --table-header-blue-bg: var(--blue-700);
+            --table-header-blue-text: var(--blue-100);
+            --table-header-blue-border: var(--blue-500);
+            
+            --table-header-purple-bg: var(--purple-700);
+            --table-header-purple-text: var(--purple-100);
+            --table-header-purple-border: var(--purple-500);
+            
+            --table-header-yellow-bg: var(--amber-700);
+            --table-header-yellow-text: var(--yellow-100);
+            --table-header-yellow-border: var(--amber-500);
+            
+            --table-header-grey-bg: var(--gray-800);
+            --table-header-grey-text: var(--gray-50);
+            --table-header-grey-border: var(--gray-600);
         }
 
-        #canvas {
-            overflow: visible;
-        }
-        
-        #connections {
-            overflow: visible;
-        }
-        
-        #box-container {
-            overflow: visible;
-        }
+        #canvas { overflow: visible; }
+        #connections { overflow: visible; }
+        #box-container { overflow: visible; }
 
         body {
             background-color: var(--bg-primary);
@@ -79,45 +311,15 @@
         }
 
         /* Scrollbar width */
-        ::-webkit-scrollbar {
-            width: 10px;
-            height: 10px;
-        }
-        
-        /* Scrollbar track */
-        ::-webkit-scrollbar-track {
-            background-color: var(--scrollbar-track);
-            border-radius: 6px;
-        }
-        
-        /* Scrollbar thumb */
-        ::-webkit-scrollbar-thumb {
-            background-color: var(--scrollbar-thumb);
-            border-radius: 6px;
-            transition: background-color 0.3s ease;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background-color: var(--scrollbar-thumb-hover);
-        }
-        
-        /* Scrollbar corner */
-        ::-webkit-scrollbar-corner {
-            background-color: var(--scrollbar-track);
-        }
-        
-        /* Firefox scrollbar styling */
-        * {
-            scrollbar-width: thin;
-            scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
-        }
-
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background-color: var(--scrollbar-track); border-radius: 6px; }
+        ::-webkit-scrollbar-thumb { background-color: var(--scrollbar-thumb); border-radius: 6px; transition: background-color 0.3s ease; }
+        ::-webkit-scrollbar-thumb:hover { background-color: var(--scrollbar-thumb-hover); }
+        ::-webkit-scrollbar-corner { background-color: var(--scrollbar-track); }
+        * { scrollbar-width: thin; scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track); }
 
         /* --- Theme Toggle Icons --- */
-        .theme-toggle {
-            position: relative;
-        }
-
+        .theme-toggle { position: relative; }
         .theme-toggle svg {
             position: absolute;
             top: 50%;
@@ -134,48 +336,20 @@
         }
 
         /* Show active icon based on theme */
-        body:not(.dark-mode) #sun-icon {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-        }
-
-        body.dark-mode #moon-icon {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-        }
+        body:not(.dark-mode) #sun-icon { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        body.dark-mode #moon-icon { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 
         /* Hover animations */
-        body:not(.dark-mode) .theme-toggle:hover #sun-icon {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.6) rotate(45deg);
-        }
-
-        body:not(.dark-mode) .theme-toggle:hover #moon-icon {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-        }
-
-        body.dark-mode .theme-toggle:hover #moon-icon {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.6) rotate(-45deg);
-        }
-
-        body.dark-mode .theme-toggle:hover #sun-icon {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-        }
+        body:not(.dark-mode) .theme-toggle:hover #sun-icon { opacity: 0; transform: translate(-50%, -50%) scale(0.6) rotate(45deg); }
+        body:not(.dark-mode) .theme-toggle:hover #moon-icon { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        body.dark-mode .theme-toggle:hover #moon-icon { opacity: 0; transform: translate(-50%, -50%) scale(0.6) rotate(-45deg); }
+        body.dark-mode .theme-toggle:hover #sun-icon { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 
         /* Sun icon styles */
-        #sun-icon {
-            fill: #f59e0b; /* Yellow fill */
-            color: #f59e0b;
-        }
+        #sun-icon { fill: var(--sun-icon-color); color: var(--sun-icon-color); }
 
         /* Moon icon styles */
-        #moon-icon {
-            fill: #2563eb; /* Dark blue fill */
-            color: #2563eb;
-        }
+        #moon-icon { fill: var(--moon-icon-color); color: var(--moon-icon-color); }
 
         /* --- Project Title --- */
         #project-title {
@@ -193,27 +367,9 @@
         .no-select { user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; }
 
         /* --- SVG Connection Styles --- */
-        .connection-path { 
-            stroke-width: 2; 
-            fill: none; 
-            cursor: pointer; 
-            transition: stroke 0.2s ease, stroke-width 0.2s ease, opacity 0.2s ease;
-            pointer-events: none;
-        }
-
-        /* Improved hitbox for all connections */
-        .connection-hitbox {
-            stroke-width: 12; /* Wide hit area for easier interaction */
-            stroke: transparent;
-            fill: none;
-            cursor: pointer;
-            pointer-events: stroke;
-        }
-
-        .connection-path:hover { 
-            opacity: 0.85; 
-            filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.15));
-        }
+        .connection-path { stroke-width: 2; fill: none; cursor: pointer; transition: stroke 0.2s ease, stroke-width 0.2s ease, opacity 0.2s ease; pointer-events: none; }
+        .connection-hitbox { stroke-width: 12; stroke: transparent; fill: none; cursor: pointer; pointer-events: stroke; }
+        .connection-path:hover { opacity: 0.85; filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.15)); }
 
         /* Pattern styles */
         .connection-pattern-normal { stroke-dasharray: none; }
@@ -226,15 +382,8 @@
         .connection-thickness-bold { stroke-width: 4; }
 
         /* --- Arrow hotspot styles --- */
-        .arrow-hotspot {
-            fill: transparent;
-            stroke: transparent;
-            cursor: pointer;
-            transition: opacity 0.2s ease;
-        }
-        .arrow-hotspot:hover {
-            fill: rgba(0, 0, 0, 0.05);
-        }
+        .arrow-hotspot { fill: transparent; stroke: transparent; cursor: pointer; transition: opacity 0.2s ease; }
+        .arrow-hotspot:hover { fill: rgba(0, 0, 0, 0.05); }
 
         /* --- Custom box styles --- */
         .box-default {
@@ -250,93 +399,50 @@
         }
 
         /* --- Markdown styling (enhanced) --- */
-        .markdown-content { 
-            font-size: calc(14px * var(--font-scale)); 
-            line-height: 1.5; 
-            word-wrap: break-word; 
-            color: var(--text-primary); 
-        }
-        .markdown-content h1 { 
-            font-size: calc(1.5em * var(--font-scale)); 
-            font-weight: bold; 
-            margin-top: 0.5em; 
-            margin-bottom: 0.3em; 
-        }
-        .markdown-content h2 { 
-            font-size: calc(1.3em * var(--font-scale)); 
-            font-weight: bold; 
-            margin-top: 0.4em; 
-            margin-bottom: 0.2em; 
-        }
-        .markdown-content h3 { 
-            font-size: calc(1.1em * var(--font-scale)); 
-            font-weight: bold; 
-            margin-top: 0.3em; 
-            margin-bottom: 0.1em; 
-        }
+        .markdown-content { font-size: calc(14px * var(--font-scale)); line-height: 1.5; word-wrap: break-word; color: var(--text-primary); }
+        .markdown-content h1 { font-size: calc(1.5em * var(--font-scale)); font-weight: bold; margin-top: 0.5em; margin-bottom: 0.3em; }
+        .markdown-content h2 { font-size: calc(1.3em * var(--font-scale)); font-weight: bold; margin-top: 0.4em; margin-bottom: 0.2em; }
+        .markdown-content h3 { font-size: calc(1.1em * var(--font-scale)); font-weight: bold; margin-top: 0.3em; margin-bottom: 0.1em; }
         .markdown-content p { margin-bottom: 0.5em; }
-        .markdown-content ul, .markdown-content ol { 
-            padding-left: 1.5em; 
-            margin-bottom: 0.5em; 
-            list-style-position: outside; 
-        }
+        .markdown-content ul, .markdown-content ol { padding-left: 1.5em; margin-bottom: 0.5em; list-style-position: outside; }
         .markdown-content ul { list-style-type: disc; }
         .markdown-content ol { list-style-type: decimal; }
         .markdown-content li { margin-bottom: 0.2em; }
         .markdown-content li > ul, .markdown-content li > ol { margin-top: 0.2em; }
-        .markdown-content code { 
-            background-color: rgba(0, 0, 0, 0.05); 
-            padding: 0.1em 0.2em; 
-            border-radius: 0.2em; 
-            font-family: monospace; 
-            font-size: calc(0.9em * var(--font-scale));
-        }
+        .markdown-content code { background-color: rgba(0, 0, 0, 0.05); padding: 0.1em 0.2em; border-radius: 0.2em; font-family: monospace; font-size: calc(0.9em * var(--font-scale)); }
         .markdown-content hr { margin: 0.5em 0; border: none; border-top: 1px solid var(--border-color); }
-        .markdown-content a { color: #8b5cf6; text-decoration: underline; }
+        .markdown-content a { color: var(--link-color); text-decoration: underline; }
         
         /* Table base styling */
         .markdown-content table { border-collapse: collapse; width: 100%; margin-bottom: 0.8em; font-size: calc(0.9em * var(--font-scale)); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); border-radius: 4px; overflow: hidden; }
         .markdown-content table td { border: 1px solid var(--border-color); padding: 0.4em 0.7em; }
         .markdown-content table tr:nth-child(odd) { background-color: transparent; }
-        .markdown-content table tr:nth-child(even) { background-color: rgba(0, 0, 0, 0.05); }
-        .dark-mode .markdown-content table tr:nth-child(even) { background-color: rgba(255, 255, 255, 0.07); }
-        .markdown-content table tr:hover { background-color: rgba(0, 0, 0, 0.08); }
-        .dark-mode .markdown-content table tr:hover { background-color: rgba(255, 255, 255, 0.1); }
+        .markdown-content table tr:nth-child(even) { background-color: var(--table-row-even); }
+        .dark-mode .markdown-content table tr:nth-child(even) { background-color: var(--table-row-even); }
+        .markdown-content table tr:hover { background-color: var(--transparent-black-8); }
+        .dark-mode .markdown-content table tr:hover { background-color: var(--transparent-white-10); }
         .markdown-content table th { border: 1px solid var(--border-color); padding: 0.5em 0.7em; text-align: left; font-weight: bold; }
 
         /* Theme-specific table header styling for light mode - with softer colors */
-        div[data-theme="default"] .markdown-content table th { background-color: #6b7280; color: #ffffff; border-color: #9ca3af; }
-        div[data-theme="red"] .markdown-content table th { background-color: #f87171; color: #7f1d1d; border-color: #ef4444; }
-        div[data-theme="green"] .markdown-content table th { background-color: #34d399; color: #064e3b; border-color: #10b981; }
-        div[data-theme="blue"] .markdown-content table th { background-color: #60a5fa; color: #1e3a8a; border-color: #3b82f6; }
-        div[data-theme="purple"] .markdown-content table th { background-color: #a78bfa; color: #4c1d95; border-color: #8b5cf6; }
-        div[data-theme="yellow"] .markdown-content table th { background-color: #fbbf24; color: #78350f; border-color: #f59e0b; }
-        div[data-theme="grey"] .markdown-content table th { background-color: #4b5563; color: #f9fafb; border-color: #6b7280; }
+        div[data-theme="default"] .markdown-content table th { background-color: var(--table-header-default-bg); color: var(--table-header-default-text); border-color: var(--table-header-default-border); }
+        div[data-theme="red"] .markdown-content table th { background-color: var(--table-header-red-bg); color: var(--table-header-red-text); border-color: var(--table-header-red-border); }
+        div[data-theme="green"] .markdown-content table th { background-color: var(--table-header-green-bg); color: var(--table-header-green-text); border-color: var(--table-header-green-border); }
+        div[data-theme="blue"] .markdown-content table th { background-color: var(--table-header-blue-bg); color: var(--table-header-blue-text); border-color: var(--table-header-blue-border); }
+        div[data-theme="purple"] .markdown-content table th { background-color: var(--table-header-purple-bg); color: var(--table-header-purple-text); border-color: var(--table-header-purple-border); }
+        div[data-theme="yellow"] .markdown-content table th { background-color: var(--table-header-yellow-bg); color: var(--table-header-yellow-text); border-color: var(--table-header-yellow-border); }
+        div[data-theme="grey"] .markdown-content table th { background-color: var(--table-header-grey-bg); color: var(--table-header-grey-text); border-color: var(--table-header-grey-border); }
 
         /* Theme-specific table header styling for dark mode - with better contrast */
-        .dark-mode div[data-theme="default"] .markdown-content table th { background-color: #4b5563; color: #f3f4f6; border-color: #6b7280; }
-        .dark-mode div[data-theme="red"] .markdown-content table th { background-color: #b91c1c; color: #fee2e2; border-color: #ef4444; }
-        .dark-mode div[data-theme="green"] .markdown-content table th { background-color: #047857; color: #d1fae5; border-color: #10b981; }
-        .dark-mode div[data-theme="blue"] .markdown-content table th { background-color: #1d4ed8; color: #dbeafe; border-color: #3b82f6; }
-        .dark-mode div[data-theme="purple"] .markdown-content table th { background-color: #6d28d9; color: #ede9fe; border-color: #8b5cf6; }
-        .dark-mode div[data-theme="yellow"] .markdown-content table th { background-color: #b45309; color: #fef3c7; border-color: #f59e0b; }
-        .dark-mode div[data-theme="grey"] .markdown-content table th { background-color: #1f2937; color: #f9fafb; border-color: #4b5563; }
+        .dark-mode div[data-theme="default"] .markdown-content table th { background-color: var(--table-header-default-bg); color: var(--table-header-default-text); border-color: var(--table-header-default-border); }
+        .dark-mode div[data-theme="red"] .markdown-content table th { background-color: var(--table-header-red-bg); color: var(--table-header-red-text); border-color: var(--table-header-red-border); }
+        .dark-mode div[data-theme="green"] .markdown-content table th { background-color: var(--table-header-green-bg); color: var(--table-header-green-text); border-color: var(--table-header-green-border); }
+        .dark-mode div[data-theme="blue"] .markdown-content table th { background-color: var(--table-header-blue-bg); color: var(--table-header-blue-text); border-color: var(--table-header-blue-border); }
+        .dark-mode div[data-theme="purple"] .markdown-content table th { background-color: var(--table-header-purple-bg); color: var(--table-header-purple-text); border-color: var(--table-header-purple-border); }
+        .dark-mode div[data-theme="yellow"] .markdown-content table th { background-color: var(--table-header-yellow-bg); color: var(--table-header-yellow-text); border-color: var(--table-header-yellow-border); }
+        .dark-mode div[data-theme="grey"] .markdown-content table th { background-color: var(--table-header-grey-bg); color: var(--table-header-grey-text); border-color: var(--table-header-grey-border); }
  
         /* --- Textarea styling --- */
-        .edit-textarea { 
-            width: 100%; 
-            height: 100%; 
-            box-sizing: border-box; 
-            padding: 0.5rem; 
-            border: none; 
-            font-family: inherit; 
-            font-size: calc(14px * var(--font-scale)); 
-            line-height: 1.5; 
-            resize: none; 
-            overflow: auto; 
-            background-color: transparent;
-            color: var(--text-primary);
-        }
+        .edit-textarea { width: 100%; height: 100%; box-sizing: border-box; padding: 0.5rem; border: none; font-family: inherit; font-size: calc(14px * var(--font-scale)); line-height: 1.5; resize: none; overflow: auto; background-color: transparent; color: var(--text-primary); }
         .edit-textarea:focus { outline: none; }
 
         /* --- Transitions and Animations --- */
@@ -345,68 +451,68 @@
         @keyframes dash { to { stroke-dashoffset: -1000; } }
         
         /* Theme-specific box/text classes for light mode */
-        .light-default-bg { background-color: #ffffff; }
-        .light-default-text { color: #1f2937; }
-        .light-default-border { border-color: #6b7280; }
+        .light-default-bg { background-color: var(--theme-default-bg); }
+        .light-default-text { color: var(--theme-default-text); }
+        .light-default-border { border-color: var(--theme-default-border); }
 
-        .light-red-bg { background-color: #fee2e2; }
-        .light-red-text { color: #7f1d1d; }
-        .light-red-border { border-color: #ef4444; }
+        .light-red-bg { background-color: var(--theme-red-bg); }
+        .light-red-text { color: var(--theme-red-text); }
+        .light-red-border { border-color: var(--theme-red-border); }
 
-        .light-green-bg { background-color: #dcfce7; }
-        .light-green-text { color: #14532d; }
-        .light-green-border { border-color: #10b981; }
+        .light-green-bg { background-color: var(--theme-green-bg); }
+        .light-green-text { color: var(--theme-green-text); }
+        .light-green-border { border-color: var(--theme-green-border); }
 
-        .light-blue-bg { background-color: #dbeafe; }
-        .light-blue-text { color: #1e3a8a; }
-        .light-blue-border { border-color: #3b82f6; }
+        .light-blue-bg { background-color: var(--theme-blue-bg); }
+        .light-blue-text { color: var(--theme-blue-text); }
+        .light-blue-border { border-color: var(--theme-blue-border); }
 
-        .light-purple-bg { background-color: #ede9fe; }
-        .light-purple-text { color: #5b21b6; }
-        .light-purple-border { border-color: #8b5cf6; }
+        .light-purple-bg { background-color: var(--theme-purple-bg); }
+        .light-purple-text { color: var(--theme-purple-text); }
+        .light-purple-border { border-color: var(--theme-purple-border); }
 
-        .light-yellow-bg { background-color: #fef9c3; }
-        .light-yellow-text { color: #713f12; }
-        .light-yellow-border { border-color: #f59e0b; }
+        .light-yellow-bg { background-color: var(--theme-yellow-bg); }
+        .light-yellow-text { color: var(--theme-yellow-text); }
+        .light-yellow-border { border-color: var(--theme-yellow-border); }
 
-        .light-grey-bg { background-color: #e5e7eb; }
-        .light-grey-text { color: #111827; }
-        .light-grey-border { border-color: #111827; }
+        .light-grey-bg { background-color: var(--theme-grey-bg); }
+        .light-grey-text { color: var(--theme-grey-text); }
+        .light-grey-border { border-color: var(--theme-grey-border); }
 
         /* Theme-specific box/text classes for dark mode */
-        .dark-default-bg { background-color: #374151; }
-        .dark-default-text { color: var(--text-primary); }
-        .dark-default-border { border-color: #9ca3af; }
+        .dark-default-bg { background-color: var(--theme-default-bg); }
+        .dark-default-text { color: var(--theme-default-text); }
+        .dark-default-border { border-color: var(--theme-default-border); }
 
-        .dark-red-bg { background-color: #7f1d1d; }
-        .dark-red-text { color: var(--text-primary); }
-        .dark-red-border { border-color: #ef4444; }
+        .dark-red-bg { background-color: var(--theme-red-bg); }
+        .dark-red-text { color: var(--theme-red-text); }
+        .dark-red-border { border-color: var(--theme-red-border); }
 
-        .dark-green-bg { background-color: #14532d; }
-        .dark-green-text { color: var(--text-primary); }
-        .dark-green-border { border-color: #10b981; }
+        .dark-green-bg { background-color: var(--theme-green-bg); }
+        .dark-green-text { color: var(--theme-green-text); }
+        .dark-green-border { border-color: var(--theme-green-border); }
 
-        .dark-blue-bg { background-color: #1e3a8a; }
-        .dark-blue-text { color: var(--text-primary); }
-        .dark-blue-border { border-color: #3b82f6; }
+        .dark-blue-bg { background-color: var(--theme-blue-bg); }
+        .dark-blue-text { color: var(--theme-blue-text); }
+        .dark-blue-border { border-color: var(--theme-blue-border); }
 
-        .dark-purple-bg { background-color: #5b21b6; }
-        .dark-purple-text { color: var(--text-primary); }
-        .dark-purple-border { border-color: #8b5cf6; }
+        .dark-purple-bg { background-color: var(--theme-purple-bg); }
+        .dark-purple-text { color: var(--theme-purple-text); }
+        .dark-purple-border { border-color: var(--theme-purple-border); }
 
-        .dark-yellow-bg { background-color: #713f12; }
-        .dark-yellow-text { color: var(--text-primary); }
-        .dark-yellow-border { border-color: #f59e0b; }
+        .dark-yellow-bg { background-color: var(--theme-yellow-bg); }
+        .dark-yellow-text { color: var(--theme-yellow-text); }
+        .dark-yellow-border { border-color: var(--theme-yellow-border); }
 
-        .dark-grey-bg { background-color: #1f2937; }
-        .dark-grey-text { color: var(--text-primary); }
-        .dark-grey-border { border-color: #9ca3af; }
+        .dark-grey-bg { background-color: var(--theme-grey-bg); }
+        .dark-grey-text { color: var(--theme-grey-text); }
+        .dark-grey-border { border-color: var(--theme-grey-border); }
     </style>
 </head>
 <body class="h-screen m-0 p-0">
     <!-- Project title header -->
     <div id="project-title-container" class="fixed top-5 left-0 w-full text-center pointer-events-none z-0">
-        <h1 id="project-title" class="text-3xl tracking-wide"></h1>
+        <h1 id="project-title" class="text-3xl tracking-wide text-gray-500 dark:text-gray-400 font-light"></h1>
     </div>
 
     <div id="canvas" class="relative w-full cursor-default">
@@ -422,15 +528,15 @@
             <path id="preview-connection" stroke="currentColor" stroke-width="2" fill="none" marker-end="url(#arrowhead-end)" opacity="0.5" display="none" stroke-dasharray="5, 5"/>
         </svg>
         <div id="box-container" class="absolute top-0 left-0 w-full z-20 pointer-events-none"></div>
-        <div id="helper-text" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-500 text-lg text-center pointer-events-none select-none z-0">
+        <div id="helper-text" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 text-lg text-center pointer-events-none select-none z-0">
              Double click anywhere to add a box<br>
-             <span class="text-sm">Use Markdown in boxes for formatting</span>
+             <span class="text-sm mt-2 block opacity-80">Use Markdown in boxes for formatting</span>
          </div>
     </div>
     
-    <!-- Settings Menu (right-click style) -->
-    <div id="settings-menu" class="fixed bottom-12 right-2 w-72 rounded-lg shadow-lg z-50 overflow-hidden transition-all duration-200 max-h-[80vh] flex flex-col hidden opacity-0 transform translate-y-2 pointer-events-none" style="background-color: var(--bg-secondary); color: var(--text-primary); box-shadow: 0 5px 15px var(--shadow-color);">
-        <div class="px-4 py-3 border-b border-solid" style="border-color: var(--border-color);">
+    <!-- Settings Menu -->
+    <div id="settings-menu" class="fixed bottom-12 right-2 w-72 rounded-lg shadow-lg z-50 overflow-hidden transition-all duration-200 max-h-[80vh] flex flex-col hidden opacity-0 transform translate-y-2 pointer-events-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50">
+        <div class="px-4 py-3 border-b border-gray-300 dark:border-gray-600">
             <div class="flex justify-between items-center">
                 <h3 class="text-base font-semibold m-0">Projects</h3>
                 <button id="add-project-toggle" class="p-1 rounded-full hover:bg-black hover:bg-opacity-10 transition-colors text-sm">
@@ -443,8 +549,7 @@
             <!-- New project form (hidden by default) -->
             <div id="new-project-form" class="mb-3 hidden overflow-hidden transition-all duration-200 max-h-0">
                 <div class="flex items-center mb-2">
-                    <input type="text" id="project-name" class="flex-1 p-2 rounded border border-solid mr-2" placeholder="Enter project name"
-                        style="border-color: var(--border-color); background-color: var(--bg-primary); color: var(--text-primary);">
+                    <input type="text" id="project-name" class="flex-1 p-2 rounded border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 mr-2" placeholder="Enter project name">
                     <button id="commit-new-project" class="p-1 rounded hover:bg-black hover:bg-opacity-10 transition-colors text-green-600">
                         <i class="fas fa-check"></i>
                     </button>
@@ -460,9 +565,9 @@
             </div>
         </div>
         
-        <div class="h-px w-full" style="background-color: var(--border-color);"></div>
+        <div class="h-px w-full bg-gray-300 dark:bg-gray-600"></div>
         
-        <div class="px-4 py-3 border-t border-solid" style="border-color: var(--border-color);">
+        <div class="px-4 py-3 border-t border-gray-300 dark:border-gray-600">
             <div>
                 <label class="block mb-1 font-medium" for="text-scale">Text Size</label>
                 <div class="flex items-center">
@@ -473,8 +578,8 @@
         </div>
     </div>
     
-    <!-- Theme toggle button with improved icons -->
-    <div class="theme-toggle fixed bottom-2.5 right-12 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer text-lg z-50" style="background-color: var(--bg-secondary); color: var(--text-secondary); box-shadow: 0 2px 4px var(--shadow-color);" id="theme-toggle" title="Toggle dark/light mode">
+    <!-- Theme toggle button -->
+    <div class="theme-toggle fixed bottom-2.5 right-12 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer text-lg z-50 bg-white dark:bg-gray-700 shadow-md" id="theme-toggle" title="Toggle dark/light mode">
         <!-- Sun icon (filled, yellow) -->
         <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="5"></circle>
@@ -495,7 +600,7 @@
     </div>
     
     <!-- Settings button (gear icon) -->
-    <div class="fixed bottom-2.5 right-2.5 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer text-lg z-50" id="settings-button" style="background-color: var(--bg-secondary); color: var(--text-secondary); box-shadow: 0 2px 4px var(--shadow-color);" title="Projects & Settings">
+    <div class="fixed bottom-2.5 right-2.5 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer text-lg z-50 bg-white dark:bg-gray-700 shadow-md hover:shadow-lg transition-shadow" id="settings-button" title="Projects & Settings">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="3"></circle>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
@@ -503,6 +608,32 @@
     </div>
 
 <script>
+// --- Utility Functions ---
+// Throttle function for performance-sensitive operations
+function throttle(func, limit) {
+    let inThrottle;
+    return function() {
+        const args = arguments;
+        const context = this;
+        if (!inThrottle) {
+            func.apply(context, args);
+            inThrottle = true;
+            setTimeout(() => inThrottle = false, limit);
+        }
+    };
+}
+
+// Debounce function for operations that should only happen after a pause
+function debounce(func, wait) {
+    let timeout;
+    return function() {
+        const context = this;
+        const args = arguments;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(context, args), wait);
+    };
+}
+
 // --- Constants ---
 const INITIAL_BOX_WIDTH = 200;
 const INITIAL_BOX_HEIGHT = 80;
@@ -534,13 +665,13 @@ const COLOR_THEMES = {
             bg: 'light-default-bg',
             border: 'light-default-border',
             text: 'light-default-text',
-            stroke: '#4b5563'
+            stroke: 'var(--theme-default-stroke)'
         },
         dark: {
             bg: 'dark-default-bg',
             border: 'dark-default-border',
             text: 'dark-default-text',
-            stroke: '#9ca3af'
+            stroke: 'var(--theme-default-stroke)'
         }
     },
     red: {
@@ -549,13 +680,13 @@ const COLOR_THEMES = {
             bg: 'light-red-bg',
             border: 'light-red-border',
             text: 'light-red-text',
-            stroke: '#ef4444'
+            stroke: 'var(--theme-red-stroke)'
         },
         dark: {
             bg: 'dark-red-bg',
             border: 'dark-red-border',
             text: 'dark-red-text',
-            stroke: '#fca5a5'
+            stroke: 'var(--theme-red-stroke)'
         }
     },
     green: {
@@ -564,13 +695,13 @@ const COLOR_THEMES = {
             bg: 'light-green-bg',
             border: 'light-green-border',
             text: 'light-green-text',
-            stroke: '#10b981'
+            stroke: 'var(--theme-green-stroke)'
         },
         dark: {
             bg: 'dark-green-bg',
             border: 'dark-green-border',
             text: 'dark-green-text',
-            stroke: '#34d399'
+            stroke: 'var(--theme-green-stroke)'
         }
     },
     blue: {
@@ -579,13 +710,13 @@ const COLOR_THEMES = {
             bg: 'light-blue-bg',
             border: 'light-blue-border',
             text: 'light-blue-text',
-            stroke: '#3b82f6'
+            stroke: 'var(--theme-blue-stroke)'
         },
         dark: {
             bg: 'dark-blue-bg',
             border: 'dark-blue-border',
             text: 'dark-blue-text',
-            stroke: '#60a5fa'
+            stroke: 'var(--theme-blue-stroke)'
         }
     },
     purple: {
@@ -594,13 +725,13 @@ const COLOR_THEMES = {
             bg: 'light-purple-bg',
             border: 'light-purple-border',
             text: 'light-purple-text',
-            stroke: '#8b5cf6'
+            stroke: 'var(--theme-purple-stroke)'
         },
         dark: {
             bg: 'dark-purple-bg',
             border: 'dark-purple-border',
             text: 'dark-purple-text',
-            stroke: '#a78bfa'
+            stroke: 'var(--theme-purple-stroke)'
         }
     },
     yellow: {
@@ -609,13 +740,13 @@ const COLOR_THEMES = {
             bg: 'light-yellow-bg',
             border: 'light-yellow-border',
             text: 'light-yellow-text',
-            stroke: '#f59e0b'
+            stroke: 'var(--theme-yellow-stroke)'
         },
         dark: {
             bg: 'dark-yellow-bg',
             border: 'dark-yellow-border',
             text: 'dark-yellow-text',
-            stroke: '#fbbf24'
+            stroke: 'var(--theme-yellow-stroke)'
         }
     },
     grey: {
@@ -624,13 +755,13 @@ const COLOR_THEMES = {
             bg: 'light-grey-bg',
             border: 'light-grey-border',
             text: 'light-grey-text',
-            stroke: '#111827'
+            stroke: 'var(--theme-grey-stroke)'
         },
         dark: {
             bg: 'dark-grey-bg',
             border: 'dark-grey-border',
             text: 'dark-grey-text',
-            stroke: '#9ca3af'
+            stroke: 'var(--theme-grey-stroke)'
         }
     }
 };
@@ -639,7 +770,7 @@ const COLOR_THEMES = {
 const THEME_KEYS = Object.keys(COLOR_THEMES);
 
 // Define base classes for reuse in JS - using Tailwind utility classes
-const BASE_BOX_CLASSES = 'absolute rounded-lg box-default cursor-move no-select py-2 px-3 pointer-events-auto overflow-hidden box-transition';
+const BASE_BOX_CLASSES = 'absolute rounded-lg border border-solid shadow-md hover:shadow-lg transform transition-all duration-200 ease-in-out hover:-translate-y-0.5 cursor-move py-2 px-3 pointer-events-auto overflow-hidden';
 
 // Enhanced markdown parser with better support for lists and tables
 function simpleMarkdownParser(text) {
@@ -881,12 +1012,12 @@ class ProjectManager {
             }
         });
         
-        // Text scale slider auto-save
-        this.textScaleSlider.addEventListener('input', (e) => {
+        // Text scale slider auto-save (debounced)
+        this.textScaleSlider.addEventListener('input', debounce((e) => {
             const value = parseFloat(e.target.value);
             this.textScaleValue.textContent = `${value.toFixed(1)}x`;
             
-            // Save immediately to localStorage
+            // Save to localStorage
             const settings = JSON.parse(localStorage.getItem('markdownDiagramSettings') || '{"textScale":1.0}');
             settings.textScale = value;
             localStorage.setItem('markdownDiagramSettings', JSON.stringify(settings));
@@ -894,12 +1025,9 @@ class ProjectManager {
             // Apply the setting
             document.documentElement.style.setProperty('--font-scale', value);
             
-            // Update box sizes
-            clearTimeout(this._resizeTimeout);
-            this._resizeTimeout = setTimeout(() => {
-                this.diagramManager.updateAllBoxSizes();
-            }, 50);
-        });
+            // Update box sizes - only do this once user finishes adjusting
+            this.diagramManager.updateAllBoxSizes();
+        }, 250));
     }
     
     toggleNewProjectForm() {
@@ -1064,19 +1192,18 @@ class ProjectManager {
             
             // Main project container
             const projectContainer = document.createElement('div');
-            projectContainer.className = 'p-2 flex justify-between items-center cursor-pointer group';
-            projectContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
+            projectContainer.className = 'p-2 flex justify-between items-center cursor-pointer group bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors';
             
             if (project.id === this.currentProjectId) {
-                projectContainer.classList.add('bg-purple-600', 'bg-opacity-20');
+                projectContainer.classList.add('bg-purple-100', 'dark:bg-purple-900', 'bg-opacity-50', 'dark:bg-opacity-20');
             }
             
             // Check if this project is being edited
             if (this.editingProjectId === project.id) {
-                // Render edit form
+                // Render edit form with Tailwind classes
                 projectContainer.innerHTML = `
                     <div class="flex w-full items-center">
-                        <input type="text" class="flex-1 px-2 py-1 mr-2 border rounded" value="${project.name}" id="edit-${project.id}" style="border-color: var(--border-color); background-color: var(--bg-primary); color: var(--text-primary);">
+                        <input type="text" class="flex-1 px-2 py-1 mr-2 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500" value="${project.name}" id="edit-${project.id}">
                         <button class="p-1 rounded hover:bg-black hover:bg-opacity-10 transition-colors text-green-600" data-id="${project.id}" title="Save">
                             <i class="fas fa-check"></i>
                         </button>
@@ -1122,15 +1249,15 @@ class ProjectManager {
                     }
                 });
             }
-            // Normal project display
+            // Normal project display with Tailwind classes
             else {
                 const dateModified = new Date(project.dateModified);
                 const formattedDate = dateModified.toLocaleDateString();
                 
                 projectContainer.innerHTML = `
                     <div>
-                        <div class="truncate">${project.name}</div>
-                        <div class="text-xs opacity-60">Modified: ${formattedDate}</div>
+                        <div class="truncate font-medium">${project.name}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">Modified: ${formattedDate}</div>
                     </div>
                     <div class="flex gap-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                         <button class="p-1 rounded hover:bg-black hover:bg-opacity-10 transition-colors" data-id="${project.id}" title="Edit">
@@ -1147,12 +1274,11 @@ class ProjectManager {
             
             // Check if this project has a delete confirmation showing
             if (this.confirmingDeleteId === project.id) {
-                // Create delete confirmation that slides down
+                // Create delete confirmation with Tailwind classes
                 const confirmDelete = document.createElement('div');
-                confirmDelete.className = 'p-2 flex items-center justify-between transition-all duration-200 overflow-hidden';
-                confirmDelete.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+                confirmDelete.className = 'p-2 flex items-center justify-between bg-red-100 dark:bg-red-900 bg-opacity-50 dark:bg-opacity-30 transition-all duration-200 overflow-hidden';
                 confirmDelete.innerHTML = `
-                    <span class="text-sm">Confirm delete</span>
+                    <span class="text-sm font-medium text-red-800 dark:text-red-200">Confirm delete</span>
                     <div class="flex gap-2">
                         <button class="p-1 rounded hover:bg-black hover:bg-opacity-10 transition-colors text-green-600" id="confirm-delete-${project.id}" title="Confirm">
                             <i class="fas fa-check"></i>
@@ -1327,31 +1453,31 @@ class Box {
 
     createElement() { 
         const div = document.createElement('div'); 
-        div.className = BASE_BOX_CLASSES; 
+        div.className = BASE_BOX_CLASSES;
+        div.classList.add('dark:border-gray-600', 'bg-white', 'dark:bg-gray-700');
         div.dataset.id = this.data.id; 
         div.dataset.type = 'box';
         div.dataset.theme = this.data.themeKey;
+        
         const contentDiv = document.createElement('div'); 
-        contentDiv.className = 'markdown-content relative w-full h-full'; 
+        contentDiv.className = 'markdown-content relative w-full h-full text-gray-900 dark:text-gray-50'; 
         div.appendChild(contentDiv); 
         return div; 
     }
     
     setupEventListeners() {
-        let isDragging = false;
-        
-        this.element.addEventListener('mouseenter', () => {
+        // Store references to event handlers for later cleanup
+        this._mouseEnterHandler = () => {
             this.manager.hoveredElement = this;
-        });
+        };
         
-        this.element.addEventListener('mouseleave', () => {
+        this._mouseLeaveHandler = () => {
             if (this.manager.hoveredElement === this) {
                 this.manager.hoveredElement = null;
             }
-        });
+        };
         
-        this.element.addEventListener('mousedown', (e) => { 
-            isDragging = false; 
+        this._mouseDownHandler = (e) => {
             // Start dragging on mousedown
             if (e.button === 0 && !this.isEditing) {
                 this.manager.startDragging(this, e);
@@ -1359,26 +1485,57 @@ class Box {
                 // Right mouse button down - start connection or change width
                 this.manager.handleBoxRightMouseDown(e, this);
             }
-        });
+        };
         
-        this.element.addEventListener('mousemove', () => { 
+        this._mouseMoveHandler = () => {
             if (this.manager.draggingBox === this) { 
-                isDragging = true; 
+                this._isDragging = true; 
             } 
-        });
+        };
         
-        this.element.addEventListener('dblclick', (e) => { 
+        this._dblClickHandler = (e) => {
             e.stopPropagation(); 
             if (!this.isEditing) { 
                 this.startEditing(); 
             } 
-        });
+        };
         
-        this.element.addEventListener('contextmenu', (e) => { 
+        this._contextMenuHandler = (e) => {
             e.preventDefault(); 
             e.stopPropagation(); 
             return false; 
-        });
+        };
+        
+        // Add event listeners to element
+        this.element.addEventListener('mouseenter', this._mouseEnterHandler);
+        this.element.addEventListener('mouseleave', this._mouseLeaveHandler);
+        this.element.addEventListener('mousedown', this._mouseDownHandler);
+        this.element.addEventListener('mousemove', this._mouseMoveHandler);
+        this.element.addEventListener('dblclick', this._dblClickHandler);
+        this.element.addEventListener('contextmenu', this._contextMenuHandler);
+    }
+
+    // Clean up event listeners
+    cleanupEventListeners() {
+        if (!this.element) return;
+        
+        // Remove mouse event listeners
+        this.element.removeEventListener('mouseenter', this._mouseEnterHandler);
+        this.element.removeEventListener('mouseleave', this._mouseLeaveHandler);
+        this.element.removeEventListener('mousedown', this._mouseDownHandler);
+        this.element.removeEventListener('mousemove', this._mouseMoveHandler);
+        this.element.removeEventListener('dblclick', this._dblClickHandler);
+        this.element.removeEventListener('contextmenu', this._contextMenuHandler);
+        
+        // Remove any textarea related listeners
+        if (this.textarea) {
+            this.textarea.removeEventListener('keydown', this._keyDownHandler);
+            this.textarea.removeEventListener('input', this._inputHandler);
+            this.textarea.removeEventListener('mousedown', this._textAreaMouseDownHandler);
+            this.textarea.removeEventListener('contextmenu', this._textAreaContextMenuHandler);
+            this.textarea.removeEventListener('dblclick', this._textAreaDblClickHandler);
+            this.textarea.removeEventListener('click', this._textAreaClickHandler);
+        }
     }
 
     // Updates the element's CSS position
@@ -1466,7 +1623,7 @@ class Box {
         if (!this.data.markdown) return;
         
         try {
-            // Use marked.js or fallback
+            // Use marked.js or fallback (without additional DOM manipulations)
             this.contentDiv.innerHTML = typeof marked !== 'undefined' && typeof marked.parse === 'function' 
                 ? marked.parse(this.data.markdown) 
                 : simpleMarkdownParser(this.data.markdown);
@@ -1479,31 +1636,33 @@ class Box {
         this.calculateRenderedSize();
     }
 
-    // Calculate size with fixed width based on type
+    // Optimized size calculation using a shared offscreen element
     calculateRenderedSize() {
-        // Clone for measurement
-        const clone = this.element.cloneNode(true);
-        document.body.appendChild(clone);
-        
-        // Reset styles for measurement
-        clone.style.position = 'absolute';
-        clone.style.visibility = 'hidden';
-        clone.style.left = '-9999px';
-        clone.style.top = '-9999px';
-        clone.style.height = 'auto';
-        clone.style.maxWidth = 'none';
-        clone.style.transition = 'none';
-        
-        // Use fixed width from width type directly
+        // Get fixed width from width type directly
         const fixedWidth = WIDTH_TYPE_VALUES[this.data.widthType];
-        clone.style.width = `${fixedWidth}px`;
         
-        // Force reflow and measure height with the fixed width
-        clone.offsetHeight;
-        const newHeight = Math.max(clone.offsetHeight, 50);
+        // Use a shared offscreen measurement element
+        let calculator = document.getElementById('size-calculator');
+        if (!calculator) {
+            calculator = document.createElement('div');
+            calculator.id = 'size-calculator';
+            calculator.style.position = 'absolute';
+            calculator.style.visibility = 'hidden';
+            calculator.style.left = '-9999px';
+            calculator.style.top = '-9999px';
+            calculator.style.height = 'auto';
+            calculator.style.maxWidth = 'none';
+            calculator.style.transition = 'none';
+            document.body.appendChild(calculator);
+        }
         
-        // Clean up
-        document.body.removeChild(clone);
+        // Configure the measurement element
+        calculator.style.width = `${fixedWidth}px`;
+        calculator.className = this.element.className;
+        calculator.innerHTML = this.contentDiv.innerHTML;
+        
+        // Force reflow and measure height
+        const newHeight = Math.max(calculator.scrollHeight, 50);
         
         // Update size
         this.data.width = fixedWidth;
@@ -1547,17 +1706,17 @@ class Box {
         // Clear and prepare container
         this.contentDiv.innerHTML = '';
         
-        // Create textarea
+        // Create textarea with Tailwind classes
         this.textarea = document.createElement('textarea');
-        this.textarea.className = 'edit-textarea';
+        this.textarea.className = 'w-full h-full px-2 py-1 border-none bg-transparent text-inherit focus:outline-none resize-none overflow-auto';
         this.textarea.value = this.data.markdown || '';
         this.textarea.placeholder = 'Add markdown content...';
         
         // Set fixed width from width type
         this.data.width = WIDTH_TYPE_VALUES[this.data.widthType];
         
-        // Add event listeners
-        this.textarea.addEventListener('keydown', (e) => {
+        // Store event handler references
+        this._keyDownHandler = (e) => {
             if (e.key === 'Escape') { 
                 e.preventDefault(); 
                 this.cancelEdit(); 
@@ -1568,17 +1727,24 @@ class Box {
             
             // Update size on next tick
             setTimeout(() => this.updateEditModeSize(), 0);
-        });
+        };
         
-        this.textarea.addEventListener('input', () => {
+        this._inputHandler = () => {
             this.updateEditModeSize();
-        });
+        };
         
-        // Prevent event propagation
-        this.textarea.addEventListener('mousedown', e => e.stopPropagation());
-        this.textarea.addEventListener('contextmenu', e => e.stopPropagation());
-        this.textarea.addEventListener('dblclick', e => e.stopPropagation());
-        this.textarea.addEventListener('click', e => e.stopPropagation());
+        this._textAreaMouseDownHandler = e => e.stopPropagation();
+        this._textAreaContextMenuHandler = e => e.stopPropagation();
+        this._textAreaDblClickHandler = e => e.stopPropagation();
+        this._textAreaClickHandler = e => e.stopPropagation();
+        
+        // Add event listeners
+        this.textarea.addEventListener('keydown', this._keyDownHandler);
+        this.textarea.addEventListener('input', this._inputHandler);
+        this.textarea.addEventListener('mousedown', this._textAreaMouseDownHandler);
+        this.textarea.addEventListener('contextmenu', this._textAreaContextMenuHandler);
+        this.textarea.addEventListener('dblclick', this._textAreaDblClickHandler);
+        this.textarea.addEventListener('click', this._textAreaClickHandler);
 
         this.contentDiv.appendChild(this.textarea);
 
@@ -1619,6 +1785,15 @@ class Box {
     cleanupEdit() { 
         this.isEditing = false; 
         if (this.textarea && this.textarea.parentNode) { 
+            // Remove event listeners
+            this.textarea.removeEventListener('keydown', this._keyDownHandler);
+            this.textarea.removeEventListener('input', this._inputHandler);
+            this.textarea.removeEventListener('mousedown', this._textAreaMouseDownHandler);
+            this.textarea.removeEventListener('contextmenu', this._textAreaContextMenuHandler);
+            this.textarea.removeEventListener('dblclick', this._textAreaDblClickHandler);
+            this.textarea.removeEventListener('click', this._textAreaClickHandler);
+            
+            // Remove the textarea
             this.textarea.remove(); 
         } 
         this.textarea = null; 
@@ -1682,13 +1857,13 @@ class Connection {
     createElements() {
         // Create the hitbox path with wide stroke for easier clicking
         this.hitboxElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        this.hitboxElement.setAttribute('class', 'connection-hitbox');
+        this.hitboxElement.setAttribute('class', 'connection-hitbox cursor-pointer');
         this.hitboxElement.dataset.id = this.data.id;
         this.hitboxElement.dataset.type = 'connection-hitbox';
         
-        // Create the visible connection path
+        // Create the visible connection path with Tailwind compatible classes
         this.element = document.createElementNS('http://www.w3.org/2000/svg', 'path'); 
-        this.element.setAttribute('class', 'connection-path pointer-events-none'); 
+        this.element.setAttribute('class', 'connection-path pointer-events-none transition-all duration-200'); 
         this.element.dataset.id = this.data.id; 
         this.element.dataset.type = 'connection';
         this.element.dataset.theme = this.data.themeKey;
@@ -1707,54 +1882,55 @@ class Connection {
     
     // Create invisible hotspots for better arrow interaction
     createHotspots() {
+        // Create references to event handlers for later cleanup
+        this._mouseEnterHandler = () => {
+            this.manager.hoveredElement = this;
+        };
+        
+        this._mouseLeaveHandler = () => {
+            if (this.manager.hoveredElement === this) {
+                this.manager.hoveredElement = null;
+            }
+        };
+        
+        this._clickHandler = (e) => {
+            e.stopPropagation();
+            this.toggleBidirectional();
+            this.manager.saveCurrentProject();
+        };
+        
+        this._contextMenuHandler = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.cycleThickness();
+            this.manager.saveCurrentProject();
+        };
+        
         // Create start hotspot
         this.startHotspot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        this.startHotspot.setAttribute('class', 'arrow-hotspot');
+        this.startHotspot.setAttribute('class', 'arrow-hotspot cursor-pointer hover:fill-gray-200 dark:hover:fill-gray-700 transition-opacity duration-200');
         this.startHotspot.setAttribute('r', '12');
         this.startHotspot.dataset.connection = this.data.id;
         this.startHotspot.dataset.end = 'start';
         this.manager.svg.appendChild(this.startHotspot);
         
+        // Add event listeners to start hotspot
+        this.startHotspot.addEventListener('mouseenter', this._mouseEnterHandler);
+        this.startHotspot.addEventListener('mouseleave', this._mouseLeaveHandler);
+        this.startHotspot.addEventListener('click', this._clickHandler);
+        
         // Create end hotspot
         this.endHotspot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        this.endHotspot.setAttribute('class', 'arrow-hotspot');
+        this.endHotspot.setAttribute('class', 'arrow-hotspot cursor-pointer hover:fill-gray-200 dark:hover:fill-gray-700 transition-opacity duration-200');
         this.endHotspot.setAttribute('r', '12');
         this.endHotspot.dataset.connection = this.data.id;
         this.endHotspot.dataset.end = 'end';
         this.manager.svg.appendChild(this.endHotspot);
         
-        // Add event listeners to hotspots
-        this.startHotspot.addEventListener('mouseenter', () => {
-            this.manager.hoveredElement = this;
-        });
-        
-        this.startHotspot.addEventListener('mouseleave', () => {
-            if (this.manager.hoveredElement === this) {
-                this.manager.hoveredElement = null;
-            }
-        });
-        
-        this.startHotspot.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.toggleBidirectional();
-            this.manager.saveCurrentProject();
-        });
-        
-        this.endHotspot.addEventListener('mouseenter', () => {
-            this.manager.hoveredElement = this;
-        });
-        
-        this.endHotspot.addEventListener('mouseleave', () => {
-            if (this.manager.hoveredElement === this) {
-                this.manager.hoveredElement = null;
-            }
-        });
-        
-        this.endHotspot.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.toggleBidirectional();
-            this.manager.saveCurrentProject();
-        });
+        // Add event listeners to end hotspot
+        this.endHotspot.addEventListener('mouseenter', this._mouseEnterHandler);
+        this.endHotspot.addEventListener('mouseleave', this._mouseLeaveHandler);
+        this.endHotspot.addEventListener('click', this._clickHandler);
     }
     
     // Toggle bidirectionality of the connection
@@ -1773,30 +1949,14 @@ class Connection {
     
     setupEventListeners() { 
         // Add interaction events to the hitbox element
-        this.hitboxElement.addEventListener('mouseenter', () => {
-            this.manager.hoveredElement = this;
-        });
-        
-        this.hitboxElement.addEventListener('mouseleave', () => {
-            if (this.manager.hoveredElement === this) {
-                this.manager.hoveredElement = null;
-            }
-        });
+        this.hitboxElement.addEventListener('mouseenter', this._mouseEnterHandler);
+        this.hitboxElement.addEventListener('mouseleave', this._mouseLeaveHandler);
         
         // Add left-click event to toggle line pattern
-        this.hitboxElement.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.cyclePattern();
-            this.manager.saveCurrentProject();
-        });
+        this.hitboxElement.addEventListener('click', this._clickHandler);
         
         // Add right-click event to toggle thickness
-        this.hitboxElement.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            this.cycleThickness();
-            this.manager.saveCurrentProject();
-        });
+        this.hitboxElement.addEventListener('contextmenu', this._contextMenuHandler);
     }
     
     // Apply the current theme to the connection
@@ -1931,21 +2091,34 @@ class Connection {
     
     // Clean up the connection by removing hotspot elements
     cleanup() {
+        // Remove event listeners for hotspots
         if (this.startHotspot) {
+            this.startHotspot.removeEventListener('mouseenter', this._mouseEnterHandler);
+            this.startHotspot.removeEventListener('mouseleave', this._mouseLeaveHandler);
+            this.startHotspot.removeEventListener('click', this._clickHandler);
             this.startHotspot.remove();
             this.startHotspot = null;
         }
         
         if (this.endHotspot) {
+            this.endHotspot.removeEventListener('mouseenter', this._mouseEnterHandler);
+            this.endHotspot.removeEventListener('mouseleave', this._mouseLeaveHandler);
+            this.endHotspot.removeEventListener('click', this._clickHandler);
             this.endHotspot.remove();
             this.endHotspot = null;
         }
         
+        // Remove event listeners for hitbox element
         if (this.hitboxElement) {
+            this.hitboxElement.removeEventListener('mouseenter', this._mouseEnterHandler);
+            this.hitboxElement.removeEventListener('mouseleave', this._mouseLeaveHandler);
+            this.hitboxElement.removeEventListener('click', this._clickHandler);
+            this.hitboxElement.removeEventListener('contextmenu', this._contextMenuHandler);
             this.hitboxElement.remove();
             this.hitboxElement = null;
         }
         
+        // Remove visible path element
         if (this.element) {
             this.element.remove();
             this.element = null;
@@ -1985,6 +2158,13 @@ class DiagramManager {
         this.dragBoxStartCenter = { cx: 0, cy: 0 };
         this.connectionStartBox = null;
         this.hoveredElement = null; // Track currently hovered element
+        
+        // Throttled update function for dragging
+        this.throttledUpdateConnections = throttle((box) => {
+            this.connections.forEach(c => { 
+                if (c.startBox === box || c.endBox === box) c.update(); 
+            });
+        }, 30); // 30ms throttle
         
         // Initialize theme
         this.initTheme();
@@ -2073,7 +2253,7 @@ class DiagramManager {
         this.canvas.addEventListener('mousedown', this.handleCanvasMouseDown.bind(this)); 
         
         // Use separate event handlers for better scroll position management
-        document.addEventListener('mousemove', (e) => {
+        document.addEventListener('mousemove', throttle((e) => {
             // Handle box dragging
             if (this.draggingBox) { 
                 const dx = e.clientX - this.dragStartPos.x; 
@@ -2098,7 +2278,7 @@ class DiagramManager {
                 
                 this.previewPath.setAttribute('d', `M ${sC.cx} ${sC.cy} L ${mX} ${mY}`); 
             }
-        }); 
+        }, 16)); // ~60fps
         
         document.addEventListener('mouseup', (e) => {
             if (this.draggingBox) { 
@@ -2149,13 +2329,14 @@ class DiagramManager {
             } 
         }); 
 
-        // Add scroll event handling to ensure connections update during scrolling
-        window.addEventListener('scroll', () => {
-            // Update all connections when scrolling to ensure they remain accurate
+        // Throttle scroll event handling
+        const throttledScrollHandler = throttle(() => {
             this.connections.forEach(connection => {
                 connection.update();
             });
-        });
+        }, 100); // 100ms throttle for scroll events
+        
+        window.addEventListener('scroll', throttledScrollHandler);
     }
 
     setupThemeToggle() {
@@ -2229,64 +2410,6 @@ class DiagramManager {
         this.rightClickBox = box;
     }
 
-    handleMouseMove(e) { 
-        if (this.draggingBox) { 
-            const dx = e.clientX - this.dragStartPos.x; 
-            const dy = e.clientY - this.dragStartPos.y; 
-            const nCx = this.dragBoxStartCenter.cx + dx; 
-            const nCy = this.dragBoxStartCenter.cy + dy; 
-            this.draggingBox.setCenterPosition(nCx, nCy); 
-            this.updateConnectionsForBox(this.draggingBox); 
-        } else if (this.connectionStartBox) { 
-            const sC = { cx: this.connectionStartBox.data.cx, cy: this.connectionStartBox.data.cy }; 
-            
-            // Calculate the correct mouse position with scroll offsets
-            const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
-            const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-            
-            const r = this.svg.getBoundingClientRect(); 
-            const mX = e.clientX - r.left + scrollX; 
-            const mY = e.clientY - r.top + scrollY; 
-            
-            this.previewPath.setAttribute('d', `M ${sC.cx} ${sC.cy} L ${mX} ${mY}`); 
-        } 
-    }
-
-    handleMouseUp(e) { 
-        if (this.draggingBox) { 
-            this.draggingBox = null; 
-            this.saveCurrentProject();
-            this.updateCanvasSize(); // Update canvas size after drag
-        } else if (this.connectionStartBox && e.button === 2) { 
-            e.preventDefault(); 
-            this.previewPath.setAttribute('display', 'none'); 
-            let eTE = document.elementFromPoint(e.clientX, e.clientY); 
-            let eBE = eTE?.closest('.box-default'); 
-            
-            if (eBE) { 
-                const eB = this.boxes.get(eBE.dataset.id); 
-                if (eB && eB !== this.connectionStartBox) { 
-                    // Create or update connection between boxes
-                    const connection = this.createOrUpdateConnection(this.connectionStartBox, eB);
-                    if (connection) {
-                        this.saveCurrentProject();
-                    }
-                } else if (eB === this.connectionStartBox) {
-                    // Change width if right-click and release on the same box
-                    eB.toggleWidthType();
-                    this.saveCurrentProject();
-                }
-            } 
-            
-            this.connectionStartBox = null; 
-            this.rightClickBox = null;
-        } 
-        
-        if (e.button === 0) { 
-            this.draggingBox = null; 
-        } 
-    }
-
     handleGlobalClick(e) { 
         const targetTextarea = e.target.closest('textarea'); 
         
@@ -2353,7 +2476,7 @@ class DiagramManager {
         return b; 
     }
 
-    //// Create a new connection or update existing one to be bidirectional
+    // Create a new connection or update existing one to be bidirectional
     createOrUpdateConnection(startBox, endBox) { 
         if (!startBox || !endBox || startBox === endBox) return null; 
         
@@ -2404,10 +2527,17 @@ class DiagramManager {
         if (!boxInstance) return; 
         const bId = boxInstance.data.id; 
         const cTR = []; 
+        
+        // Find connections to be removed
         this.connections.forEach(c => { 
             if (c.startBox === boxInstance || c.endBox === boxInstance) cTR.push(c); 
         }); 
+        
+        // Remove connections
         cTR.forEach(c => this.deleteConnection(c)); 
+        
+        // Clean up event listeners before removing the element
+        boxInstance.cleanupEventListeners();
         boxInstance.element.remove(); 
         this.boxes.delete(bId); 
         this.updateHelperText(); 
@@ -2424,7 +2554,7 @@ class DiagramManager {
     deleteConnection(connInstance) { 
         if (!connInstance) return; 
         
-        // Clean up all connection elements
+        // Clean up all connection elements (including event listeners)
         connInstance.cleanup();
         
         const cId = connInstance.data.id; 
@@ -2436,10 +2566,17 @@ class DiagramManager {
         }
     }
 
-    updateConnectionsForBox(boxInstance) { 
-        this.connections.forEach(c => { 
-            if (c.startBox === boxInstance || c.endBox === boxInstance) c.update(); 
-        }); 
+    // Use throttled connection updates during dragging
+    updateConnectionsForBox(boxInstance) {
+        if (this.draggingBox === boxInstance) {
+            // Use throttled updates during dragging
+            this.throttledUpdateConnections(boxInstance);
+        } else {
+            // Use normal updates otherwise
+            this.connections.forEach(c => { 
+                if (c.startBox === boxInstance || c.endBox === boxInstance) c.update(); 
+            });
+        }
     }
 
     updateHelperText() { 
@@ -2456,6 +2593,7 @@ class DiagramManager {
         
         // Remove all boxes
         this.boxes.forEach(box => {
+            box.cleanupEventListeners();
             box.element.remove();
         });
         this.boxes.clear();
