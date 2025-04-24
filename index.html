@@ -2079,14 +2079,11 @@ class Connection {
     toggleBidirectional() {
         this.data.bidirectional = !this.data.bidirectional;
         
-        if (this.data.bidirectional) {
-            this.element.setAttribute('marker-start', 'url(#arrowhead-start)');
-        } else {
-            this.element.removeAttribute('marker-start');
-        }
-        
-        // Update the connection
+        // Apply the updated bidirectional state
         this.update();
+        
+        // Call applyTheme to ensure the correct marker is used
+        this.applyTheme();
     }
     
     setupEventListeners() { 
@@ -2130,16 +2127,21 @@ class Connection {
             // Set stroke color
             this.element.setAttribute('stroke', strokeColor);
             
-            // For SVG markers to inherit color via currentColor
-            this.element.style.color = strokeColor;
+            // Use theme-specific markers based on theme and current mode
+            const startMarkerId = `arrowhead-start-${themeKey}-${mode}`;
+            const endMarkerId = `arrowhead-end-${themeKey}-${mode}`;
             
-            // Also update the marker polygons directly
-            const markers = document.querySelectorAll('#arrowhead-start polygon, #arrowhead-end polygon');
-            markers.forEach(marker => {
-                marker.setAttribute('fill', strokeColor);
-            });
+            // Use theme-specific markers
+            if (this.data.bidirectional) {
+                this.element.setAttribute('marker-start', `url(#${startMarkerId})`);
+            } else {
+                this.element.removeAttribute('marker-start');
+            }
+            this.element.setAttribute('marker-end', `url(#${endMarkerId})`);
             
-            // Rest of the existing code...
+            // Also set hover fill color for hotspots to match the theme
+            this.startHotspot.style.setProperty('--transparent-black-5', strokeColor + '33');
+            this.endHotspot.style.setProperty('--transparent-black-5', strokeColor + '33');
         }
         
         // Update data attributes for theme identification
@@ -2382,36 +2384,49 @@ class DiagramManager {
         // Clear existing markers
         defs.innerHTML = '';
         
-        // Create basic markers that will inherit colors
-        const markerEnd = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
-        markerEnd.id = 'arrowhead-end';
-        markerEnd.setAttribute('markerWidth', '10');
-        markerEnd.setAttribute('markerHeight', '7');
-        markerEnd.setAttribute('refX', '9');
-        markerEnd.setAttribute('refY', '3.5');
-        markerEnd.setAttribute('orient', 'auto');
-        
-        const polygonEnd = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-        polygonEnd.setAttribute('points', '0 0, 10 3.5, 0 7');
-        polygonEnd.setAttribute('fill', 'currentColor');
-        
-        markerEnd.appendChild(polygonEnd);
-        defs.appendChild(markerEnd);
-        
-        const markerStart = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
-        markerStart.id = 'arrowhead-start';
-        markerStart.setAttribute('markerWidth', '10');
-        markerStart.setAttribute('markerHeight', '7');
-        markerStart.setAttribute('refX', '1');
-        markerStart.setAttribute('refY', '3.5');
-        markerStart.setAttribute('orient', 'auto');
-        
-        const polygonStart = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-        polygonStart.setAttribute('points', '10 0, 0 3.5, 10 7');
-        polygonStart.setAttribute('fill', 'currentColor');
-        
-        markerStart.appendChild(polygonStart);
-        defs.appendChild(markerStart);
+        // Create markers for each theme
+        Object.keys(COLOR_THEMES).forEach(themeKey => {
+            const theme = COLOR_THEMES[themeKey];
+            
+            // Create markers for both light and dark modes
+            ['light', 'dark'].forEach(mode => {
+                const strokeColor = theme[mode].stroke;
+                
+                // Create end marker
+                const markerEndId = `arrowhead-end-${themeKey}-${mode}`;
+                const markerEnd = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+                markerEnd.id = markerEndId;
+                markerEnd.setAttribute('markerWidth', '10');
+                markerEnd.setAttribute('markerHeight', '7');
+                markerEnd.setAttribute('refX', '9');
+                markerEnd.setAttribute('refY', '3.5');
+                markerEnd.setAttribute('orient', 'auto');
+                
+                const polygonEnd = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                polygonEnd.setAttribute('points', '0 0, 10 3.5, 0 7');
+                polygonEnd.setAttribute('fill', strokeColor);
+                
+                markerEnd.appendChild(polygonEnd);
+                defs.appendChild(markerEnd);
+                
+                // Create start marker (for bidirectional)
+                const markerStartId = `arrowhead-start-${themeKey}-${mode}`;
+                const markerStart = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+                markerStart.id = markerStartId;
+                markerStart.setAttribute('markerWidth', '10');
+                markerStart.setAttribute('markerHeight', '7');
+                markerStart.setAttribute('refX', '1');
+                markerStart.setAttribute('refY', '3.5');
+                markerStart.setAttribute('orient', 'auto');
+                
+                const polygonStart = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                polygonStart.setAttribute('points', '10 0, 0 3.5, 10 7');
+                polygonStart.setAttribute('fill', strokeColor);
+                
+                markerStart.appendChild(polygonStart);
+                defs.appendChild(markerStart);
+            });
+        });
     }
     
     // Update canvas size based on box positions with buffer zone
