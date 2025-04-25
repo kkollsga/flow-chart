@@ -708,6 +708,27 @@
         .dark-grey-bg { background-color: var(--theme-grey-bg); }
         .dark-grey-text { color: var(--theme-grey-text); }
         .dark-grey-border { border-color: var(--theme-grey-border); }
+
+        /* Modal styles */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-content {
+            transform: translateY(20px);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        
+        .modal.open .modal-backdrop {
+            opacity: 1;
+        }
+        
+        .modal.open .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="h-screen m-0 p-0">
@@ -740,9 +761,17 @@
         <div class="px-4 py-3 border-b border-solid" style="border-color: var(--border-color);">
             <div class="flex justify-between items-center">
                 <h3 class="text-base font-semibold m-0">Projects</h3>
-                <button id="add-project-toggle" class="p-1 rounded-full hover:bg-black hover:bg-opacity-10 transition-colors text-sm">
-                    <i class="fas fa-plus"></i>
-                </button>
+                <div class="flex items-center">
+                    <button id="export-projects-button" class="p-1 rounded-full hover:bg-black hover:bg-opacity-10 transition-colors text-sm mr-1" title="Export Projects">
+                        <i class="fas fa-file-export"></i>
+                    </button>
+                    <button id="import-projects-button" class="p-1 rounded-full hover:bg-black hover:bg-opacity-10 transition-colors text-sm mr-1" title="Import Projects">
+                        <i class="fas fa-file-import"></i>
+                    </button>
+                    <button id="add-project-toggle" class="p-1 rounded-full hover:bg-black hover:bg-opacity-10 transition-colors text-sm">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
             </div>
         </div>
         
@@ -1060,6 +1089,454 @@ function safeRemoveClass(element, className) {
     }
 }
 
+// --- ImportManager Class ---
+class ImportManager {
+    constructor(projectManager) {
+        this.projectManager = projectManager;
+        this.modal = this.createModal();
+        document.body.appendChild(this.modal);
+        this.setupEventListeners();
+    }
+    
+    createModal() {
+        const modal = document.createElement('div');
+        modal.id = 'import-projects-modal';
+        modal.className = 'fixed inset-0 flex items-center justify-center z-50 hidden modal';
+        
+        modal.innerHTML = `
+            <div class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop" id="import-modal-backdrop"></div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl z-10 w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden modal-content" 
+                 style="background-color: var(--bg-secondary); color: var(--text-primary);">
+                <div class="px-4 py-3 border-b border-solid flex justify-between items-center" 
+                     style="border-color: var(--border-color);">
+                    <h3 class="text-lg font-semibold">Import Projects</h3>
+                    <button id="close-import-modal" class="p-1 rounded-full hover:bg-black hover:bg-opacity-10 transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="p-4 flex flex-col">
+                    <div class="mb-4">
+                        <label class="block mb-2">Select JSON file containing projects:</label>
+                        <input type="file" id="import-file-input" accept=".json" class="w-full p-2 border rounded"
+                               style="border-color: var(--border-color); background-color: var(--bg-primary);">
+                    </div>
+                    
+                    <div class="mb-4 hidden" id="import-projects-list-container">
+                        <label class="block mb-2">Select projects to import:</label>
+                        <div id="import-projects-list" class="border rounded p-2 max-h-48 overflow-y-auto"
+                             style="border-color: var(--border-color); background-color: var(--bg-primary);">
+                            <!-- Project checkboxes will be dynamically added here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="px-4 py-3 border-t border-solid flex justify-end" 
+                     style="border-color: var(--border-color);">
+                    <button id="import-selected-projects" class="px-4 py-2 bg-purple-600 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        Import Selected
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        return modal;
+    }
+    
+    setupEventListeners() {
+        const modal = this.modal;
+        const backdrop = modal.querySelector('#import-modal-backdrop');
+        const closeButton = modal.querySelector('#close-import-modal');
+        const fileInput = modal.querySelector('#import-file-input');
+        const importButton = modal.querySelector('#import-selected-projects');
+        
+        // Close modal when clicking backdrop or close button
+        backdrop.addEventListener('click', () => this.closeModal());
+        closeButton.addEventListener('click', () => this.closeModal());
+        
+        // Handle file selection
+        fileInput.addEventListener('change', (e) => this.handleFileSelection(e));
+        
+        // Handle import button click
+        importButton.addEventListener('click', () => this.importSelectedProjects());
+    }
+    
+    openModal() {
+        this.modal.classList.remove('hidden');
+        setTimeout(() => {
+            this.modal.classList.add('open');
+        }, 10);
+    }
+    
+    closeModal() {
+        const modal = this.modal;
+        const fileInput = modal.querySelector('#import-file-input');
+        const container = modal.querySelector('#import-projects-list-container');
+        
+        // Animate out
+        modal.classList.remove('open');
+        
+        // Reset state
+        fileInput.value = '';
+        container.classList.add('hidden');
+        
+        // Hide modal after animation
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    }
+    
+    handleFileSelection(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const importedData = JSON.parse(event.target.result);
+                if (Array.isArray(importedData)) {
+                    this.displayImportProjects(importedData);
+                } else {
+                    alert('Invalid project file format');
+                }
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+                alert('Error parsing file: ' + error.message);
+            }
+        };
+        
+        reader.readAsText(file);
+    }
+    
+    displayImportProjects(importedProjects) {
+        const modal = this.modal;
+        const container = modal.querySelector('#import-projects-list-container');
+        const projectsList = modal.querySelector('#import-projects-list');
+        const importButton = modal.querySelector('#import-selected-projects');
+        
+        // Show the projects list container
+        container.classList.remove('hidden');
+        
+        // Clear previous list
+        projectsList.innerHTML = '';
+        
+        // Get current projects for comparison
+        const currentProjects = this.projectManager.projects;
+        const currentProjectsMap = new Map();
+        currentProjects.forEach(project => {
+            currentProjectsMap.set(project.name, project);
+        });
+        
+        // Flag to track if any projects are available for import
+        let hasSelectableProjects = false;
+        
+        // Add checkboxes for each project
+        importedProjects.forEach(project => {
+            const listItem = document.createElement('div');
+            listItem.className = 'flex items-center p-1 border-b last:border-b-0';
+            listItem.style.borderColor = 'var(--border-color)';
+            
+            const isConflict = currentProjectsMap.has(project.name);
+            let isNewer = false;
+            let shouldSelect = true;
+            
+            if (isConflict) {
+                const currentProject = currentProjectsMap.get(project.name);
+                isNewer = new Date(project.dateModified) > new Date(currentProject.dateModified);
+                shouldSelect = isNewer;
+                
+                // Apply color based on date comparison
+                listItem.style.color = isNewer ? 'var(--theme-green-text)' : 'var(--theme-red-text)';
+            }
+            
+            // Format date
+            const modifiedDate = new Date(project.dateModified).toLocaleDateString();
+            
+            listItem.innerHTML = `
+                <label class="flex items-center w-full cursor-pointer">
+                    <input type="checkbox" class="mr-2 import-project-checkbox" value="${project.id}" 
+                           data-name="${project.name}" ${shouldSelect ? 'checked' : ''}>
+                    <div class="flex-1">
+                        <div class="font-medium">${project.name}</div>
+                        <div class="text-xs opacity-70">Modified: ${modifiedDate}</div>
+                        ${isConflict ? `<div class="text-xs font-medium">
+                            ${isNewer ? '(Newer than existing project)' : '(Older than existing project)'}
+                        </div>` : ''}
+                    </div>
+                </label>
+            `;
+            
+            projectsList.appendChild(listItem);
+            hasSelectableProjects = true;
+        });
+        
+        // Enable/disable import button
+        importButton.disabled = !hasSelectableProjects;
+        
+        if (!hasSelectableProjects) {
+            projectsList.innerHTML = '<div class="p-2 text-center text-gray-500">No projects available to import</div>';
+        }
+    }
+    
+    importSelectedProjects() {
+        const modal = this.modal;
+        const checkboxes = modal.querySelectorAll('.import-project-checkbox:checked');
+        const fileInput = modal.querySelector('#import-file-input');
+        
+        if (checkboxes.length === 0 || !fileInput.files[0]) {
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const importedProjects = JSON.parse(event.target.result);
+                if (!Array.isArray(importedProjects)) {
+                    throw new Error('Invalid project format');
+                }
+                
+                // Get selected project IDs
+                const selectedIds = Array.from(checkboxes).map(cb => cb.value);
+                
+                // Filter projects to only selected ones
+                const projectsToImport = importedProjects.filter(project => 
+                    selectedIds.includes(project.id));
+                
+                // Create a map of existing project names for comparison
+                const existingProjectNames = new Map();
+                this.projectManager.projects.forEach(project => {
+                    existingProjectNames.set(project.name, project);
+                });
+                
+                // Import projects, replacing any with the same name
+                projectsToImport.forEach(project => {
+                    // If project with same name exists, remove it
+                    if (existingProjectNames.has(project.name)) {
+                        const existingProject = existingProjectNames.get(project.name);
+                        const existingIndex = this.projectManager.projects.findIndex(p => p.id === existingProject.id);
+                        if (existingIndex >= 0) {
+                            this.projectManager.projects.splice(existingIndex, 1);
+                        }
+                    }
+                    
+                    // Add the imported project
+                    this.projectManager.projects.push(project);
+                });
+                
+                // Save and update UI
+                this.projectManager.saveProjects();
+                this.projectManager.renderProjectList();
+                
+                // Close modal and show success message
+                this.closeModal();
+                alert(`Successfully imported ${projectsToImport.length} project(s)`);
+                
+            } catch (error) {
+                console.error('Error importing projects:', error);
+                alert('Error importing projects: ' + error.message);
+            }
+        };
+        
+        reader.readAsText(fileInput.files[0]);
+    }
+}
+
+// --- ExportManager Class ---
+class ExportManager {
+    constructor(projectManager) {
+        this.projectManager = projectManager;
+        this.modal = this.createModal();
+        document.body.appendChild(this.modal);
+        this.setupEventListeners();
+    }
+    
+    createModal() {
+        const modal = document.createElement('div');
+        modal.id = 'export-projects-modal';
+        modal.className = 'fixed inset-0 flex items-center justify-center z-50 hidden modal';
+        
+        modal.innerHTML = `
+            <div class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop" id="export-modal-backdrop"></div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl z-10 w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden modal-content" 
+                 style="background-color: var(--bg-secondary); color: var(--text-primary);">
+                <div class="px-4 py-3 border-b border-solid flex justify-between items-center" 
+                     style="border-color: var(--border-color);">
+                    <h3 class="text-lg font-semibold">Export Projects</h3>
+                    <button id="close-export-modal" class="p-1 rounded-full hover:bg-black hover:bg-opacity-10 transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="p-4 flex flex-col">
+                    <div class="mb-4">
+                        <label class="block mb-2">Select projects to export:</label>
+                        <div id="export-projects-list" class="border rounded p-2 max-h-48 overflow-y-auto"
+                             style="border-color: var(--border-color); background-color: var(--bg-primary);">
+                            <!-- Project checkboxes will be dynamically added here -->
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block mb-2" for="export-filename">Filename:</label>
+                        <input type="text" id="export-filename" class="w-full p-2 border rounded" value="flowchart-projects.json"
+                               style="border-color: var(--border-color); background-color: var(--bg-primary);">
+                    </div>
+                </div>
+                
+                <div class="px-4 py-3 border-t border-solid flex justify-end" 
+                     style="border-color: var(--border-color);">
+                    <button id="export-selected-projects" class="px-4 py-2 bg-purple-600 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed">
+                        Export Selected
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        return modal;
+    }
+    
+    setupEventListeners() {
+        const modal = this.modal;
+        const backdrop = modal.querySelector('#export-modal-backdrop');
+        const closeButton = modal.querySelector('#close-export-modal');
+        const exportButton = modal.querySelector('#export-selected-projects');
+        
+        // Close modal when clicking backdrop or close button
+        backdrop.addEventListener('click', () => this.closeModal());
+        closeButton.addEventListener('click', () => this.closeModal());
+        
+        // Handle export button click
+        exportButton.addEventListener('click', () => this.exportSelectedProjects());
+    }
+    
+    openModal() {
+        this.populateProjectsList();
+        
+        this.modal.classList.remove('hidden');
+        setTimeout(() => {
+            this.modal.classList.add('open');
+        }, 10);
+    }
+    
+    closeModal() {
+        this.modal.classList.remove('open');
+        
+        // Hide modal after animation
+        setTimeout(() => {
+            this.modal.classList.add('hidden');
+        }, 300);
+    }
+    
+    populateProjectsList() {
+        const modal = this.modal;
+        const projectsList = modal.querySelector('#export-projects-list');
+        const exportButton = modal.querySelector('#export-selected-projects');
+        
+        // Clear previous list
+        projectsList.innerHTML = '';
+        
+        // Get current projects
+        const projects = this.projectManager.projects;
+        
+        // Add checkboxes for each project
+        if (projects.length > 0) {
+            // Add "Select All" checkbox
+            const selectAllContainer = document.createElement('div');
+            selectAllContainer.className = 'flex items-center p-1 bg-black bg-opacity-5 sticky top-0 border-b';
+            selectAllContainer.style.borderColor = 'var(--border-color)';
+            
+            selectAllContainer.innerHTML = `
+                <label class="flex items-center w-full cursor-pointer">
+                    <input type="checkbox" id="select-all-export" class="mr-2" checked>
+                    <div class="font-medium">Select All</div>
+                </label>
+            `;
+            
+            projectsList.appendChild(selectAllContainer);
+            
+            // Add event listener for select all
+            modal.querySelector('#select-all-export').addEventListener('change', function() {
+                const checkboxes = modal.querySelectorAll('.export-project-checkbox');
+                checkboxes.forEach(cb => {
+                    cb.checked = this.checked;
+                });
+            });
+            
+            // Add project items
+            projects.forEach(project => {
+                const modifiedDate = new Date(project.dateModified).toLocaleDateString();
+                
+                const listItem = document.createElement('div');
+                listItem.className = 'flex items-center p-1 border-b last:border-b-0';
+                listItem.style.borderColor = 'var(--border-color)';
+                
+                listItem.innerHTML = `
+                    <label class="flex items-center w-full cursor-pointer">
+                        <input type="checkbox" class="mr-2 export-project-checkbox" value="${project.id}" checked>
+                        <div class="flex-1">
+                            <div class="font-medium">${project.name}</div>
+                            <div class="text-xs opacity-70">Modified: ${modifiedDate}</div>
+                        </div>
+                    </label>
+                `;
+                
+                projectsList.appendChild(listItem);
+            });
+            
+            // Enable export button
+            exportButton.disabled = false;
+        } else {
+            projectsList.innerHTML = '<div class="p-2 text-center text-gray-500">No projects available to export</div>';
+            exportButton.disabled = true;
+        }
+    }
+    
+    exportSelectedProjects() {
+        const modal = this.modal;
+        const checkboxes = modal.querySelectorAll('.export-project-checkbox:checked');
+        
+        if (checkboxes.length === 0) {
+            alert('Please select at least one project to export');
+            return;
+        }
+        
+        // Get selected project IDs
+        const selectedIds = Array.from(checkboxes).map(cb => cb.value);
+        
+        // Get projects from projectManager
+        const selectedProjects = this.projectManager.projects.filter(project => 
+            selectedIds.includes(project.id));
+        
+        // Create JSON data
+        const jsonData = JSON.stringify(selectedProjects, null, 2);
+        
+        // Get filename
+        const filenameInput = modal.querySelector('#export-filename');
+        let filename = filenameInput.value.trim();
+        if (!filename) {
+            filename = 'flowchart-projects.json';
+        } else if (!filename.toLowerCase().endsWith('.json')) {
+            filename += '.json';
+        }
+        
+        // Create download link
+        const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(jsonData);
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute('href', dataStr);
+        downloadAnchor.setAttribute('download', filename);
+        document.body.appendChild(downloadAnchor);
+        
+        // Trigger download
+        downloadAnchor.click();
+        
+        // Clean up
+        document.body.removeChild(downloadAnchor);
+        
+        // Close modal
+        this.closeModal();
+    }
+}
+
 // --- Settings Manager ---
 class SettingsManager {
     constructor(diagramManager) {
@@ -1136,6 +1613,10 @@ class ProjectManager {
         this.confirmingDeleteId = null;
         this.showingNewProjectForm = false;
         
+        // Initialize import and export managers
+        this.importManager = new ImportManager(this);
+        this.exportManager = new ExportManager(this);
+        
         this.loadProjects();
         this.setupEventListeners();
     }
@@ -1206,6 +1687,18 @@ class ProjectManager {
             this._resizeTimeout = setTimeout(() => {
                 this.diagramManager.updateAllBoxSizes();
             }, 50);
+        });
+        
+        // Import button
+        document.getElementById('import-projects-button').addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.importManager.openModal();
+        });
+        
+        // Export button
+        document.getElementById('export-projects-button').addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.exportManager.openModal();
         });
     }
     
