@@ -13,98 +13,19 @@
         /* --- Color Palette Variables --- */
         :root {
             /* --- Base Colors --- */
-            /* Gray/Default Scale */
-            --gray-50: #f9fafb;
-            --gray-100: #f3f4f6;
-            --gray-200: #e5e7eb;
-            --gray-300: #d1d5db;
-            --gray-400: #9ca3af;
-            --gray-500: #6b7280;
-            --gray-600: #4b5563;
-            --gray-700: #374151;
-            --gray-800: #1f2937;
-            --gray-900: #111827;
-            
-            /* Red Scale */
-            --red-50: #FEEBE8;
-            --red-100: #FEDFDB;
-            --red-200: #FDC7C1;
-            --red-300: #FCAFA6;
-            --red-400: #FB877A;
-            --red-500: #FA5D4B;
-            --red-600: #F93822;
-            --red-700: #BA2A19;
-            --red-800: #881E12;
-            --red-900: #63160D;
-            --red-950: #3E0E08;
+            /* Gray/Default Scale       Red Scale                 Amber/Orange Scale         Yellow Scale                  Green Scale                  Blue Scale              Purple Scale */             
+            --gray-50: #EEEDED;       --red-50: #FEEBE8;     --amber-50: #FDF6E5;     --yellow-50: #FEFBE5;      --green-50: #F1F8E8;     --blue-50: #E5F0FA;     --purple-50: #F3EFFA;        
+            --gray-100: #E5E3E2;     --red-100: #FEDFDB;    --amber-100: #FCF1D6;    --yellow-100: #FEF9D6;     --green-100: #E9F4DB;    --blue-100: #D6E8F7;    --purple-100: #EDE6F7;        
+            --gray-200: #D1CECD;     --red-200: #FDC7C1;    --amber-200: #FBE6B7;    --yellow-200: #FEF5B7;     --green-200: #D9ECC0;    --blue-200: #B7D7F1;    --purple-200: #DFD3F1;        
+            --gray-300: #BEB9B7;     --red-300: #FCAFA6;    --amber-300: #F9DC99;    --yellow-300: #FEF199;     --green-300: #C9E5A5;    --blue-300: #99C6EB;    --purple-300: #D2C0EB;        
+            --gray-400: #9E9694;     --red-400: #FB877A;    --amber-400: #F7CB66;    --yellow-400: #FEEA66;     --green-400: #AED879;    --blue-400: #66AAE1;    --purple-400: #BCA1E1;        
+            --gray-500: #7C726E;     --red-500: #FA5D4B;    --amber-500: #F4B930;    --yellow-500: #FEE330;     --green-500: #91CA4A;    --blue-500: #308CD7;    --purple-500: #A580D6;        
+            --gray-600: #5E514D;     --red-600: #F93822;    --amber-600: #F2A900;    --yellow-600: #FEDD00;     --green-600: #78BE20;    --blue-600: #0072CE;    --purple-600: #9063CD;        
+            --gray-700: #463C39;     --red-700: #BA2A19;    --amber-700: #B57E00;    --yellow-700: #BEA500;     --green-700: #5A8E18;    --blue-700: #00559A;    --purple-700: #6C4A99;        
+            --gray-800: #332C2A;     --red-800: #881E12;    --amber-800: #855C00;    --yellow-800: #8B7900;     --green-800: #426811;    --blue-800: #003E71;    --purple-800: #4F3670;        
+            --gray-900: #25201E;     --red-900: #63160D;    --amber-900: #604300;    --yellow-900: #655800;     --green-900: #304C0C;    --blue-900: #002D52;    --purple-900: #392752;        
+            --gray-950: #171413;     --red-950: #3E0E08;    --amber-950: #3C2A00;    --yellow-950: #3F3700;     --green-950: #1E2F08;    --blue-950: #001C33;    --purple-950: #241833;        
 
-            /* Green Scale */
-            --green-50: #F1F8E8;
-            --green-100: #E9F4DB;
-            --green-200: #D9ECC0;
-            --green-300: #C9E5A5;
-            --green-400: #AED879;
-            --green-500: #91CA4A;
-            --green-600: #78BE20;
-            --green-700: #5A8E18;
-            --green-800: #426811;
-            --green-900: #304C0C;
-            --green-950: #1E2F08;
-
-            /* Blue Scale */
-            --blue-50: #E5F0FA;
-            --blue-100: #D6E8F7;
-            --blue-200: #B7D7F1;
-            --blue-300: #99C6EB;
-            --blue-400: #66AAE1;
-            --blue-500: #308CD7;
-            --blue-600: #0072CE;
-            --blue-700: #00559A;
-            --blue-800: #003E71;
-            --blue-900: #002D52;
-            --blue-950: #001C33;
-            
-
-            /* Purple Scale */
-            --purple-50: #F3EFFA;
-            --purple-100: #EDE6F7;
-            --purple-200: #DFD3F1;
-            --purple-300: #D2C0EB;
-            --purple-400: #BCA1E1;
-            --purple-500: #A580D6;
-            --purple-600: #9063CD;
-            --purple-700: #6C4A99;
-            --purple-800: #4F3670;
-            --purple-900: #392752;
-            --purple-950: #241833;
-
-            
-            /* Yellow Scale */
-            --yellow-50: #FEFBE5;
-            --yellow-100: #FEF9D6;
-            --yellow-200: #FEF5B7;
-            --yellow-300: #FEF199;
-            --yellow-400: #FEEA66;
-            --yellow-500: #FEE330;
-            --yellow-600: #FEDD00;
-            --yellow-700: #BEA500;
-            --yellow-800: #8B7900;
-            --yellow-900: #655800;
-            --yellow-950: #3F3700;
-
-            /* Amber/Orange Scale */
-            --amber-50: #FDF6E5;
-            --amber-100: #FCF1D6;
-            --amber-200: #FBE6B7;
-            --amber-300: #F9DC99;
-            --amber-400: #F7CB66;
-            --amber-500: #F4B930;
-            --amber-600: #F2A900;
-            --amber-700: #B57E00;
-            --amber-800: #855C00;
-            --amber-900: #604300;
-            --amber-950: #3C2A00;
-            
             /* Black, White, and Transparent */
             --black: #000000;
             --white: #ffffff;
@@ -121,350 +42,98 @@
             --transparent-white-10: rgba(255, 255, 255, 0.1);
             
             /* --- Theme Variables (Light Mode) --- */
-            --bg-primary: var(--gray-100);
-            --bg-secondary: var(--white);
-            --text-primary: var(--gray-900);
-            --text-secondary: var(--gray-600);
-            --text-muted: var(--gray-500);
-            --border-color: var(--gray-300);
-            --shadow-color: var(--transparent-black-10);
-            --box-shadow: 0 2px 5px var(--transparent-black-8);
-            --box-shadow-hover: 0 8px 15px var(--transparent-black-12);
-            --font-scale: 1; /* Default font scale */
-            
+            --bg-primary: var(--white); --bg-secondary: var(--white); --text-primary: var(--gray-900); --text-secondary: var(--gray-600); --text-muted: var(--gray-500); --border-color: var(--gray-300); --shadow-color: var(--transparent-black-10); --box-shadow: 0 2px 5px var(--transparent-black-8); --box-shadow-hover: 0 8px 15px var(--transparent-black-12); --font-scale: 1; /* Default font scale */
             /* Scrollbar Colors - Light Mode */
-            --scrollbar-track: #f1f1f1;
-            --scrollbar-thumb: #c1c1c1;
-            --scrollbar-thumb-hover: #a1a1a1;
-            
+            --scrollbar-track: #f1f1f1; --scrollbar-thumb: #c1c1c1; --scrollbar-thumb-hover: #a1a1a1;
             /* Table Variables - Light Mode */
-            --table-header-bg: var(--gray-600);
-            --table-header-text: var(--white);
-            --table-row-odd: transparent;
-            --table-row-even: var(--transparent-black-5);
-            --table-border: var(--border-color);
+            --table-hover-bg: var(--transparent-black-8);
             
-            /* Theme Colors - Light Mode */
-            --theme-default-bg: var(--white);
-            --theme-default-text: var(--gray-800);
-            --theme-default-border: var(--gray-500);
-            --theme-default-stroke: var(--gray-600);
-            
-            --theme-red-bg: var(--red-100);
-            --theme-red-text: var(--red-900);
-            --theme-red-border: var(--red-500);
-            --theme-red-stroke: var(--red-500);
-            
-            --theme-green-bg: var(--green-100);
-            --theme-green-text: var(--green-900);
-            --theme-green-border: var(--green-500);
-            --theme-green-stroke: var(--green-500);
-            
-            --theme-blue-bg: var(--blue-100);
-            --theme-blue-text: var(--blue-900);
-            --theme-blue-border: var(--blue-500);
-            --theme-blue-stroke: var(--blue-500);
-            
-            --theme-purple-bg: var(--purple-100);
-            --theme-purple-text: var(--purple-800);
-            --theme-purple-border: var(--purple-500);
-            --theme-purple-stroke: var(--purple-500);
-            
-            --theme-yellow-bg: var(--yellow-100);
-            --theme-yellow-text: var(--yellow-900);
-            --theme-yellow-border: var(--amber-500);
-            --theme-yellow-stroke: var(--amber-500);
-            
-            --theme-grey-bg: var(--gray-200);
-            --theme-grey-text: var(--gray-900);
-            --theme-grey-border: var(--gray-900);
-            --theme-grey-stroke: var(--gray-900);
-            
-            /* Table Header Theming - Light Mode */
-            --table-header-default-bg: var(--gray-500);
-            --table-header-default-text: var(--white);
-            --table-header-default-border: var(--gray-500);
-            
-            --table-header-red-bg: var(--red-400);
-            --table-header-red-text: var(--red-900);
-            --table-header-red-border: var(--red-500);
-            
-            --table-header-green-bg: var(--green-400);
-            --table-header-green-text: var(--green-950);
-            --table-header-green-border: var(--green-500);
-            
-            --table-header-blue-bg: var(--blue-400);
-            --table-header-blue-text: var(--blue-900);
-            --table-header-blue-border: var(--blue-500);
-            
-            --table-header-purple-bg: var(--purple-400);
-            --table-header-purple-text: var(--purple-950);
-            --table-header-purple-border: var(--purple-500);
-            
-            --table-header-yellow-bg: var(--amber-400);
-            --table-header-yellow-text: var(--yellow-950);
-            --table-header-yellow-border: var(--amber-500);
-            
-            --table-header-grey-bg: var(--gray-600);
-            --table-header-grey-text: var(--gray-50);
-            --table-header-grey-border: var(--gray-500);
-            
+            /* Theme Colors - Light Mode (Simplified) */
+            /* Default Theme */
+            --theme-default-bg: var(--white); --theme-default-text: var(--gray-800); --theme-default-border: var(--gray-500); --theme-default-stroke: var(--gray-400); --theme-default-table-header-bg: var(--gray-500); --theme-default-table-header-text: var(--white); --theme-default-table-row-odd: var(--white); --theme-default-table-row-even: var(--gray-100);
+            /* Red Theme */
+            --theme-red-bg: var(--red-100); --theme-red-text: var(--red-900); --theme-red-border: var(--red-500); --theme-red-stroke: var(--red-400); --theme-red-table-header-bg: var(--red-400); --theme-red-table-header-text: var(--red-900); --theme-red-table-row-odd: var(--red-50); --theme-red-table-row-even: var(--red-200);
+            /* Green Theme */
+            --theme-green-bg: var(--green-100); --theme-green-text: var(--green-900); --theme-green-border: var(--green-500); --theme-green-stroke: var(--green-400); --theme-green-table-header-bg: var(--green-400); --theme-green-table-header-text: var(--green-950); --theme-green-table-row-odd: var(--green-50); --theme-green-table-row-even: var(--green-200);
+            /* Blue Theme */
+            --theme-blue-bg: var(--blue-100); --theme-blue-text: var(--blue-900); --theme-blue-border: var(--blue-500); --theme-blue-stroke: var(--blue-400); --theme-blue-table-header-bg: var(--blue-400); --theme-blue-table-header-text: var(--blue-900); --theme-blue-table-row-odd: var(--blue-50); --theme-blue-table-row-even: var(--blue-200);
+            /* Purple Theme */
+            --theme-purple-bg: var(--purple-100); --theme-purple-text: var(--purple-800); --theme-purple-border: var(--purple-500); --theme-purple-stroke: var(--purple-400); --theme-purple-table-header-bg: var(--purple-400); --theme-purple-table-header-text: var(--purple-950); --theme-purple-table-row-odd: var(--purple-50); --theme-purple-table-row-even: var(--purple-200);
+            /* Yellow Theme */
+            --theme-yellow-bg: var(--yellow-100); --theme-yellow-text: var(--yellow-900); --theme-yellow-border: var(--amber-500); --theme-yellow-stroke: var(--amber-400); --theme-yellow-table-header-bg: var(--amber-400); --theme-yellow-table-header-text: var(--yellow-950); --theme-yellow-table-row-odd: var(--amber-50); --theme-yellow-table-row-even: var(--amber-200);
+            /* Grey Theme */
+            --theme-grey-bg: var(--gray-200); --theme-grey-text: var(--gray-900); --theme-grey-border: var(--gray-600); --theme-grey-stroke: var(--gray-500); --theme-grey-table-header-bg: var(--gray-600); --theme-grey-table-header-text: var(--gray-50); --theme-grey-table-row-odd: var(--white); --theme-grey-table-row-even: var(--gray-100);
             /* Icon Colors */
-            --sun-icon-color: var(--amber-500);
-            --moon-icon-color: var(--blue-600);
-            
+            --sun-icon-color: var(--amber-500); --moon-icon-color: var(--blue-600);
             /* Link Colors */
             --link-color: var(--purple-500);
         }
 
+        /* --- Dark Mode Variables --- */
         .dark-mode {
-            /* --- Theme Variables (Dark Mode) --- */
-            --bg-primary: var(--gray-800);
-            --bg-secondary: var(--gray-700);
-            --text-primary: var(--gray-50);
-            --text-secondary: var(--gray-300);
-            --text-muted: var(--gray-400);
-            --border-color: var(--gray-600);
-            --shadow-color: var(--transparent-black-30);
-            --box-shadow: 0 2px 5px var(--transparent-black-20);
-            --box-shadow-hover: 0 8px 15px var(--transparent-black-35);
-            
+            --bg-primary: var(--gray-800); --bg-secondary: var(--gray-700); --text-primary: var(--gray-50); --text-secondary: var(--gray-300); --text-muted: var(--gray-400); --border-color: var(--gray-600); --shadow-color: var(--transparent-black-30); --box-shadow: 0 2px 5px var(--transparent-black-20); --box-shadow-hover: 0 8px 15px var(--transparent-black-35);
             /* Scrollbar Colors - Dark Mode */
-            --scrollbar-track: var(--gray-700);
-            --scrollbar-thumb: var(--gray-600);
-            --scrollbar-thumb-hover: var(--gray-500);
-            
+            --scrollbar-track: var(--gray-700); --scrollbar-thumb: var(--gray-600); --scrollbar-thumb-hover: var(--gray-500);
             /* Table Variables - Dark Mode */
-            --table-header-bg: var(--purple-600);
-            --table-header-text: var(--white);
-            --table-row-odd: transparent;
-            --table-row-even: var(--transparent-white-5);
-            --table-border: var(--border-color);
+            --table-hover-bg: var(--transparent-white-10);
             
-            /* Theme Colors - Dark Mode */
-            --theme-default-bg: var(--gray-700);
-            --theme-default-text: var(--gray-50);
-            --theme-default-border: var(--gray-400);
-            --theme-default-stroke: var(--gray-400);
-            
-            --theme-red-bg: var(--red-900);
-            --theme-red-text: var(--red-200);
-            --theme-red-border: var(--red-500);
-            --theme-red-stroke: var(--red-300);
-            
-            --theme-green-bg: var(--green-900);
-            --theme-green-text: var(--green-200);
-            --theme-green-border: var(--green-500);
-            --theme-green-stroke: var(--green-400);
-            
-            --theme-blue-bg: var(--blue-900);
-            --theme-blue-text: var(--blue-200);
-            --theme-blue-border: var(--blue-500);
-            --theme-blue-stroke: var(--blue-400);
-            
-            --theme-purple-bg: var(--purple-800);
-            --theme-purple-text: var(--purple-200);
-            --theme-purple-border: var(--purple-500);
-            --theme-purple-stroke: var(--purple-400);
-            
-            --theme-yellow-bg: var(--yellow-900);
-            --theme-yellow-text: var(--yellow-200);
-            --theme-yellow-border: var(--amber-500);
-            --theme-yellow-stroke: var(--amber-400);
-            
-            --theme-grey-bg: var(--gray-800);
-            --theme-grey-text: var(--gray-200);
-            --theme-grey-border: var(--gray-400);
-            --theme-grey-stroke: var(--gray-400);
-            
-            /* Table Header Theming - Dark Mode */
-            --table-header-default-bg: var(--gray-600);
-            --table-header-default-text: var(--gray-100);
-            --table-header-default-border: var(--gray-500);
-            
-            --table-header-red-bg: var(--red-700);
-            --table-header-red-text: var(--red-100);
-            --table-header-red-border: var(--red-500);
-            
-            --table-header-green-bg: var(--green-700);
-            --table-header-green-text: var(--green-100);
-            --table-header-green-border: var(--green-500);
-            
-            --table-header-blue-bg: var(--blue-700);
-            --table-header-blue-text: var(--blue-100);
-            --table-header-blue-border: var(--blue-500);
-            
-            --table-header-purple-bg: var(--purple-700);
-            --table-header-purple-text: var(--purple-100);
-            --table-header-purple-border: var(--purple-500);
-            
-            --table-header-yellow-bg: var(--amber-700);
-            --table-header-yellow-text: var(--yellow-100);
-            --table-header-yellow-border: var(--amber-500);
-            
-            --table-header-grey-bg: var(--gray-800);
-            --table-header-grey-text: var(--gray-50);
-            --table-header-grey-border: var(--gray-600);
+            /* Theme Colors - Dark Mode (Simplified) */
+            /* Default Theme */
+            --theme-default-bg: var(--gray-700); --theme-default-text: var(--gray-50); --theme-default-border: var(--gray-500); --theme-default-stroke: var(--gray-400); --theme-default-table-header-bg: var(--gray-600); --theme-default-table-header-text: var(--gray-100); --theme-default-table-row-odd: var(--gray-800); --theme-default-table-row-even: var(--gray-700);
+            /* Red Theme */
+            --theme-red-bg: var(--red-900); --theme-red-text: var(--red-200); --theme-red-border: var(--red-600); --theme-red-stroke: var(--red-500); --theme-red-table-header-bg: var(--red-700); --theme-red-table-header-text: var(--red-100); --theme-red-table-row-odd: var(--red-900); --theme-red-table-row-even: var(--red-800);
+            /* Green Theme */
+            --theme-green-bg: var(--green-900); --theme-green-text: var(--green-200); --theme-green-border: var(--green-600); --theme-green-stroke: var(--green-500); --theme-green-table-header-bg: var(--green-700); --theme-green-table-header-text: var(--green-100); --theme-green-table-row-odd: var(--green-900); --theme-green-table-row-even: var(--green-800);
+            /* Blue Theme */
+            --theme-blue-bg: var(--blue-900); --theme-blue-text: var(--blue-200); --theme-blue-border: var(--blue-600); --theme-blue-stroke: var(--blue-500); --theme-blue-table-header-bg: var(--blue-700); --theme-blue-table-header-text: var(--blue-100); --theme-blue-table-row-odd: var(--blue-900); --theme-blue-table-row-even: var(--blue-800);
+            /* Purple Theme */
+            --theme-purple-bg: var(--purple-800); --theme-purple-text: var(--purple-200); --theme-purple-border: var(--purple-600); --theme-purple-stroke: var(--purple-500); --theme-purple-table-header-bg: var(--purple-700); --theme-purple-table-header-text: var(--purple-100); --theme-purple-table-row-odd: var(--purple-900); --theme-purple-table-row-even: var(--purple-800);
+            /* Yellow Theme */
+            --theme-yellow-bg: var(--yellow-900); --theme-yellow-text: var(--yellow-200); --theme-yellow-border: var(--amber-600); --theme-yellow-stroke: var(--amber-500); --theme-yellow-table-header-bg: var(--yellow-700); --theme-yellow-table-header-text: var(--yellow-100); --theme-yellow-table-row-odd: var(--yellow-900); --theme-yellow-table-row-even: var(--yellow-800);
+            /* Grey Theme */
+            --theme-grey-bg: var(--gray-800); --theme-grey-text: var(--gray-200); --theme-grey-border: var(--gray-500); --theme-grey-stroke: var(--gray-400); --theme-grey-table-header-bg: var(--gray-700); --theme-grey-table-header-text: var(--gray-50); --theme-grey-table-row-odd: var(--gray-900); --theme-grey-table-row-even: var(--gray-800);
         }
 
-        #canvas {
-            overflow: visible;
-        }
-        
-        #connections {
-            overflow: visible;
-        }
-        
-        #box-container {
-            overflow: visible;
-        }
+        /* --- Canvas & Container Styles --- */
+        #canvas { overflow: visible; }
+        #connections { overflow: visible; }
+        #box-container { overflow: visible; }
 
-        body {
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            transition: background-color 0.3s ease, color 0.3s ease;
-            overflow-x: auto;
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
-        }
+        /* --- Body & General Styles --- */
+        body { background-color: var(--bg-primary); color: var(--text-primary); transition: background-color 0.3s ease, color 0.3s ease; overflow-x: auto; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track); }
 
-        /* Scrollbar width */
-        ::-webkit-scrollbar {
-            width: 10px;
-            height: 10px;
-        }
-        
-        /* Scrollbar track */
-        ::-webkit-scrollbar-track {
-            background-color: var(--scrollbar-track);
-            border-radius: 6px;
-        }
-        
-        /* Scrollbar thumb */
-        ::-webkit-scrollbar-thumb {
-            background-color: var(--scrollbar-thumb);
-            border-radius: 6px;
-            transition: background-color 0.3s ease;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background-color: var(--scrollbar-thumb-hover);
-        }
-        
-        /* Scrollbar corner */
-        ::-webkit-scrollbar-corner {
-            background-color: var(--scrollbar-track);
-        }
-        
-        /* Firefox scrollbar styling */
-        * {
-            scrollbar-width: thin;
-            scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
-        }
-
+        /* --- Scrollbar Styles --- */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background-color: var(--scrollbar-track); border-radius: 6px; }
+        ::-webkit-scrollbar-thumb { background-color: var(--scrollbar-thumb); border-radius: 6px; transition: background-color 0.3s ease; }
+        ::-webkit-scrollbar-thumb:hover { background-color: var(--scrollbar-thumb-hover); }
+        ::-webkit-scrollbar-corner { background-color: var(--scrollbar-track); }
+        * { scrollbar-width: thin; scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track); }
 
         /* --- Theme Toggle Icons --- */
-        .theme-toggle {
-            position: relative;
-        }
-
-        .theme-toggle svg {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        /* Hide both icons initially */
-        #sun-icon, #moon-icon {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.6);
-            display: block; /* Ensure SVGs are always in layout */
-        }
-
-        /* Show active icon based on theme */
-        body:not(.dark-mode) #sun-icon {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-        }
-
-        body.dark-mode #moon-icon {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-        }
-
-        /* Hover animations */
-        body:not(.dark-mode) .theme-toggle:hover #sun-icon {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.6) rotate(45deg);
-        }
-
-        body:not(.dark-mode) .theme-toggle:hover #moon-icon {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-        }
-
-        body.dark-mode .theme-toggle:hover #moon-icon {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.6) rotate(-45deg);
-        }
-
-        body.dark-mode .theme-toggle:hover #sun-icon {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-        }
-
-        /* Sun icon styles */
-        #sun-icon {
-            fill: var(--sun-icon-color);
-            color: var(--sun-icon-color);
-        }
-
-        /* Moon icon styles */
-        #moon-icon {
-            fill: var(--moon-icon-color);
-            color: var(--moon-icon-color);
-        }
+        .theme-toggle { position: relative; }
+        .theme-toggle svg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        #sun-icon, #moon-icon { opacity: 0; transform: translate(-50%, -50%) scale(0.6); display: block; /* Ensure SVGs are always in layout */ }
+        body:not(.dark-mode) #sun-icon { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        body.dark-mode #moon-icon { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        body:not(.dark-mode) .theme-toggle:hover #sun-icon { opacity: 0; transform: translate(-50%, -50%) scale(0.6) rotate(45deg); }
+        body:not(.dark-mode) .theme-toggle:hover #moon-icon { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        body.dark-mode .theme-toggle:hover #moon-icon { opacity: 0; transform: translate(-50%, -50%) scale(0.6) rotate(-45deg); }
+        body.dark-mode .theme-toggle:hover #sun-icon { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        #sun-icon { fill: var(--sun-icon-color); color: var(--sun-icon-color); }
+        #moon-icon { fill: var(--moon-icon-color); color: var(--moon-icon-color); }
 
         /* --- Project Title --- */
-        #project-title {
-            color: var(--text-muted);
-            font-weight: 300;
-            letter-spacing: 0.05em;
-            user-select: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-        }
+        #project-title { color: var(--text-muted); font-weight: 300; letter-spacing: 0.05em; user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; }
 
         /* --- Base Setup --- */
         html { height: 100%; }
         .no-select { user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; }
 
         /* --- SVG Connection Styles --- */
-        .connection-path { 
-            stroke-width: 2; 
-            fill: none; 
-            cursor: pointer; 
-            transition: stroke 0.2s ease, stroke-width 0.2s ease, opacity 0.2s ease;
-            pointer-events: none;
-        }
-
-        /* Improved hitbox for all connections */
-        .connection-hitbox {
-            stroke-width: 12; /* Wide hit area for easier interaction */
-            stroke: transparent;
-            fill: none;
-            cursor: pointer;
-            pointer-events: stroke;
-        }
-
-        .connection-path:hover { 
-            opacity: 0.85; 
-            filter: drop-shadow(0 0 2px var(--transparent-black-15));
-        }
+        .connection-path { stroke-width: 2; fill: none; cursor: pointer; transition: stroke 0.2s ease, stroke-width 0.2s ease, opacity 0.2s ease; pointer-events: none; }
+        .connection-hitbox { stroke-width: 12; /* Wide hit area for easier interaction */ stroke: transparent; fill: none; cursor: pointer; pointer-events: stroke; }
+        .connection-path:hover { opacity: 0.85; filter: drop-shadow(0 0 2px var(--transparent-black-15)); }
 
         /* Pattern styles */
         .connection-pattern-normal { stroke-dasharray: none; }
@@ -477,181 +146,89 @@
         .connection-thickness-bold { stroke-width: 4; }
 
         /* --- Arrow hotspot styles --- */
-        .arrow-hotspot {
-            fill: transparent;
-            stroke: transparent;
-            cursor: pointer;
-            transition: opacity 0.2s ease;
-        }
-        .arrow-hotspot:hover {
-            fill: var(--transparent-black-5);
-        }
+        .arrow-hotspot { fill: transparent; stroke: transparent; cursor: pointer; transition: opacity 0.2s ease; }
+        .arrow-hotspot:hover { fill: var(--transparent-black-5); }
 
         /* --- Custom box styles --- */
-        .box-default {
-            border: 1.5px solid var(--border-color);
-            box-shadow: var(--box-shadow);
-            transform: translateY(0);
-            transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.3s ease, border-color 0.3s ease;
-        }
-
-        .box-default:hover {
-            box-shadow: var(--box-shadow-hover);
-            transform: translateY(-2px);
-        }
+        .box-default { border: 1.5px solid var(--border-color); box-shadow: var(--box-shadow); transform: translateY(0); transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.3s ease, border-color 0.3s ease; }
+        .box-default:hover { box-shadow: var(--box-shadow-hover); transform: translateY(-2px); }
 
         /* --- Markdown styling (enhanced) --- */
-        .markdown-content { 
-            font-size: calc(14px * var(--font-scale)); 
-            line-height: 1.5; 
-            word-wrap: break-word; 
-            color: var(--text-primary); 
-        }
-        .markdown-content h1 { 
-            font-size: calc(1.5em * var(--font-scale)); 
-            font-weight: bold; 
-            margin-top: 0.5em; 
-            margin-bottom: 0.3em; 
-        }
-        .markdown-content h2 { 
-            font-size: calc(1.3em * var(--font-scale)); 
-            font-weight: bold; 
-            margin-top: 0.4em; 
-            margin-bottom: 0.2em; 
-        }
-        .markdown-content h3 { 
-            font-size: calc(1.1em * var(--font-scale)); 
-            font-weight: bold; 
-            margin-top: 0.3em; 
-            margin-bottom: 0.1em; 
-        }
+        .markdown-content { font-size: calc(14px * var(--font-scale)); line-height: 1.5; word-wrap: break-word; color: var(--text-primary); }
+        .markdown-content h1 { font-size: calc(1.5em * var(--font-scale)); font-weight: bold; margin-top: 0.5em; margin-bottom: 0.3em; }
+        .markdown-content h2 { font-size: calc(1.3em * var(--font-scale)); font-weight: bold; margin-top: 0.4em; margin-bottom: 0.2em; }
+        .markdown-content h3 { font-size: calc(1.1em * var(--font-scale)); font-weight: bold; margin-top: 0.3em; margin-bottom: 0.1em; }
         .markdown-content p { margin-bottom: 0.5em; }
-        .markdown-content ul, .markdown-content ol { 
-            padding-left: 1.5em; 
-            margin-bottom: 0.5em; 
-            list-style-position: outside; 
-        }
+        .markdown-content ul, .markdown-content ol { padding-left: 1.5em; margin-bottom: 0.5em; list-style-position: outside; }
         .markdown-content ul { list-style-type: disc; }
         .markdown-content ol { list-style-type: decimal; }
         .markdown-content li { margin-bottom: 0.2em; }
         .markdown-content li > ul, .markdown-content li > ol { margin-top: 0.2em; }
-        .markdown-content code { 
-            background-color: var(--transparent-black-5); 
-            padding: 0.1em 0.2em; 
-            border-radius: 0.2em; 
-            font-family: monospace; 
-            font-size: calc(0.9em * var(--font-scale));
-        }
+        .markdown-content code { background-color: var(--transparent-black-5); padding: 0.1em 0.2em; border-radius: 0.2em; font-family: monospace; font-size: calc(0.9em * var(--font-scale)); }
         .markdown-content hr { margin: 0.5em 0; border: none; border-top: 1px solid var(--border-color); }
         .markdown-content a { color: var(--link-color); text-decoration: underline; }
-        
-        /* Table base styling */
+
+        /* --- Table base styling --- */
         .markdown-content table { border-collapse: collapse; width: 100%; margin-bottom: 0.8em; font-size: calc(0.9em * var(--font-scale)); box-shadow: 0 1px 3px var(--transparent-black-10); border-radius: 4px; overflow: hidden; }
-        .markdown-content table td { border: 1px solid var(--border-color); padding: 0.4em 0.7em; }
-        .markdown-content table tr:nth-child(odd) { background-color: transparent; }
-        .markdown-content table tr:nth-child(even) { background-color: var(--table-row-even); }
-        .dark-mode .markdown-content table tr:nth-child(even) { background-color: var(--transparent-white-7); }
-        .markdown-content table tr:hover { background-color: var(--transparent-black-8); }
-        .dark-mode .markdown-content table tr:hover { background-color: var(--transparent-white-10); }
-        .markdown-content table th { border: 1px solid var(--border-color); padding: 0.5em 0.7em; text-align: left; font-weight: bold; }
 
-        /* Theme-specific table header styling for light mode */
-        div[data-theme="default"] .markdown-content table th { 
-            background-color: var(--table-header-default-bg); 
-            color: var(--table-header-default-text); 
-            border-color: var(--table-header-default-border); 
-        }
-        div[data-theme="red"] .markdown-content table th { 
-            background-color: var(--table-header-red-bg); 
-            color: var(--table-header-red-text); 
-            border-color: var(--table-header-red-border); 
-        }
-        div[data-theme="green"] .markdown-content table th { 
-            background-color: var(--table-header-green-bg); 
-            color: var(--table-header-green-text); 
-            border-color: var(--table-header-green-border); 
-        }
-        div[data-theme="blue"] .markdown-content table th { 
-            background-color: var(--table-header-blue-bg); 
-            color: var(--table-header-blue-text); 
-            border-color: var(--table-header-blue-border); 
-        }
-        div[data-theme="purple"] .markdown-content table th { 
-            background-color: var(--table-header-purple-bg); 
-            color: var(--table-header-purple-text); 
-            border-color: var(--table-header-purple-border); 
-        }
-        div[data-theme="yellow"] .markdown-content table th { 
-            background-color: var(--table-header-yellow-bg); 
-            color: var(--table-header-yellow-text); 
-            border-color: var(--table-header-yellow-border); 
-        }
-        div[data-theme="grey"] .markdown-content table th { 
-            background-color: var(--table-header-grey-bg); 
-            color: var(--table-header-grey-text); 
-            border-color: var(--table-header-grey-border); 
-        }
+        /* Themed table styling */
+        /* Default theme tables */
+        div[data-theme="default"] .markdown-content table { border-color: var(--theme-default-border); }
+        div[data-theme="default"] .markdown-content table th { background-color: var(--theme-default-table-header-bg); color: var(--theme-default-table-header-text); border-color: var(--theme-default-border); }
+        div[data-theme="default"] .markdown-content table td { border-color: var(--theme-default-border); color: var(--theme-default-text); }
+        div[data-theme="default"] .markdown-content table tr:nth-child(odd) { background-color: var(--theme-default-table-row-odd); }
+        div[data-theme="default"] .markdown-content table tr:nth-child(even) { background-color: var(--theme-default-table-row-even); }
 
-        /* Theme-specific table header styling for dark mode */
-        .dark-mode div[data-theme="default"] .markdown-content table th { 
-            background-color: var(--table-header-default-bg); 
-            color: var(--table-header-default-text); 
-            border-color: var(--table-header-default-border); 
-        }
-        .dark-mode div[data-theme="red"] .markdown-content table th { 
-            background-color: var(--table-header-red-bg); 
-            color: var(--table-header-red-text); 
-            border-color: var(--table-header-red-border); 
-        }
-        .dark-mode div[data-theme="green"] .markdown-content table th { 
-            background-color: var(--table-header-green-bg); 
-            color: var(--table-header-green-text); 
-            border-color: var(--table-header-green-border); 
-        }
-        .dark-mode div[data-theme="blue"] .markdown-content table th { 
-            background-color: var(--table-header-blue-bg); 
-            color: var(--table-header-blue-text); 
-            border-color: var(--table-header-blue-border); 
-        }
-        .dark-mode div[data-theme="purple"] .markdown-content table th { 
-            background-color: var(--table-header-purple-bg); 
-            color: var(--table-header-purple-text); 
-            border-color: var(--table-header-purple-border); 
-        }
-        .dark-mode div[data-theme="yellow"] .markdown-content table th { 
-            background-color: var(--table-header-yellow-bg); 
-            color: var(--table-header-yellow-text); 
-            border-color: var(--table-header-yellow-border); 
-        }
-        .dark-mode div[data-theme="grey"] .markdown-content table th { 
-            background-color: var(--table-header-grey-bg); 
-            color: var(--table-header-grey-text); 
-            border-color: var(--table-header-grey-border); 
-        }
- 
+        /* Red theme tables */
+        div[data-theme="red"] .markdown-content table { border-color: var(--theme-red-border); }
+        div[data-theme="red"] .markdown-content table th { background-color: var(--theme-red-table-header-bg); color: var(--theme-red-table-header-text); border-color: var(--theme-red-border); }
+        div[data-theme="red"] .markdown-content table td { border-color: var(--theme-red-border); color: var(--theme-red-text); }
+        div[data-theme="red"] .markdown-content table tr:nth-child(odd) { background-color: var(--theme-red-table-row-odd); }
+        div[data-theme="red"] .markdown-content table tr:nth-child(even) { background-color: var(--theme-red-table-row-even); }
+        /* Green theme tables */
+        div[data-theme="green"] .markdown-content table { border-color: var(--theme-green-border); }
+        div[data-theme="green"] .markdown-content table th { background-color: var(--theme-green-table-header-bg); color: var(--theme-green-table-header-text); border-color: var(--theme-green-border); }
+        div[data-theme="green"] .markdown-content table td { border-color: var(--theme-green-border); color: var(--theme-green-text); }
+        div[data-theme="green"] .markdown-content table tr:nth-child(odd) { background-color: var(--theme-green-table-row-odd); }
+        div[data-theme="green"] .markdown-content table tr:nth-child(even) { background-color: var(--theme-green-table-row-even); }
+        /* Blue theme tables */
+        div[data-theme="blue"] .markdown-content table { border-color: var(--theme-blue-border); }
+        div[data-theme="blue"] .markdown-content table th { background-color: var(--theme-blue-table-header-bg); color: var(--theme-blue-table-header-text); border-color: var(--theme-blue-border); }
+        div[data-theme="blue"] .markdown-content table td { border-color: var(--theme-blue-border); color: var(--theme-blue-text); }
+        div[data-theme="blue"] .markdown-content table tr:nth-child(odd) { background-color: var(--theme-blue-table-row-odd); }
+        div[data-theme="blue"] .markdown-content table tr:nth-child(even) { background-color: var(--theme-blue-table-row-even); }
+        /* Purple theme tables */
+        div[data-theme="purple"] .markdown-content table { border-color: var(--theme-purple-border); }
+        div[data-theme="purple"] .markdown-content table th { background-color: var(--theme-purple-table-header-bg); color: var(--theme-purple-table-header-text); border-color: var(--theme-purple-border); }
+        div[data-theme="purple"] .markdown-content table td { border-color: var(--theme-purple-border); color: var(--theme-purple-text); }
+        div[data-theme="purple"] .markdown-content table tr:nth-child(odd) { background-color: var(--theme-purple-table-row-odd); }
+        div[data-theme="purple"] .markdown-content table tr:nth-child(even) { background-color: var(--theme-purple-table-row-even); }
+        /* Yellow theme tables */
+        div[data-theme="yellow"] .markdown-content table { border-color: var(--theme-yellow-border); }
+        div[data-theme="yellow"] .markdown-content table th { background-color: var(--theme-yellow-table-header-bg); color: var(--theme-yellow-table-header-text); border-color: var(--theme-yellow-border); }
+        div[data-theme="yellow"] .markdown-content table td { border-color: var(--theme-yellow-border); color: var(--theme-yellow-text); }
+        div[data-theme="yellow"] .markdown-content table tr:nth-child(odd) { background-color: var(--theme-yellow-table-row-odd); }
+        div[data-theme="yellow"] .markdown-content table tr:nth-child(even) { background-color: var(--theme-yellow-table-row-even); }
+        /* Grey theme tables */
+        div[data-theme="grey"] .markdown-content table { border-color: var(--theme-grey-border); }
+        div[data-theme="grey"] .markdown-content table th { background-color: var(--theme-grey-table-header-bg); color: var(--theme-grey-table-header-text); border-color: var(--theme-grey-border); }
+        div[data-theme="grey"] .markdown-content table td { border-color: var(--theme-grey-border); color: var(--theme-grey-text); }
+        div[data-theme="grey"] .markdown-content table tr:nth-child(odd) { background-color: var(--theme-grey-table-row-odd); }
+        div[data-theme="grey"] .markdown-content table tr:nth-child(even) { background-color: var(--theme-grey-table-row-even); }
+
+        /* Hover effect for table rows */
+        .markdown-content table tr:hover { background-color: var(--table-hover-bg); }
+
         /* --- Textarea styling --- */
-        .edit-textarea { 
-            width: 100%; 
-            height: 100%; 
-            box-sizing: border-box; 
-            padding: 0.5rem; 
-            border: none; 
-            font-family: inherit; 
-            font-size: calc(14px * var(--font-scale)); 
-            line-height: 1.5; 
-            resize: none; 
-            overflow: auto; 
-            background-color: transparent;
-            color: var(--text-primary);
-        }
+        .edit-textarea { width: 100%; height: 100%; box-sizing: border-box; padding: 0.5rem; border: none; font-family: inherit; font-size: calc(14px * var(--font-scale)); line-height: 1.5; resize: none; overflow: auto; background-color: transparent; color: var(--text-primary); }
         .edit-textarea:focus { outline: none; }
 
         /* --- Transitions and Animations --- */
         .box-transition { transition: width 0.2s ease, height 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease; }
         #preview-connection { stroke-dasharray: 5, 5; animation: dash 15s linear infinite; stroke: var(--text-secondary); }
         @keyframes dash { to { stroke-dashoffset: -1000; } }
-        
-        /* Theme-specific box/text classes for light mode */
+
+        /* --- Theme-specific box/text classes for light mode --- */
         .light-default-bg { background-color: var(--theme-default-bg); }
         .light-default-text { color: var(--theme-default-text); }
         .light-default-border { border-color: var(--theme-default-border); }
@@ -680,7 +257,7 @@
         .light-grey-text { color: var(--theme-grey-text); }
         .light-grey-border { border-color: var(--theme-grey-border); }
 
-        /* Theme-specific box/text classes for dark mode */
+        /* --- Theme-specific box/text classes for dark mode --- */
         .dark-default-bg { background-color: var(--theme-default-bg); }
         .dark-default-text { color: var(--theme-default-text); }
         .dark-default-border { border-color: var(--theme-default-border); }
@@ -709,59 +286,22 @@
         .dark-grey-text { color: var(--theme-grey-text); }
         .dark-grey-border { border-color: var(--theme-grey-border); }
 
-        /* Modal styles */
-        .modal-backdrop {
-            background-color: rgba(0, 0, 0, 0.5);
-            transition: opacity 0.3s ease;
-        }
-        
-        .modal-content {
-            transform: translateY(20px);
-            opacity: 0;
-            transition: transform 0.3s ease, opacity 0.3s ease;
-        }
-        
-        .modal.open .modal-backdrop {
-            opacity: 1;
-        }
-        
-        .modal.open .modal-content {
-            transform: translateY(0);
-            opacity: 1;
-        }
+        /* --- Modal styles --- */
+        .modal-backdrop { background-color: rgba(0, 0, 0, 0.5); transition: opacity 0.3s ease; }
+        .modal-content { transform: translateY(20px); opacity: 0; transition: transform 0.3s ease, opacity 0.3s ease; }
+        .modal.open .modal-backdrop { opacity: 1; }
+        .modal.open .modal-content { transform: translateY(0); opacity: 1; }
 
-        /* Project item styling */
-        .project-item {
-            border-radius: 4px;
-            overflow: hidden;
-            transition: all 0.2s ease;
-        }
+        /* --- Project item styling --- */
+        .project-item { border-radius: 4px; overflow: hidden; transition: all 0.2s ease; }
+        .project-item .project-container { background-color: rgba(0, 0, 0, 0.08); }
+        body.dark-mode .project-item .project-container { background-color: rgba(255, 255, 255, 0.1); /* Higher contrast in dark mode */ }
+        .project-item.active { box-shadow: 0 0 0 2px var(--blue-500); /* Blue outline for active project */ }
+        .project-item.active .project-container { background-color: rgba(0, 114, 206, 0.1); /* Light blue background */ }
+        body.dark-mode .project-item.active .project-container { background-color: rgba(0, 114, 206, 0.2); /* Slightly stronger in dark mode */ }
 
-        .project-item .project-container {
-            background-color: rgba(0, 0, 0, 0.08);
-        }
-
-        body.dark-mode .project-item .project-container {
-            background-color: rgba(255, 255, 255, 0.1); /* Higher contrast in dark mode */
-        }
-
-        .project-item.active {
-            box-shadow: 0 0 0 2px var(--blue-500); /* Blue outline for active project */
-        }
-
-        .project-item.active .project-container {
-            background-color: rgba(0, 114, 206, 0.1); /* Light blue background */
-        }
-
-        body.dark-mode .project-item.active .project-container {
-            background-color: rgba(0, 114, 206, 0.2); /* Slightly stronger in dark mode */
-        }
-
-        /* Section header styling */
-        .settings-section-header {
-            color: var(--text-muted);
-            font-weight: 300;
-        }
+        /* --- Section header styling --- */
+        .settings-section-header { color: var(--text-muted); font-weight: 300; }
     </style>
 </head>
 <body class="h-screen m-0 p-0">
