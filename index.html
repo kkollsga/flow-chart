@@ -729,6 +729,39 @@
             transform: translateY(0);
             opacity: 1;
         }
+
+        /* Project item styling */
+        .project-item {
+            border-radius: 4px;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .project-item .project-container {
+            background-color: rgba(0, 0, 0, 0.08);
+        }
+
+        body.dark-mode .project-item .project-container {
+            background-color: rgba(255, 255, 255, 0.1); /* Higher contrast in dark mode */
+        }
+
+        .project-item.active {
+            box-shadow: 0 0 0 2px var(--blue-500); /* Blue outline for active project */
+        }
+
+        .project-item.active .project-container {
+            background-color: rgba(0, 114, 206, 0.1); /* Light blue background */
+        }
+
+        body.dark-mode .project-item.active .project-container {
+            background-color: rgba(0, 114, 206, 0.2); /* Slightly stronger in dark mode */
+        }
+
+        /* Section header styling */
+        .settings-section-header {
+            color: var(--text-muted);
+            font-weight: 300;
+        }
     </style>
 </head>
 <body class="h-screen m-0 p-0">
@@ -756,11 +789,11 @@
          </div>
     </div>
     
-    <!-- Settings Menu (right-click style) -->
+    <!-- Settings Menu with Fixed New Project Form -->
     <div id="settings-menu" class="fixed bottom-12 right-2 w-72 rounded-lg shadow-lg z-50 overflow-hidden transition-all duration-200 max-h-[80vh] flex flex-col hidden opacity-0 transform translate-y-2 pointer-events-none" style="background-color: var(--bg-secondary); color: var(--text-primary); box-shadow: 0 5px 15px var(--shadow-color);">
         <div class="px-4 py-3 border-b border-solid" style="border-color: var(--border-color);">
             <div class="flex justify-between items-center">
-                <h3 class="text-base font-semibold m-0">Projects</h3>
+                <h3 class="text-base settings-section-header m-0">Projects</h3>
                 <div class="flex items-center">
                     <button id="export-projects-button" class="p-1 rounded-full hover:bg-black hover:bg-opacity-10 transition-colors text-sm mr-1" title="Export Projects">
                         <i class="fas fa-file-export"></i>
@@ -778,44 +811,50 @@
         <div class="px-4 py-3 overflow-y-auto max-h-[50vh]">
             <!-- New project form (hidden by default) -->
             <div id="new-project-form" class="mb-3 hidden overflow-hidden transition-all duration-200 max-h-0">
-                <div class="flex items-center mb-2">
-                    <input type="text" id="project-name" class="flex-1 p-2 rounded border border-solid mr-2" placeholder="Enter project name"
+                <div class="flex flex-col mb-2">
+                    <input type="text" id="project-name" class="w-full p-2 rounded border border-solid mb-2" placeholder="Enter project name"
                         style="border-color: var(--border-color); background-color: var(--bg-primary); color: var(--text-primary);">
-                    <button id="commit-new-project" class="p-1 rounded hover:bg-black hover:bg-opacity-10 transition-colors text-green-600">
-                        <i class="fas fa-check"></i>
-                    </button>
-                    <button id="cancel-new-project" class="p-1 rounded hover:bg-black hover:bg-opacity-10 transition-colors text-red-600 ml-1">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <div class="flex justify-end">
+                        <button id="commit-new-project" class="w-7 h-7 flex items-center justify-center rounded hover:bg-black hover:bg-opacity-10 transition-colors" style="color: var(--green-500);" title="Save Project">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button id="cancel-new-project" class="w-7 h-7 flex items-center justify-center rounded hover:bg-black hover:bg-opacity-10 transition-colors ml-1" style="color: var(--red-500);" title="Cancel">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
             
             <div id="project-list" class="space-y-2">
                 <!-- Projects will be loaded here -->
-                <div class="text-center text-gray-500 py-3" id="no-projects-message">No projects yet</div>
+                <div class="text-center py-3" id="no-projects-message" style="color: var(--text-muted);">No projects yet</div>
             </div>
         </div>
         
         <div class="h-px w-full" style="background-color: var(--border-color);"></div>
         
         <div class="px-4 py-3 border-t border-solid" style="border-color: var(--border-color);">
-            <div>
-                <label class="block mb-1 font-medium">Text Size</label>
-                <div class="flex items-center">
-                    <button id="text-scale-decrease" class="p-1 rounded hover:bg-black hover:bg-opacity-10 transition-colors">
-                        <i class="fas fa-minus"></i>
-                    </button>
-                    <span class="inline-block font-medium px-2" id="text-scale-value">1.00x</span>
-                    <button id="text-scale-increase" class="p-1 rounded hover:bg-black hover:bg-opacity-10 transition-colors">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                    
-                    <!-- Add separator -->
-                    <div class="h-6 w-px mx-3" style="background-color: var(--border-color);"></div>
-                    
-                    <!-- Add export to SVG button -->
-                    <button id="export-svg-button" class="p-1 rounded hover:bg-black hover:bg-opacity-10 transition-colors" title="Export to SVG">
-                        <i class="fas fa-file-export"></i> SVG
+            <div class="flex justify-between items-start">
+                <!-- Text Size Section -->
+                <div>
+                    <label class="block mb-1 settings-section-header text-sm">Text Size</label>
+                    <div class="flex items-center">
+                        <button id="text-scale-decrease" class="p-1 rounded hover:bg-black hover:bg-opacity-10 transition-colors">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <span class="inline-block font-medium px-2" id="text-scale-value">1.00x</span>
+                        <button id="text-scale-increase" class="p-1 rounded hover:bg-black hover:bg-opacity-10 transition-colors">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Export SVG Section -->
+                <div>
+                    <label class="block mb-1 settings-section-header text-sm">Export</label>
+                    <button id="export-svg-button" class="px-3 py-1 rounded hover:bg-black hover:bg-opacity-10 transition-colors flex items-center" title="Export to SVG">
+                        <i class="fas fa-print mr-1"></i>
+                        <span>SVG</span>
                     </button>
                 </div>
             </div>
@@ -2461,17 +2500,16 @@ class ProjectManager {
         // Add project items
         this.projects.forEach(project => {
             const projectItem = document.createElement('div');
-            projectItem.className = 'mb-2 rounded overflow-hidden';
+            // Add 'project-item' class and active if current project
+            projectItem.className = 'project-item mb-2 rounded overflow-hidden';
+            if (project.id === this.currentProjectId) {
+                projectItem.classList.add('active');
+            }
             projectItem.dataset.id = project.id;
             
             // Main project container
             const projectContainer = document.createElement('div');
-            projectContainer.className = 'p-2 flex justify-between items-center cursor-pointer group';
-            projectContainer.style.backgroundColor = 'var(--transparent-black-5)';
-            
-            if (project.id === this.currentProjectId) {
-                projectContainer.classList.add('bg-purple-600', 'bg-opacity-20');
-            }
+            projectContainer.className = 'project-container p-2 flex justify-between items-center cursor-pointer group';
             
             // Check if this project is being edited
             if (this.editingProjectId === project.id) {
