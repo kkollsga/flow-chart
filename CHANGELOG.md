@@ -15,6 +15,9 @@ get an entry here; git history is their record.
   arrowhead back.
 - Exporting a large project library (over ~2 MB of JSON) now downloads the
   whole file instead of silently failing.
+- Importing a project file whose internal id collides with a different
+  existing project no longer makes edits silently save into the wrong
+  project — the imported project gets a fresh id.
 - SVG exports made in dark mode now include their dark background (previously
   they shipped transparent); links in exported SVGs use the app's link color;
   box border and arrow colors in dark-mode exports now match what the app

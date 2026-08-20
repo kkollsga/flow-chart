@@ -228,6 +228,15 @@ class ImportManager {
                         }
                     }
                     
+                    // Re-key if the imported id collides with a *different*
+                    // surviving project: every lookup (loadProject,
+                    // saveCurrentProject, lastActiveProject) resolves ids via
+                    // first-match, so a duplicate id makes saves silently write
+                    // into the wrong project.
+                    if (this.projectManager.projects.some(p => p.id === project.id)) {
+                        project.id = 'project_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+                    }
+
                     // Add the imported project
                     this.projectManager.projects.push(project);
                 });
