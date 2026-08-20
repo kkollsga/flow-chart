@@ -39,6 +39,8 @@ get an entry here; git history is their record.
   files) no longer execute. Ordinary HTML tags in markdown still render.
 
 ### Changed
+- The box width shortcut moved from `s` to `w` (`s` now cycles box shape).
+  Right-click press-and-release on a box still toggles width as before.
 - The app no longer loads anything from a CDN and now works fully offline:
   Tailwind's runtime compiler is replaced with equivalent static CSS, and
   marked 4.3.0 plus the Font Awesome icons used are bundled with the app.

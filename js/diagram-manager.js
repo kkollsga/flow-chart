@@ -390,8 +390,10 @@ class DiagramManager {
             this.saveCurrentProject();
         }
 
-        // Handle 's' key for changing width of hovered box (NOT connections)
-        if (e.key === 's' && this.hoveredElement instanceof Box) {
+        // Handle 'w' key for changing width of hovered box (NOT connections).
+        // Moved from 's' (2026-08-20), which now cycles shape; the right-click
+        // press+release-on-same-box gesture still toggles width too.
+        if (e.key === 'w' && this.hoveredElement instanceof Box) {
             this.hoveredElement.toggleWidthType();
             this.saveCurrentProject();
         }
