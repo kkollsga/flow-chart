@@ -156,14 +156,19 @@ class Box {
     renderMarkdown() {
         if (!this.data.markdown) return;
         
+        // Sanitize before innerHTML: markdown arrives from imported JSON files
+        // too, and marked v4 passes raw HTML through. Without this, a shared
+        // project file can carry script payloads into the page (and into
+        // exported SVGs, which copy this rendered DOM).
+        const sanitize = (html) => typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(html) : html;
         try {
             // Use marked.js or fallback
-            this.contentDiv.innerHTML = typeof marked !== 'undefined' && typeof marked.parse === 'function' 
+            this.contentDiv.innerHTML = sanitize(typeof marked !== 'undefined' && typeof marked.parse === 'function' 
                 ? marked.parse(this.data.markdown) 
-                : simpleMarkdownParser(this.data.markdown);
+                : simpleMarkdownParser(this.data.markdown));
         } catch (e) {
             console.error('Error parsing markdown:', e);
-            this.contentDiv.innerHTML = simpleMarkdownParser(this.data.markdown);
+            this.contentDiv.innerHTML = sanitize(simpleMarkdownParser(this.data.markdown));
         }
         
         // Update size after rendering

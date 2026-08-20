@@ -25,6 +25,11 @@ get an entry here; git history is their record.
   box border and arrow colors in dark-mode exports now match what the app
   shows on screen.
 
+### Security
+- Markdown is sanitized before rendering: script tags and event-handler
+  attributes in box content (including content arriving via imported project
+  files) no longer execute. Ordinary HTML tags in markdown still render.
+
 ### Changed
 - The app no longer loads anything from a CDN and now works fully offline:
   Tailwind's runtime compiler is replaced with equivalent static CSS, and
