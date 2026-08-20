@@ -23,7 +23,16 @@ function roundedPolygonPath(vertices, radius) {
         const next = vertices[(i + 1) % n];
         const l1 = Math.hypot(prev.x - v.x, prev.y - v.y) || 1;
         const l2 = Math.hypot(next.x - v.x, next.y - v.y) || 1;
-        const t = Math.min(radius, l1 / 2, l2 / 2);
+        // Angle-compensated trim: a fixed trim makes sharp corners LOOK less
+        // rounded than wide ones (perceived radius ~ trim*tan(theta/2)), which
+        // left the triangle's base corners crisp next to its softer apex.
+        // trim = radius/tan(theta/2) gives every corner the same true radius;
+        // collinear helper vertices (tan -> inf) get trim 0 and stay invisible.
+        const u1x = (prev.x - v.x) / l1, u1y = (prev.y - v.y) / l1;
+        const u2x = (next.x - v.x) / l2, u2y = (next.y - v.y) / l2;
+        const halfAngle = Math.acos(Math.min(1, Math.max(-1, u1x * u2x + u1y * u2y))) / 2;
+        const tanHalf = Math.tan(halfAngle);
+        const t = tanHalf > 0.001 ? Math.min(radius / tanHalf, l1 / 2, l2 / 2) : 0;
         const p1 = { x: v.x + (prev.x - v.x) / l1 * t, y: v.y + (prev.y - v.y) / l1 * t };
         const p2 = { x: v.x + (next.x - v.x) / l2 * t, y: v.y + (next.y - v.y) / l2 * t };
         d += (i === 0 ? `M ${fmt(p1)}` : ` L ${fmt(p1)}`) + ` Q ${fmt(v)} ${fmt(p2)}`;
@@ -45,4 +54,6 @@ function polygonShapeVertices(shape, left, top, width, height) {
             { x: cx, y: top + height }, { x: left, y: top + height }];
 }
 
-const POLYGON_CORNER_RADIUS = 14;
+// True corner radius (see angle compensation above). 10 keeps the triangle
+// apex looking as it did under the old fixed-trim scheme.
+const POLYGON_CORNER_RADIUS = 10;

@@ -10,6 +10,10 @@ get an entry here; git history is their record.
 
 ## [Unreleased]
 
+### Fixed
+- Triangle and diamond corners are now rounded evenly — the triangle's base
+  corners used to look sharp next to its softer apex.
+
 ## [0.1.4] — 2026-08-20
 
 ### Fixed
