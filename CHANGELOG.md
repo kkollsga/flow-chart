@@ -10,6 +10,12 @@ get an entry here; git history is their record.
 
 ## [Unreleased]
 
+### Changed
+- The app no longer loads anything from a CDN and now works fully offline:
+  Tailwind's runtime compiler is replaced with equivalent static CSS, and
+  marked 4.3.0 plus the Font Awesome icons used are bundled with the app.
+  Appearance and behaviour are unchanged.
+
 ## [0.1.0] — 2026-08-20
 
 Baseline. This is the app as it stood when versioning, the local gate and the
