@@ -149,24 +149,41 @@ class SVGExportManager {
             boxGroup.setAttribute("class", `box theme-${themeKey}`);
             boxGroup.setAttribute("transform", `translate(${bounds.left}, ${bounds.top})`);
             
-            // Create the box rectangle
-            const rect = document.createElementNS(svgNamespace, "rect");
-            rect.setAttribute("width", bounds.width);
-            rect.setAttribute("height", bounds.height);
-            rect.setAttribute("rx", "8"); // Rounded corners
-            rect.setAttribute("ry", "8");
+            // Create the box's shape element (theme classes carry fill/stroke)
+            const shape = box.data.shape || 'rectangle';
+            let shapeEl;
+            if (shape === 'circle') {
+                shapeEl = document.createElementNS(svgNamespace, "ellipse");
+                shapeEl.setAttribute("cx", bounds.width / 2);
+                shapeEl.setAttribute("cy", bounds.height / 2);
+                shapeEl.setAttribute("rx", bounds.width / 2);
+                shapeEl.setAttribute("ry", bounds.height / 2);
+            } else {
+                shapeEl = document.createElementNS(svgNamespace, "rect");
+                shapeEl.setAttribute("width", bounds.width);
+                shapeEl.setAttribute("height", bounds.height);
+                const r = shape === 'rounded' ? '24' : '8';
+                shapeEl.setAttribute("rx", r);
+                shapeEl.setAttribute("ry", r);
+            }
             
             // Apply theme classes - for both light and dark modes
             // The SVG's .dark-mode class will determine which is active
-            rect.classList.add('light-' + themeKey + '-bg', 'light-' + themeKey + '-border');
-            rect.classList.add('dark-' + themeKey + '-bg', 'dark-' + themeKey + '-border');
+            shapeEl.classList.add('light-' + themeKey + '-bg', 'light-' + themeKey + '-border');
+            shapeEl.classList.add('dark-' + themeKey + '-bg', 'dark-' + themeKey + '-border');
             
-            boxGroup.appendChild(rect);
+            boxGroup.appendChild(shapeEl);
             
-            // Create a foreignObject for the markdown content
+            // Create a foreignObject for the markdown content, inscribed in the
+            // shape with the same content ratios the app uses.
+            const cfg = SHAPE_CONFIG[shape] || SHAPE_CONFIG.rectangle;
+            const cw = Math.round(bounds.width * cfg.contentWidthRatio);
+            const ch = Math.round(bounds.height / cfg.heightRatio);
             const foreignObject = document.createElementNS(svgNamespace, "foreignObject");
-            foreignObject.setAttribute("width", bounds.width);
-            foreignObject.setAttribute("height", bounds.height);
+            foreignObject.setAttribute("x", Math.round((bounds.width - cw) / 2));
+            foreignObject.setAttribute("y", Math.round((bounds.height - ch) / 2));
+            foreignObject.setAttribute("width", cw);
+            foreignObject.setAttribute("height", ch);
             
             // Create a new div with the proper markdown-content class (like original code)
             const div = document.createElement("div");
@@ -488,7 +505,7 @@ class SVGExportManager {
             .thickness-bold { stroke-width: 4; }
             
             /* Box styling */
-            .box rect {
+            .box rect, .box ellipse, .box polygon {
                 stroke-width: 1.5;
             }
             

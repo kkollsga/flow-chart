@@ -7,6 +7,7 @@ class Box {
         if (!this.data.themeKey) { this.data.themeKey = 'default'; }
         if (!TEXT_ALIGNMENTS.includes(this.data.textAlign)) { this.data.textAlign = 'left'; }
         this.data.fontScale = Math.min(2.0, Math.max(0.5, Number(this.data.fontScale) || 1.0));
+        if (!BOX_SHAPES.includes(this.data.shape)) { this.data.shape = 'rectangle'; }
         this.manager = manager;
         this.isEditing = false;
         this.element = this.createElement();
@@ -16,6 +17,7 @@ class Box {
         this.applyColorTheme();
         this.applyTextAlign();
         this.applyFontScale();
+        this.applyShape();
         this.renderMarkdown();
         this.setupEventListeners();
     }
@@ -140,6 +142,69 @@ class Box {
         this.contentDiv.dataset.align = this.data.textAlign;
     }
 
+    // Which shape the box should currently PRESENT (edit mode always presents
+    // the plain rectangle so the textarea pipeline stays untouched).
+    presentedShape() {
+        return this.isEditing ? 'rectangle' : this.data.shape;
+    }
+
+    applyShape() {
+        this.element.dataset.shape = this.presentedShape();
+    }
+
+    cycleShape() {
+        const currentIndex = BOX_SHAPES.indexOf(this.data.shape);
+        this.data.shape = BOX_SHAPES[(currentIndex + 1) % BOX_SHAPES.length];
+        this.applyShape();
+
+        // Satisfying pop on top of the border-radius / clip-path morph.
+        this.element.classList.remove('shape-pop');
+        void this.element.offsetWidth;
+        this.element.classList.add('shape-pop');
+        this.element.addEventListener('animationend',
+            () => this.element.classList.remove('shape-pop'), { once: true });
+
+        // Content fitting differs per shape -> re-measure.
+        this.calculateRenderedSize();
+        this.manager.updateConnectionsForBox(this);
+    }
+
+    // Outline of the presented shape as a polygon in canvas coordinates —
+    // shared by connection-endpoint intersection. Diamond/triangle fall back
+    // to the rectangle outline until their rendering lands.
+    getOutlinePolygon() {
+        const b = this.getBounds();
+        const shape = this.presentedShape();
+        const pts = [];
+        if (shape === 'circle') {
+            const cx = this.data.cx, cy = this.data.cy, rx = b.width / 2, ry = b.height / 2;
+            for (let i = 0; i < 36; i++) {
+                const a = (i / 36) * Math.PI * 2;
+                pts.push({ x: cx + rx * Math.cos(a), y: cy + ry * Math.sin(a) });
+            }
+        } else if (shape === 'rounded' || shape === 'rectangle') {
+            const r = Math.min(shape === 'rounded' ? 24 : 8, b.width / 2, b.height / 2);
+            // 4 corner arcs sampled at 5 points each, clockwise from top-left
+            const corners = [
+                { cx: b.left + r,  cy: b.top + r,    from: Math.PI,       to: Math.PI * 1.5 },
+                { cx: b.right - r, cy: b.top + r,    from: Math.PI * 1.5, to: Math.PI * 2 },
+                { cx: b.right - r, cy: b.bottom - r, from: 0,             to: Math.PI * 0.5 },
+                { cx: b.left + r,  cy: b.bottom - r, from: Math.PI * 0.5, to: Math.PI },
+            ];
+            corners.forEach(c => {
+                for (let i = 0; i <= 4; i++) {
+                    const a = c.from + (c.to - c.from) * (i / 4);
+                    pts.push({ x: c.cx + r * Math.cos(a), y: c.cy + r * Math.sin(a) });
+                }
+            });
+        } else {
+            // diamond/triangle placeholder until their rendering phase
+            pts.push({ x: b.left, y: b.top }, { x: b.right, y: b.top },
+                     { x: b.right, y: b.bottom }, { x: b.left, y: b.bottom });
+        }
+        return pts;
+    }
+
     applyFontScale() {
         this.element.style.setProperty('--box-font-scale', this.data.fontScale);
     }
@@ -230,14 +295,18 @@ class Box {
         clone.style.height = 'auto';
         clone.style.maxWidth = 'none';
         clone.style.transition = 'none';
+        clone.style.animation = 'none';
         
         // Use fixed width from width type directly
         const fixedWidth = WIDTH_TYPE_VALUES[this.data.widthType];
         clone.style.width = `${fixedWidth}px`;
         
-        // Force reflow and measure height with the fixed width
+        // Force reflow and measure height with the fixed width. The clone
+        // carries data-shape, so shaped content-width constraints apply; the
+        // shape's height ratio adds the headroom the outline needs.
         clone.offsetHeight;
-        const newHeight = Math.max(clone.offsetHeight, 50);
+        const heightRatio = (SHAPE_CONFIG[this.presentedShape()] || SHAPE_CONFIG.rectangle).heightRatio;
+        const newHeight = Math.max(Math.round(clone.offsetHeight * heightRatio), 50);
         
         // Clean up
         document.body.removeChild(clone);
@@ -279,6 +348,7 @@ class Box {
     startEditing() {
         if (this.isEditing) return;
         this.isEditing = true;
+        this.applyShape(); // edit mode presents the plain rectangle
         this.element.classList.remove('cursor-move');
         
         // Clear and prepare container
@@ -364,6 +434,7 @@ class Box {
         } 
         this.textarea = null; 
         this.element.classList.add('cursor-move'); 
+        this.applyShape(); // restore the real shape (edit mode presents rectangle)
     }
     
     getBounds() { 
@@ -391,6 +462,7 @@ class Box {
             themeKey: this.data.themeKey,
             textAlign: this.data.textAlign,
             fontScale: this.data.fontScale,
+            shape: this.data.shape,
             markdown: this.data.markdown
         };
     }

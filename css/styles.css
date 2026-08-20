@@ -236,7 +236,16 @@ div[data-theme="grey"] .markdown-content table tr:nth-child(even) { background-c
 .edit-textarea:focus { outline: none; }
 
 /* --- Transitions and Animations --- */
-.box-transition { transition: width 0.2s ease, height 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease; }
+.box-transition { transition: width 0.2s ease, height 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease, border-radius 0.35s ease; }
+
+/* --- Box shapes (cycled with 's'; data-shape on the box element) ---
+   'rectangle' (default) has NO rule so it renders byte-identically to the
+   pre-shape app (8px rounded-lg). border-radius morphs within this group. */
+.box-default[data-shape="rounded"] { border-radius: 24px; }
+.box-default[data-shape="circle"] { border-radius: 50%; display: flex; }
+.box-default[data-shape="circle"] > .markdown-content { width: 71%; height: auto; margin: auto; }
+@keyframes shape-pop { 0% { transform: scale(1); } 35% { transform: scale(0.93); } 70% { transform: scale(1.045); } 100% { transform: scale(1); } }
+.shape-pop { animation: shape-pop 0.35s ease; }
 #preview-connection { stroke-dasharray: 5, 5; animation: dash 15s linear infinite; stroke: var(--text-secondary); }
 @keyframes dash { to { stroke-dashoffset: -1000; } }
 

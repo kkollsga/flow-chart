@@ -243,32 +243,28 @@ class Connection {
         if (bounds.width <= 0 || bounds.height <= 0 || (dx === 0 && dy === 0)) { 
             return { x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2 }; 
         } 
+        // Generic ray-vs-outline: works for every box shape via the shared
+        // outline polygon (rectangle results match the old rect-only math).
+        const poly = targetBox.getOutlinePolygon();
         let t = Infinity; 
         let intersection = null; 
-        const tol = 0.1; 
-        const checkT = (newT, x, y, b) => { 
-            if (newT >= 0 && newT < t && x >= b.left - tol && x <= b.right + tol && y >= b.top - tol && y <= b.bottom + tol) { 
-                t = newT; 
-                return { x, y }; 
-            } 
-            return null; 
-        }; 
-        if (dx !== 0) { 
-            let tL = (bounds.left - startPt.x) / dx; 
-            let yL = startPt.y + tL * dy; 
-            intersection = checkT(tL, bounds.left, yL, bounds) || intersection; 
-            let tR = (bounds.right - startPt.x) / dx; 
-            let yR = startPt.y + tR * dy; 
-            intersection = checkT(tR, bounds.right, yR, bounds) || intersection; 
-        } 
-        if (dy !== 0) { 
-            let tT = (bounds.top - startPt.y) / dy; 
-            let xT = startPt.x + tT * dx; 
-            intersection = checkT(tT, xT, bounds.top, bounds) || intersection; 
-            let tB = (bounds.bottom - startPt.y) / dy; 
-            let xB = startPt.x + tB * dx; 
-            intersection = checkT(tB, xB, bounds.bottom, bounds) || intersection; 
-        } 
+        const eps = 1e-9;
+        for (let i = 0; i < poly.length; i++) {
+            const a = poly[i];
+            const b = poly[(i + 1) % poly.length];
+            const ex = b.x - a.x;
+            const ey = b.y - a.y;
+            const denom = dx * ey - dy * ex;
+            if (Math.abs(denom) < eps) continue;
+            const sx = a.x - startPt.x;
+            const sy = a.y - startPt.y;
+            const tRay = (sx * ey - sy * ex) / denom;   // param along start->end
+            const u = (sx * dy - sy * dx) / denom;       // param along the edge
+            if (tRay >= 0 && tRay < t && u >= -0.001 && u <= 1.001) {
+                t = tRay;
+                intersection = { x: startPt.x + tRay * dx, y: startPt.y + tRay * dy };
+            }
+        }
         if (intersection) { 
             const len = Math.sqrt(dx*dx + dy*dy) || 1; 
             const ux = dx / len; 

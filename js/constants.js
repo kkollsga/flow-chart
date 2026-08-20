@@ -17,6 +17,19 @@ const WIDTH_TYPES = { SMALL: 'small', MEDIUM: 'medium', LARGE: 'large' };
 
 // Text alignment cycle for the 'a' key (order is the UX contract)
 const TEXT_ALIGNMENTS = ['left', 'justify', 'center', 'right'];
+
+// Shape cycle for the 's' key (order is the UX contract).
+// contentWidthRatio: fraction of the box width the content may occupy so it
+// stays inside the outline; heightRatio: box height per measured content
+// height (an ellipse needs ~sqrt(2) headroom, diamond/triangle ~2x).
+const BOX_SHAPES = ['rectangle', 'rounded', 'circle', 'diamond', 'triangle'];
+const SHAPE_CONFIG = {
+    rectangle: { contentWidthRatio: 1.0,  heightRatio: 1.0 },
+    rounded:   { contentWidthRatio: 1.0,  heightRatio: 1.0 },
+    circle:    { contentWidthRatio: 0.71, heightRatio: 1.41 },
+    diamond:   { contentWidthRatio: 0.55, heightRatio: 1.9 },
+    triangle:  { contentWidthRatio: 0.55, heightRatio: 2.1 },
+};
 const WIDTH_TYPE_VALUES = { [WIDTH_TYPES.SMALL]: 200, [WIDTH_TYPES.MEDIUM]: 350, [WIDTH_TYPES.LARGE]: 500 };
 
 // Separated connection style constants
