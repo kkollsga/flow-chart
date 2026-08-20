@@ -13,10 +13,18 @@ sonagram both hit that on 2026-08-10).
 
 ## What this is
 
-One file. `index.html` is a ~3.7k-line self-contained flow-chart editor:
-inline CSS (`<style>`), the markup, and a single inline `<script>` carrying all
-behaviour. Three CDN dependencies (Tailwind Play CDN, `marked@4.3.0`, Font
-Awesome 5.15.4) — no bundler, no package manager, no test suite, no CI.
+A flow-chart editor served as static files — no bundler, no package manager,
+no build step, no test suite, no CI. Since the 2026-08-20 split
+(`refactor/split-and-devendor`): `index.html` carries the markup and the
+load order; `css/` holds `styles.css` (the app sheet — **rule order inside it
+is load-bearing**, see the header comments), and `tailwind.css` (static CSS
+generated once from Tailwind v3.4.17 against the app's exact class usage —
+regenerate against index.html + js/*.js if classes change, never hand-extend);
+`js/` holds twelve classic scripts loaded in declaration order (constants
+first, init last; classic tags, not ES modules, so `file://` opens keep
+working); `vendor/` holds the pinned third-party files (marked 4.3.0,
+DOMPurify 3.2.7, a 9-glyph Font Awesome subset). Zero CDN or network
+dependencies — the page works fully offline.
 
 **The repo is the deployment.** GitHub Pages serves `index.html` from the root
 of `main` at <https://kkollsga.github.io/flow-chart/>. A push to `main` is a
@@ -104,8 +112,8 @@ fail, or a claim the code contradicts. If you cannot write down the case that
 breaks, you do not have a finding.
 
 **Not findings — do not report these, at any confidence:** structure and
-organisation preferences ("extract this", "split this file", and yes, "this
-should not be one 3.7k-line HTML file"); naming, ordering, formatting, comment
+organisation preferences ("extract this", "split this file", "this
+file layout is wrong"); naming, ordering, formatting, comment
 density; "could be simplified" absent a defect it causes; inconsistency with
 surrounding code unless the inconsistency itself breaks something; speculative
 futures ("this won't scale") with no present reachable failure; performance
@@ -172,8 +180,8 @@ what the recipient does", not "true and relevant".
 ## Releases & deploy
 
 **A push to `main` publishes.** Pages rebuilds and every visitor gets the new
-`index.html`. There is no staging environment and no rollback that is not
-itself another publish.
+files. There is no staging environment and no rollback that is not itself
+another publish.
 
 - **Pushing requires explicit, in-the-moment approval** (doctrine `R6`). The
   default is *don't push*. Approval is one-shot: it covers exactly that one
@@ -199,8 +207,9 @@ itself another publish.
 - **Verify the deploy, not the push** (doctrine `R9`). "The push succeeded"
   answers *did something happen*, never *is the new page being served*. A Pages
   build can fail or lag after a green push. `make verify-release TAG=vx.y.z`
-  compares the bytes Pages returns against local `index.html` and asserts the
-  tag exists on both sides at the same commit.
+  compares the bytes Pages returns against every local app file
+  (`index.html`, `css/`, `js/`, `vendor/`) and asserts the tag exists on both
+  sides at the same commit.
 
 Commit format: `type: short description` (`feat`, `fix`, `docs`, `refactor`,
 `chore`). Update `CHANGELOG.md` `[Unreleased]` for user-visible app changes;

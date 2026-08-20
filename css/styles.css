@@ -1,3 +1,13 @@
+/* flow-chart app stylesheet — extracted verbatim from index.html's <style>
+ * block (2026-08-20 split). RULE ORDER IN THIS FILE IS LOAD-BEARING:
+ *   - .box-transition must stay AFTER .box-default (same specificity; it wins
+ *     the `transition` tie deliberately).
+ *   - The light/dark theme-class blocks (.light-red-bg etc.) must stay AFTER
+ *     .box-default and .markdown-content (their border-color/color win
+ *     same-specificity ties; emitted earlier, every box border renders grey).
+ * css/tailwind.css is linked AFTER this file on purpose — the Tailwind Play
+ * CDN used to append its styles last, so utility classes win ties here.
+ */
 /* --- Color Palette Variables --- */
 :root {
     /* --- Base Colors --- */

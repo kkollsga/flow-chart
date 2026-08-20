@@ -30,7 +30,16 @@ import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-DEPLOYED_FILE = "index.html"
+# Everything Pages serves that the app needs. index.html alone stopped being
+# the app when the split landed (css/, js/, vendor/); verifying only the entry
+# file would pass while the page 404s its subresources.
+def deployed_files() -> list[str]:
+    files = ["index.html"]
+    for pattern in ("css/*.css", "js/*.js", "vendor/*", "vendor/fontawesome/*"):
+        files += sorted(
+            str(f.relative_to(ROOT)) for f in ROOT.glob(pattern) if f.is_file()
+        )
+    return files
 POLL_SECONDS = [0, 20, 40, 60, 60]  # Pages builds usually land inside ~1 min
 
 
@@ -88,24 +97,32 @@ def check_deploy() -> list[str]:
             "could not read the Pages configuration via `gh api …/pages` — the deploy "
             "was NOT verified. A check that could not run is not a pass."
         ]
-    want = hashlib.sha256((ROOT / DEPLOYED_FILE).read_bytes()).hexdigest()
-    served = ""
+    files = deployed_files()
+    wants = {f: hashlib.sha256((ROOT / f).read_bytes()).hexdigest() for f in files}
+    base = url.rstrip("/")
+    mismatches: list[str] = []
     for wait in POLL_SECONDS:
         if wait:
             time.sleep(wait)
-        try:
-            with urllib.request.urlopen(url, timeout=30) as resp:
-                served = hashlib.sha256(resp.read()).hexdigest()
-        except OSError as exc:  # noqa: PERF203 — one message per attempt is the point
-            served = f"<fetch failed: {exc}>"
-            continue
-        if served == want:
-            print(f"deploy: {url} serves the current {DEPLOYED_FILE} (sha256 {want[:12]}…)")
+        mismatches = []
+        for f, want in wants.items():
+            target = base + "/" + f if f != "index.html" else url
+            try:
+                with urllib.request.urlopen(target, timeout=30) as resp:
+                    served = hashlib.sha256(resp.read()).hexdigest()
+            except OSError as exc:
+                mismatches.append(f"{f}: <fetch failed: {exc}>")
+                continue
+            if served != want:
+                mismatches.append(f"{f}: served {served[:12]}…, expected {want[:12]}…")
+        if not mismatches:
+            print(f"deploy: {url} serves all {len(files)} current app files")
             return []
     return [
-        f"deploy: {url} is not serving the current {DEPLOYED_FILE} after "
-        f"~{sum(POLL_SECONDS)}s (served {served[:12]}…, expected {want[:12]}…). "
-        f"Check the pages-build-deployment run: `gh run list --workflow=pages-build-deployment`."
+        f"deploy: {url} is not serving the current app after ~{sum(POLL_SECONDS)}s:"
+        + "".join(f"\n    {m}" for m in mismatches[:8])
+        + (f"\n    … and {len(mismatches) - 8} more" if len(mismatches) > 8 else "")
+        + "\n    Check the pages-build-deployment run: `gh run list --workflow=pages-build-deployment`."
     ]
 
 
