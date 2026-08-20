@@ -10,6 +10,8 @@ get an entry here; git history is their record.
 
 ## [Unreleased]
 
+## [0.1.2] — 2026-08-20
+
 ### Fixed
 - Bullets and numbers in centered or right-aligned boxes now move with their
   list items instead of staying pinned to the left edge.
