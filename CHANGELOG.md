@@ -10,6 +10,8 @@ get an entry here; git history is their record.
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-08-20
+
 ### Added
 - Hover a box and press `s` to cycle its shape: rectangle → large rounded →
   circle → diamond → triangle. Shapes morph with a springy animation,
