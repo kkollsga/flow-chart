@@ -194,14 +194,12 @@ class DiagramManager {
             else if (this.connectionStartBox) { 
                 const sC = { cx: this.connectionStartBox.data.cx, cy: this.connectionStartBox.data.cy }; 
                 
-                // Get scroll position for accurate coordinates
-                const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
-                const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-                
-                // Get mouse position relative to canvas with scroll offsets
+                // getBoundingClientRect() is viewport-relative, so scroll is
+                // already accounted for — adding scrollX/scrollY on top shifted
+                // the preview endpoint by exactly the scroll amount.
                 const r = this.svg.getBoundingClientRect(); 
-                const mX = e.clientX - r.left + scrollX; 
-                const mY = e.clientY - r.top + scrollY; 
+                const mX = e.clientX - r.left; 
+                const mY = e.clientY - r.top; 
                 
                 this.previewPath.setAttribute('d', `M ${sC.cx} ${sC.cy} L ${mX} ${mY}`); 
             }
