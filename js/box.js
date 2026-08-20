@@ -197,8 +197,13 @@ class Box {
                     pts.push({ x: c.cx + r * Math.cos(a), y: c.cy + r * Math.sin(a) });
                 }
             });
+        } else if (shape === 'diamond') {
+            pts.push({ x: this.data.cx, y: b.top }, { x: b.right, y: this.data.cy },
+                     { x: this.data.cx, y: b.bottom }, { x: b.left, y: this.data.cy });
+        } else if (shape === 'triangle') {
+            pts.push({ x: this.data.cx, y: b.top }, { x: b.right, y: b.bottom },
+                     { x: b.left, y: b.bottom });
         } else {
-            // diamond/triangle placeholder until their rendering phase
             pts.push({ x: b.left, y: b.top }, { x: b.right, y: b.top },
                      { x: b.right, y: b.bottom }, { x: b.left, y: b.bottom });
         }

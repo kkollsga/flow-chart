@@ -236,7 +236,7 @@ div[data-theme="grey"] .markdown-content table tr:nth-child(even) { background-c
 .edit-textarea:focus { outline: none; }
 
 /* --- Transitions and Animations --- */
-.box-transition { transition: width 0.2s ease, height 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease, border-radius 0.35s ease; }
+.box-transition { transition: width 0.2s ease, height 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease, border-radius 0.35s ease, filter 0.2s ease; }
 
 /* --- Box shapes (cycled with 's'; data-shape on the box element) ---
    'rectangle' (default) has NO rule so it renders byte-identically to the
@@ -246,6 +246,59 @@ div[data-theme="grey"] .markdown-content table tr:nth-child(even) { background-c
 .box-default[data-shape="circle"] > .markdown-content { width: 71%; height: auto; margin: auto; }
 @keyframes shape-pop { 0% { transform: scale(1); } 35% { transform: scale(0.93); } 70% { transform: scale(1.045); } 100% { transform: scale(1); } }
 .shape-pop { animation: shape-pop 0.35s ease; }
+
+/* Polygon shapes (diamond, triangle): a CSS border cannot follow clip-path,
+   so the outline is two stacked pseudo-element layers — ::before is the
+   border-colored polygon, ::after the background polygon inset ~2px. Both sit
+   at z-index -1 (the element's translateY(0) transform makes it a stacking
+   context, so they stay inside the box, under the content). The div's own
+   background/border go transparent; the shadow moves to a drop-shadow filter
+   so it hugs the silhouette. Both shapes use 4-point polygons (the triangle
+   doubles its apex) so clip-path morphs between them. */
+div[data-theme="default"] { --shape-bg: var(--theme-default-bg); --shape-border: var(--theme-default-border); }
+div[data-theme="red"] { --shape-bg: var(--theme-red-bg); --shape-border: var(--theme-red-border); }
+div[data-theme="green"] { --shape-bg: var(--theme-green-bg); --shape-border: var(--theme-green-border); }
+div[data-theme="blue"] { --shape-bg: var(--theme-blue-bg); --shape-border: var(--theme-blue-border); }
+div[data-theme="purple"] { --shape-bg: var(--theme-purple-bg); --shape-border: var(--theme-purple-border); }
+div[data-theme="yellow"] { --shape-bg: var(--theme-yellow-bg); --shape-border: var(--theme-yellow-border); }
+div[data-theme="grey"] { --shape-bg: var(--theme-grey-bg); --shape-border: var(--theme-grey-border); }
+
+.box-default[data-shape="diamond"], .box-default[data-shape="triangle"] {
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    filter: drop-shadow(var(--box-shadow));
+    display: flex;
+}
+.box-default[data-shape="diamond"]:hover, .box-default[data-shape="triangle"]:hover {
+    box-shadow: none;
+    filter: drop-shadow(var(--box-shadow-hover));
+}
+.box-default[data-shape="diamond"]::before, .box-default[data-shape="triangle"]::before,
+.box-default[data-shape="diamond"]::after, .box-default[data-shape="triangle"]::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    transition: clip-path 0.35s ease, inset 0.35s ease;
+}
+.box-default[data-shape="diamond"]::before, .box-default[data-shape="triangle"]::before {
+    inset: 0;
+    background-color: var(--shape-border, var(--border-color));
+}
+.box-default[data-shape="diamond"]::after, .box-default[data-shape="triangle"]::after {
+    inset: 2.5px;
+    background-color: var(--shape-bg, var(--bg-secondary));
+}
+.box-default[data-shape="diamond"]::before, .box-default[data-shape="diamond"]::after {
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+.box-default[data-shape="triangle"]::before, .box-default[data-shape="triangle"]::after {
+    clip-path: polygon(50% 0%, 50% 0%, 100% 100%, 0% 100%);
+}
+.box-default[data-shape="diamond"] > .markdown-content,
+.box-default[data-shape="triangle"] > .markdown-content { width: 55%; height: auto; }
+.box-default[data-shape="diamond"] > .markdown-content { margin: auto; }
+.box-default[data-shape="triangle"] > .markdown-content { margin: auto auto 10% auto; }
 #preview-connection { stroke-dasharray: 5, 5; animation: dash 15s linear infinite; stroke: var(--text-secondary); }
 @keyframes dash { to { stroke-dashoffset: -1000; } }
 

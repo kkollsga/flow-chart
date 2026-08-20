@@ -158,6 +158,12 @@ class SVGExportManager {
                 shapeEl.setAttribute("cy", bounds.height / 2);
                 shapeEl.setAttribute("rx", bounds.width / 2);
                 shapeEl.setAttribute("ry", bounds.height / 2);
+            } else if (shape === 'diamond' || shape === 'triangle') {
+                const w = bounds.width, h = bounds.height;
+                shapeEl = document.createElementNS(svgNamespace, "polygon");
+                shapeEl.setAttribute("points", shape === 'diamond'
+                    ? `${w / 2},0 ${w},${h / 2} ${w / 2},${h} 0,${h / 2}`
+                    : `${w / 2},0 ${w},${h} 0,${h}`);
             } else {
                 shapeEl = document.createElementNS(svgNamespace, "rect");
                 shapeEl.setAttribute("width", bounds.width);
@@ -181,7 +187,10 @@ class SVGExportManager {
             const ch = Math.round(bounds.height / cfg.heightRatio);
             const foreignObject = document.createElementNS(svgNamespace, "foreignObject");
             foreignObject.setAttribute("x", Math.round((bounds.width - cw) / 2));
-            foreignObject.setAttribute("y", Math.round((bounds.height - ch) / 2));
+            // Triangle content sits in the lower half (mirrors the app's layout)
+            foreignObject.setAttribute("y", shape === 'triangle'
+                ? Math.round(bounds.height - ch - bounds.height * 0.10)
+                : Math.round((bounds.height - ch) / 2));
             foreignObject.setAttribute("width", cw);
             foreignObject.setAttribute("height", ch);
             

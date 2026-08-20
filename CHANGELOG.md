@@ -11,6 +11,10 @@ get an entry here; git history is their record.
 ## [Unreleased]
 
 ### Added
+- Hover a box and press `s` to cycle its shape: rectangle → large rounded →
+  circle → diamond → triangle. Shapes morph with a springy animation,
+  connections attach to the actual outline, text auto-fits inside the shape,
+  and shapes are saved with the project and drawn in SVG exports.
 - Hover a box and press `+`/`-` to scale that box's text (0.5x–2.0x,
   multiplies with the global Text Size setting). Saved per box, honoured in
   SVG exports; the box re-flows smoothly.
