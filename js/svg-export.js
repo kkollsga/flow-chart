@@ -56,28 +56,23 @@ class SVGExportManager {
         if (isDarkMode) {
             svg.classList.add('dark-mode');
             
-            // Create a background rectangle for dark mode only
-            const darkBgColor = getComputedStyle(document.documentElement)
+            // Create a background rectangle for dark mode only. Read the resolved
+            // value from body — .dark-mode lives on body, so documentElement
+            // always reports the light value (which is why the old hex-sniff
+            // guard here never fired and dark exports shipped with no background).
+            const darkBgColor = getComputedStyle(document.body)
                 .getPropertyValue('--bg-primary')
                 .trim();
-                
-            // Verify we have a dark color (simple check based on common dark mode colors)
-            // Only add background if we're confident it's dark mode
-            if (darkBgColor.includes('rgb(31,') || darkBgColor.includes('#1f') || 
-                darkBgColor.includes('rgb(30,') || darkBgColor.includes('#30') ||
-                darkBgColor.includes('rgb(55,') || darkBgColor.includes('#37') ||
-                darkBgColor === '#1f2937' || darkBgColor === '#374151') {
-                
-                const bgRect = document.createElementNS(svgNamespace, "rect");
-                bgRect.setAttribute("x", minX);
-                bgRect.setAttribute("y", minY);
-                bgRect.setAttribute("width", width);
-                bgRect.setAttribute("height", height);
-                bgRect.setAttribute("fill", darkBgColor);
-                
-                // Insert background as first element
-                svg.appendChild(bgRect);
-            }
+
+            const bgRect = document.createElementNS(svgNamespace, "rect");
+            bgRect.setAttribute("x", minX);
+            bgRect.setAttribute("y", minY);
+            bgRect.setAttribute("width", width);
+            bgRect.setAttribute("height", height);
+            bgRect.setAttribute("fill", darkBgColor);
+
+            // Insert background as first element
+            svg.appendChild(bgRect);
         }
         // No background rect added in light mode
         
@@ -325,7 +320,7 @@ class SVGExportManager {
             '--yellow-600', '--yellow-700', '--yellow-800', '--yellow-900', '--yellow-950',
             '--amber-50', '--amber-100', '--amber-200', '--amber-300', '--amber-400', '--amber-500',
             '--amber-600', '--amber-700', '--amber-800', '--amber-900', '--amber-950',
-            '--black', '--white',
+            '--black', '--white', '--link-color',
             
             // Theme variables - Light mode
             '--bg-primary', '--bg-secondary', '--text-primary', '--text-secondary', '--text-muted',
@@ -374,37 +369,37 @@ class SVGExportManager {
                 /* Theme Colors - Dark Mode */
                 --theme-default-bg: var(--gray-700);
                 --theme-default-text: var(--gray-50);
-                --theme-default-border: var(--gray-400);
+                --theme-default-border: var(--gray-500);
                 --theme-default-stroke: var(--gray-400);
                 
                 --theme-red-bg: var(--red-900);
                 --theme-red-text: var(--red-200);
-                --theme-red-border: var(--red-500);
-                --theme-red-stroke: var(--red-300);
+                --theme-red-border: var(--red-600);
+                --theme-red-stroke: var(--red-500);
                 
                 --theme-green-bg: var(--green-900);
                 --theme-green-text: var(--green-200);
-                --theme-green-border: var(--green-500);
-                --theme-green-stroke: var(--green-400);
+                --theme-green-border: var(--green-600);
+                --theme-green-stroke: var(--green-500);
                 
                 --theme-blue-bg: var(--blue-900);
                 --theme-blue-text: var(--blue-200);
-                --theme-blue-border: var(--blue-500);
-                --theme-blue-stroke: var(--blue-400);
+                --theme-blue-border: var(--blue-600);
+                --theme-blue-stroke: var(--blue-500);
                 
                 --theme-purple-bg: var(--purple-800);
                 --theme-purple-text: var(--purple-200);
-                --theme-purple-border: var(--purple-500);
-                --theme-purple-stroke: var(--purple-400);
+                --theme-purple-border: var(--purple-600);
+                --theme-purple-stroke: var(--purple-500);
                 
                 --theme-yellow-bg: var(--yellow-900);
                 --theme-yellow-text: var(--yellow-200);
-                --theme-yellow-border: var(--amber-500);
-                --theme-yellow-stroke: var(--amber-400);
+                --theme-yellow-border: var(--amber-600);
+                --theme-yellow-stroke: var(--amber-500);
                 
                 --theme-grey-bg: var(--gray-800);
                 --theme-grey-text: var(--gray-200);
-                --theme-grey-border: var(--gray-400);
+                --theme-grey-border: var(--gray-500);
                 --theme-grey-stroke: var(--gray-400);
             }
             
