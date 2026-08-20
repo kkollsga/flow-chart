@@ -307,8 +307,8 @@ div[data-theme="grey"] { --shape-bg: var(--theme-grey-bg); --shape-border: var(-
 .box-default[data-shape="diamond"]::after, .box-default[data-shape="triangle"]::after {
     clip-path: var(--shape-clip-inner);
 }
-.box-default[data-shape="diamond"] > .markdown-content { width: 62%; height: auto; margin: auto; }
-.box-default[data-shape="triangle"] > .markdown-content { width: 60%; height: auto; margin: auto auto 7% auto; }
+.box-default[data-shape="diamond"] > .markdown-content { width: 68%; height: auto; margin: auto; }
+.box-default[data-shape="triangle"] > .markdown-content { width: 66%; height: auto; margin: auto auto 5% auto; }
 #preview-connection { stroke-dasharray: 5, 5; animation: dash 15s linear infinite; stroke: var(--text-secondary); }
 @keyframes dash { to { stroke-dashoffset: -1000; } }
 

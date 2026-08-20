@@ -11,8 +11,9 @@ get an entry here; git history is their record.
 ## [Unreleased]
 
 ### Changed
-- Diamond and triangle boxes hug their text more tightly (less empty space
-  around the content).
+- Diamond and triangle boxes have natural, squat proportions instead of
+  stretching tall around their text; text may reach slightly into the narrow
+  top of the shape.
 
 ## [0.1.2] — 2026-08-20
 
