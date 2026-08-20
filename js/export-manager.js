@@ -176,18 +176,22 @@ class ExportManager {
             filename += '.json';
         }
         
-        // Create download link
-        const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(jsonData);
+        // Create download link. Blob + object URL, not a data: URI — Chrome caps
+        // data: URI navigation around 2 MB, which silently truncated large
+        // exports (the SVG export already used this pattern).
+        const blob = new Blob([jsonData], { type: 'application/json;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
         const downloadAnchor = document.createElement('a');
-        downloadAnchor.setAttribute('href', dataStr);
+        downloadAnchor.setAttribute('href', url);
         downloadAnchor.setAttribute('download', filename);
         document.body.appendChild(downloadAnchor);
-        
+
         // Trigger download
         downloadAnchor.click();
-        
+
         // Clean up
         document.body.removeChild(downloadAnchor);
+        URL.revokeObjectURL(url);
         
         // Close modal
         this.closeModal();

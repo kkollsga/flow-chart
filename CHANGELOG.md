@@ -13,6 +13,8 @@ get an entry here; git history is their record.
 ### Fixed
 - The dashed preview line shown while dragging out a new connection has its
   arrowhead back.
+- Exporting a large project library (over ~2 MB of JSON) now downloads the
+  whole file instead of silently failing.
 
 ### Changed
 - The app no longer loads anything from a CDN and now works fully offline:
