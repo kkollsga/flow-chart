@@ -6,6 +6,7 @@ class Box {
         if (!this.data.markdown) { this.data.markdown = '# New Box\nUse **markdown** to format'; }
         if (!this.data.themeKey) { this.data.themeKey = 'default'; }
         if (!TEXT_ALIGNMENTS.includes(this.data.textAlign)) { this.data.textAlign = 'left'; }
+        this.data.fontScale = Math.min(2.0, Math.max(0.5, Number(this.data.fontScale) || 1.0));
         this.manager = manager;
         this.isEditing = false;
         this.element = this.createElement();
@@ -14,6 +15,7 @@ class Box {
         this.updateElementPosition();
         this.applyColorTheme();
         this.applyTextAlign();
+        this.applyFontScale();
         this.renderMarkdown();
         this.setupEventListeners();
     }
@@ -136,6 +138,23 @@ class Box {
     // Toggle between width types
     applyTextAlign() {
         this.contentDiv.dataset.align = this.data.textAlign;
+    }
+
+    applyFontScale() {
+        this.element.style.setProperty('--box-font-scale', this.data.fontScale);
+    }
+
+    changeFontScale(delta) {
+        const next = Math.round((this.data.fontScale + delta) * 10) / 10;
+        this.data.fontScale = Math.min(2.0, Math.max(0.5, next));
+        this.applyFontScale();
+        // Re-measure: font-size drives the content-derived height.
+        if (this.isEditing) {
+            this.updateEditModeSize();
+        } else {
+            this.calculateRenderedSize();
+        }
+        this.manager.updateConnectionsForBox(this);
     }
 
     cycleTextAlign() {
@@ -371,6 +390,7 @@ class Box {
             widthType: this.data.widthType,
             themeKey: this.data.themeKey,
             textAlign: this.data.textAlign,
+            fontScale: this.data.fontScale,
             markdown: this.data.markdown
         };
     }

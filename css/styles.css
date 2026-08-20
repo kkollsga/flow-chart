@@ -152,7 +152,7 @@ html { height: 100%; }
 .box-default:hover { box-shadow: var(--box-shadow-hover); transform: translateY(-2px); }
 
 /* --- Markdown styling (enhanced) --- */
-.markdown-content { font-size: calc(14px * var(--font-scale)); line-height: 1.5; word-wrap: break-word; color: var(--text-primary); }
+.markdown-content { font-size: calc(14px * var(--font-scale) * var(--box-font-scale, 1)); line-height: 1.5; word-wrap: break-word; color: var(--text-primary); transition: font-size 0.15s ease; }
 .markdown-content h1 { font-size: calc(1.5em * var(--font-scale)); font-weight: bold; margin-top: 0.5em; margin-bottom: 0.3em; }
 .markdown-content h2 { font-size: calc(1.3em * var(--font-scale)); font-weight: bold; margin-top: 0.4em; margin-bottom: 0.2em; }
 .markdown-content h3 { font-size: calc(1.1em * var(--font-scale)); font-weight: bold; margin-top: 0.3em; margin-bottom: 0.1em; }

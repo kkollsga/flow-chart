@@ -11,6 +11,9 @@ get an entry here; git history is their record.
 ## [Unreleased]
 
 ### Added
+- Hover a box and press `+`/`-` to scale that box's text (0.5x–2.0x,
+  multiplies with the global Text Size setting). Saved per box, honoured in
+  SVG exports; the box re-flows smoothly.
 - Hover a box and press `a` to cycle its text alignment: left → justified →
   center → right. Per box, saved with the project, honoured in SVG exports,
   with a settle animation on toggle.

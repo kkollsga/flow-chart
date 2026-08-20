@@ -173,6 +173,12 @@ class SVGExportManager {
             div.className = "markdown-content";
             div.classList.add('light-' + themeKey + '-text', 'dark-' + themeKey + '-text');
             div.setAttribute('data-align', box.data.textAlign || 'left');
+            if (box.data.fontScale && box.data.fontScale !== 1.0) {
+                // Inline font-size beats the export stylesheet's global rule;
+                // em-based child sizes scale with it automatically.
+                const globalScale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--font-scale')) || 1;
+                div.style.fontSize = (14 * globalScale * box.data.fontScale) + 'px';
+            }
             
             // Apply the crucial styling
             div.style.width = "100%";

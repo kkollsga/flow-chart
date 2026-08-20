@@ -374,6 +374,16 @@ class DiagramManager {
             }
         }
         
+        // Handle '+'/'-' for per-box text size of hovered box
+        if ((e.key === '+' || e.key === '=') && this.hoveredElement instanceof Box) {
+            this.hoveredElement.changeFontScale(0.1);
+            this.saveCurrentProject();
+        }
+        if ((e.key === '-' || e.key === '_') && this.hoveredElement instanceof Box) {
+            this.hoveredElement.changeFontScale(-0.1);
+            this.saveCurrentProject();
+        }
+
         // Handle 'a' key for cycling text alignment of hovered box
         if (e.key === 'a' && this.hoveredElement instanceof Box) {
             this.hoveredElement.cycleTextAlign();
