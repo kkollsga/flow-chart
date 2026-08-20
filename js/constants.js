@@ -27,8 +27,8 @@ const SHAPE_CONFIG = {
     rectangle: { contentWidthRatio: 1.0,  heightRatio: 1.0 },
     rounded:   { contentWidthRatio: 1.0,  heightRatio: 1.0 },
     circle:    { contentWidthRatio: 0.71, heightRatio: 1.41 },
-    diamond:   { contentWidthRatio: 0.55, heightRatio: 1.9 },
-    triangle:  { contentWidthRatio: 0.55, heightRatio: 2.1 },
+    diamond:   { contentWidthRatio: 0.62, heightRatio: 1.68 },
+    triangle:  { contentWidthRatio: 0.60, heightRatio: 1.85 },
 };
 const WIDTH_TYPE_VALUES = { [WIDTH_TYPES.SMALL]: 200, [WIDTH_TYPES.MEDIUM]: 350, [WIDTH_TYPES.LARGE]: 500 };
 

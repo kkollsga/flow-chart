@@ -10,6 +10,10 @@ get an entry here; git history is their record.
 
 ## [Unreleased]
 
+### Changed
+- Diamond and triangle boxes hug their text more tightly (less empty space
+  around the content).
+
 ## [0.1.2] — 2026-08-20
 
 ### Fixed
