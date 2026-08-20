@@ -12,8 +12,9 @@ PYTHON := python3
 
 ## The pre-push gate. Three checks, and each one is here because it can catch
 ## something real in a repo with no other net:
-##   check-syntax        — a syntax error in the single inline <script> makes
-##                         the whole app inert while the page still renders.
+##   check-syntax        — a syntax error in any app script (inline blocks in
+##                         index.html, js/*.js) makes the app inert while the
+##                         page still renders.
 ##   check-skill-mirrors — a stale Codex adapter teaches a procedure the live
 ##                         copy warns against (doctrine R7).
 ##   check-dev-docs      — the gitignored working folder is the one accumulation
@@ -24,7 +25,8 @@ PYTHON := python3
 gate: check-syntax check-skill-mirrors check-dev-docs
 	@echo "gate: green"
 
-## Parse every inline <script> in index.html (node --check). See the script's
+## Parse every app script (inline <script> blocks in index.html plus js/*.js)
+## with node --check. Fails if it finds nothing to check. See the script's
 ## docstring for what this deliberately does NOT cover.
 .PHONY: check-syntax
 check-syntax:
