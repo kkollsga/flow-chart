@@ -10,6 +10,8 @@ get an entry here; git history is their record.
 
 ## [Unreleased]
 
+## [0.1.4] — 2026-08-20
+
 ### Fixed
 - The dashed preview line while right-click-dragging a new connection now
   tracks the cursor exactly; it used to trail below by the amount the page
