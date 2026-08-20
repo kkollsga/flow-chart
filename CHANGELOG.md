@@ -10,6 +10,8 @@ get an entry here; git history is their record.
 
 ## [Unreleased]
 
+## [0.1.3] — 2026-08-20
+
 ### Changed
 - Diamond and triangle boxes have natural, squat proportions instead of
   stretching tall around their text; text may reach slightly into the narrow
