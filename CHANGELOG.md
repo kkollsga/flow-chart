@@ -10,6 +10,10 @@ get an entry here; git history is their record.
 
 ## [Unreleased]
 
+### Fixed
+- Bullets and numbers in centered or right-aligned boxes now move with their
+  list items instead of staying pinned to the left edge.
+
 ### Changed
 - Diamond and triangle boxes now have rounded corners, in the app and in SVG
   exports.

@@ -172,6 +172,15 @@ html { height: 100%; }
 .markdown-content[data-align="justify"] { text-align: justify; }
 .markdown-content[data-align="center"] { text-align: center; }
 .markdown-content[data-align="right"] { text-align: right; }
+/* Centered/right-aligned lists: an 'outside' marker stays pinned to the li's
+   left edge no matter what text-align does — move it inside the text flow so
+   bullets and numbers travel with their items. Left/justify keep the normal
+   outdented layout. */
+.markdown-content[data-align="center"] ul, .markdown-content[data-align="center"] ol,
+.markdown-content[data-align="right"] ul, .markdown-content[data-align="right"] ol {
+    list-style-position: inside;
+    padding-left: 0;
+}
 @keyframes align-nudge-left { 0% { transform: translateX(8px); opacity: 0.6; } 60% { transform: translateX(-2px); } 100% { transform: translateX(0); opacity: 1; } }
 @keyframes align-nudge-right { 0% { transform: translateX(-8px); opacity: 0.6; } 60% { transform: translateX(2px); } 100% { transform: translateX(0); opacity: 1; } }
 @keyframes align-nudge-center { 0% { transform: scaleX(0.96); opacity: 0.6; } 60% { transform: scaleX(1.01); } 100% { transform: scaleX(1); opacity: 1; } }

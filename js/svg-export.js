@@ -477,6 +477,11 @@ class SVGExportManager {
             .markdown-content[data-align="justify"] { text-align: justify; }
             .markdown-content[data-align="center"] { text-align: center; }
             .markdown-content[data-align="right"] { text-align: right; }
+            .markdown-content[data-align="center"] ul, .markdown-content[data-align="center"] ol,
+            .markdown-content[data-align="right"] ul, .markdown-content[data-align="right"] ol {
+                list-style-position: inside;
+                padding-left: 0;
+            }
             
             /* Table styling */
             .markdown-content table { 
