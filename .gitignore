@@ -1,0 +1,29 @@
+# Agent instruction adapters. CLAUDE.md is the tracked repository AUTHORITY;
+# `.claude/skills/` is the authority for `.agents/skills/`. Both adapter trees
+# and AGENTS.md are workstation-local and generated — never staged, never
+# hand-edited (see CLAUDE.md "Authority", doctrine R7).
+/.claude/
+/.agents/
+/AGENTS.md
+
+# Local dev working folder — see dev-docs/README.md for the canonical layout.
+# Durable: `plans/` (actionable plans/backlog), `designs/` (design-decision
+# reference), `todos.md`. Auto-purged by the dev-docs-cleanup skill: `temp/`
+# (>1d, offload large output here instead of printing it), `bin/` (>7d,
+# soft-deleted docs). Local working state, never committed.
+#
+# KGLite re-includes `dev-docs/bench/scripts/` here because its benchmark
+# harnesses are hand-authored source in exactly one copy. This project has no
+# benchmark harnesses, so there is no exception to make: everything under
+# dev-docs/ is local. If a hand-authored script ever lands here, re-include it
+# the same way (`/dir/*` + `!/dir/sub/`) rather than leaving it unbacked.
+/dev-docs/
+
+# Inbox of feedback/coordination notes (`unread/` = needs action, `read/` =
+# archive). Local working state, never committed — see CLAUDE.md
+# "Inbox hygiene" and inbox/README.md.
+/inbox/
+
+# macOS / editor noise, and Python bytecode from scripts/
+.DS_Store
+__pycache__/
