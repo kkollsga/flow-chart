@@ -374,6 +374,12 @@ class DiagramManager {
             }
         }
         
+        // Handle 'a' key for cycling text alignment of hovered box
+        if (e.key === 'a' && this.hoveredElement instanceof Box) {
+            this.hoveredElement.cycleTextAlign();
+            this.saveCurrentProject();
+        }
+
         // Handle 's' key for changing width of hovered box (NOT connections)
         if (e.key === 's' && this.hoveredElement instanceof Box) {
             this.hoveredElement.toggleWidthType();

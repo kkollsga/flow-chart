@@ -10,6 +10,11 @@ get an entry here; git history is their record.
 
 ## [Unreleased]
 
+### Added
+- Hover a box and press `a` to cycle its text alignment: left → justified →
+  center → right. Per box, saved with the project, honoured in SVG exports,
+  with a settle animation on toggle.
+
 ### Fixed
 - The dashed preview line shown while dragging out a new connection has its
   arrowhead back.

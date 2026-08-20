@@ -172,6 +172,7 @@ class SVGExportManager {
             const div = document.createElement("div");
             div.className = "markdown-content";
             div.classList.add('light-' + themeKey + '-text', 'dark-' + themeKey + '-text');
+            div.setAttribute('data-align', box.data.textAlign || 'left');
             
             // Apply the crucial styling
             div.style.width = "100%";
@@ -440,6 +441,11 @@ class SVGExportManager {
             }
             .markdown-content hr { margin: 0.5em 0; border: none; border-top: 1px solid var(--border-color); }
             .markdown-content a { color: var(--link-color); text-decoration: underline; }
+            /* no rule for data-align="left": explicit text-align on the container
+               flips Chrome's UA th centering (-internal-center); default start == today */
+            .markdown-content[data-align="justify"] { text-align: justify; }
+            .markdown-content[data-align="center"] { text-align: center; }
+            .markdown-content[data-align="right"] { text-align: right; }
             
             /* Table styling */
             .markdown-content table { 

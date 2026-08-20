@@ -166,6 +166,19 @@ html { height: 100%; }
 .markdown-content hr { margin: 0.5em 0; border: none; border-top: 1px solid var(--border-color); }
 .markdown-content a { color: var(--link-color); text-decoration: underline; }
 
+/* --- Text alignment (per-box, cycled with 'a') --- */
+/* no rule for data-align="left": explicit text-align on the container
+   flips Chrome's UA th centering (-internal-center); default start == today */
+.markdown-content[data-align="justify"] { text-align: justify; }
+.markdown-content[data-align="center"] { text-align: center; }
+.markdown-content[data-align="right"] { text-align: right; }
+@keyframes align-nudge-left { 0% { transform: translateX(8px); opacity: 0.6; } 60% { transform: translateX(-2px); } 100% { transform: translateX(0); opacity: 1; } }
+@keyframes align-nudge-right { 0% { transform: translateX(-8px); opacity: 0.6; } 60% { transform: translateX(2px); } 100% { transform: translateX(0); opacity: 1; } }
+@keyframes align-nudge-center { 0% { transform: scaleX(0.96); opacity: 0.6; } 60% { transform: scaleX(1.01); } 100% { transform: scaleX(1); opacity: 1; } }
+.align-anim-left { animation: align-nudge-left 0.28s ease-out; }
+.align-anim-right { animation: align-nudge-right 0.28s ease-out; }
+.align-anim-center { animation: align-nudge-center 0.28s ease-out; }
+
 /* --- Table base styling --- */
 .markdown-content table { border-collapse: collapse; width: 100%; margin-bottom: 0.8em; font-size: calc(0.9em * var(--font-scale)); box-shadow: 0 1px 3px var(--transparent-black-10); border-radius: 4px; overflow: hidden; }
 .markdown-content table td, .markdown-content  table th { padding: 0 6px; }

@@ -14,6 +14,9 @@ const PADDING_HEIGHT = 30; // Additional padding for box height
 
 // Width type constants
 const WIDTH_TYPES = { SMALL: 'small', MEDIUM: 'medium', LARGE: 'large' };
+
+// Text alignment cycle for the 'a' key (order is the UX contract)
+const TEXT_ALIGNMENTS = ['left', 'justify', 'center', 'right'];
 const WIDTH_TYPE_VALUES = { [WIDTH_TYPES.SMALL]: 200, [WIDTH_TYPES.MEDIUM]: 350, [WIDTH_TYPES.LARGE]: 500 };
 
 // Separated connection style constants

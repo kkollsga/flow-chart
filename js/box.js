@@ -5,6 +5,7 @@ class Box {
         if (!this.data.widthType) { this.data.widthType = WIDTH_TYPES.MEDIUM; }
         if (!this.data.markdown) { this.data.markdown = '# New Box\nUse **markdown** to format'; }
         if (!this.data.themeKey) { this.data.themeKey = 'default'; }
+        if (!TEXT_ALIGNMENTS.includes(this.data.textAlign)) { this.data.textAlign = 'left'; }
         this.manager = manager;
         this.isEditing = false;
         this.element = this.createElement();
@@ -12,6 +13,7 @@ class Box {
         this.textarea = null;
         this.updateElementPosition();
         this.applyColorTheme();
+        this.applyTextAlign();
         this.renderMarkdown();
         this.setupEventListeners();
     }
@@ -132,6 +134,26 @@ class Box {
     }
 
     // Toggle between width types
+    applyTextAlign() {
+        this.contentDiv.dataset.align = this.data.textAlign;
+    }
+
+    cycleTextAlign() {
+        const currentIndex = TEXT_ALIGNMENTS.indexOf(this.data.textAlign);
+        this.data.textAlign = TEXT_ALIGNMENTS[(currentIndex + 1) % TEXT_ALIGNMENTS.length];
+        this.applyTextAlign();
+
+        // Satisfying nudge: restart a short slide/settle animation toward the
+        // new alignment (text-align itself is not animatable).
+        const anim = 'align-anim-' + (this.data.textAlign === 'right' ? 'right'
+            : this.data.textAlign === 'left' ? 'left' : 'center');
+        this.contentDiv.classList.remove('align-anim-left', 'align-anim-right', 'align-anim-center');
+        void this.contentDiv.offsetWidth; // restart if the same class re-applies
+        this.contentDiv.classList.add(anim);
+        this.contentDiv.addEventListener('animationend',
+            () => this.contentDiv.classList.remove(anim), { once: true });
+    }
+
     toggleWidthType() {
         const types = Object.values(WIDTH_TYPES);
         const currentIndex = types.indexOf(this.data.widthType);
@@ -348,6 +370,7 @@ class Box {
             height: this.data.height,
             widthType: this.data.widthType,
             themeKey: this.data.themeKey,
+            textAlign: this.data.textAlign,
             markdown: this.data.markdown
         };
     }
