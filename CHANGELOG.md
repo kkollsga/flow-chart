@@ -15,6 +15,8 @@ get an entry here; git history is their record.
   arrowhead back.
 - Exporting a large project library (over ~2 MB of JSON) now downloads the
   whole file instead of silently failing.
+- Dark mode no longer flashes a white page while loading — the stored theme
+  applies before the first paint.
 - Importing a project file whose internal id collides with a different
   existing project no longer makes edits silently save into the wrong
   project — the imported project gets a fresh id.

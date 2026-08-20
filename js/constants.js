@@ -1,3 +1,11 @@
+// Apply the stored theme before anything renders. This runs as the first
+// statement of the first script (loaded at the end of <body>, so body exists),
+// well before the DOMContentLoaded init — waiting until then gave dark-mode
+// users a white flash on every load.
+if (localStorage.getItem('darkMode') === 'true') {
+    document.body.classList.add('dark-mode');
+}
+
 // --- Constants ---
 const INITIAL_BOX_WIDTH = 200;
 const INITIAL_BOX_HEIGHT = 80;
