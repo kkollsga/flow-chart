@@ -10,6 +10,10 @@ get an entry here; git history is their record.
 
 ## [Unreleased]
 
+### Fixed
+- The dashed preview line shown while dragging out a new connection has its
+  arrowhead back.
+
 ### Changed
 - The app no longer loads anything from a CDN and now works fully offline:
   Tailwind's runtime compiler is replaced with equivalent static CSS, and

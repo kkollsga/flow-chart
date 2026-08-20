@@ -52,7 +52,25 @@ class DiagramManager {
         
         // Clear existing markers
         defs.innerHTML = '';
-        
+
+        // Re-create the default markers the wipe just removed: #preview-connection
+        // (the drag-to-connect preview line) references #arrowhead-end, so without
+        // this the preview renders with no arrowhead.
+        [['arrowhead-end', '9', '0 0, 10 3.5, 0 7'], ['arrowhead-start', '1', '10 0, 0 3.5, 10 7']].forEach(([id, refX, points]) => {
+            const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+            marker.id = id;
+            marker.setAttribute('markerWidth', '10');
+            marker.setAttribute('markerHeight', '7');
+            marker.setAttribute('refX', refX);
+            marker.setAttribute('refY', '3.5');
+            marker.setAttribute('orient', 'auto');
+            const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            polygon.setAttribute('points', points);
+            polygon.setAttribute('fill', 'currentColor');
+            marker.appendChild(polygon);
+            defs.appendChild(marker);
+        });
+
         // Create markers for each theme
         Object.keys(COLOR_THEMES).forEach(themeKey => {
             const theme = COLOR_THEMES[themeKey];
