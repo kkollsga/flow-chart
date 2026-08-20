@@ -10,6 +10,10 @@ get an entry here; git history is their record.
 
 ## [Unreleased]
 
+### Changed
+- Diamond and triangle boxes now have rounded corners, in the app and in SVG
+  exports.
+
 ## [0.1.1] — 2026-08-20
 
 ### Added

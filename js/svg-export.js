@@ -159,11 +159,10 @@ class SVGExportManager {
                 shapeEl.setAttribute("rx", bounds.width / 2);
                 shapeEl.setAttribute("ry", bounds.height / 2);
             } else if (shape === 'diamond' || shape === 'triangle') {
-                const w = bounds.width, h = bounds.height;
-                shapeEl = document.createElementNS(svgNamespace, "polygon");
-                shapeEl.setAttribute("points", shape === 'diamond'
-                    ? `${w / 2},0 ${w},${h / 2} ${w / 2},${h} 0,${h / 2}`
-                    : `${w / 2},0 ${w},${h} 0,${h}`);
+                shapeEl = document.createElementNS(svgNamespace, "path");
+                shapeEl.setAttribute("d", roundedPolygonPath(
+                    polygonShapeVertices(shape, 0, 0, bounds.width, bounds.height),
+                    POLYGON_CORNER_RADIUS).d);
             } else {
                 shapeEl = document.createElementNS(svgNamespace, "rect");
                 shapeEl.setAttribute("width", bounds.width);
@@ -514,7 +513,7 @@ class SVGExportManager {
             .thickness-bold { stroke-width: 4; }
             
             /* Box styling */
-            .box rect, .box ellipse, .box polygon {
+            .box rect, .box ellipse, .box polygon, .box path {
                 stroke-width: 1.5;
             }
             

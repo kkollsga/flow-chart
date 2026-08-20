@@ -80,6 +80,7 @@ class Box {
 
     // Updates the element's CSS position
     updateElementPosition() {
+        this.updateShapeClip();
         const x = this.data.cx - this.data.width / 2;
         const y = this.data.cy - this.data.height / 2;
         this.element.style.left = `${Math.round(x)}px`;
@@ -150,6 +151,20 @@ class Box {
 
     applyShape() {
         this.element.dataset.shape = this.presentedShape();
+        this.updateShapeClip();
+    }
+
+    // Polygon shapes clip via JS-generated rounded paths (clip-path: polygon()
+    // cannot round corners). Outer path for the border layer, inner path for
+    // the background layer (its inset shrinks the reference box by 5px).
+    updateShapeClip() {
+        const shape = this.presentedShape();
+        if (shape !== 'diamond' && shape !== 'triangle') return;
+        const w = this.data.width, h = this.data.height;
+        const outer = roundedPolygonPath(polygonShapeVertices(shape, 0, 0, w, h), POLYGON_CORNER_RADIUS);
+        const inner = roundedPolygonPath(polygonShapeVertices(shape, 0, 0, Math.max(w - 5, 1), Math.max(h - 5, 1)), Math.max(POLYGON_CORNER_RADIUS - 2.5, 1));
+        this.element.style.setProperty('--shape-clip', `path('${outer.d}')`);
+        this.element.style.setProperty('--shape-clip-inner', `path('${inner.d}')`);
     }
 
     cycleShape() {
@@ -197,12 +212,10 @@ class Box {
                     pts.push({ x: c.cx + r * Math.cos(a), y: c.cy + r * Math.sin(a) });
                 }
             });
-        } else if (shape === 'diamond') {
-            pts.push({ x: this.data.cx, y: b.top }, { x: b.right, y: this.data.cy },
-                     { x: this.data.cx, y: b.bottom }, { x: b.left, y: this.data.cy });
-        } else if (shape === 'triangle') {
-            pts.push({ x: this.data.cx, y: b.top }, { x: b.right, y: b.bottom },
-                     { x: b.left, y: b.bottom });
+        } else if (shape === 'diamond' || shape === 'triangle') {
+            return roundedPolygonPath(
+                polygonShapeVertices(shape, b.left, b.top, b.width, b.height),
+                POLYGON_CORNER_RADIUS).points;
         } else {
             pts.push({ x: b.left, y: b.top }, { x: b.right, y: b.top },
                      { x: b.right, y: b.bottom }, { x: b.left, y: b.bottom });

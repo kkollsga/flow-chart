@@ -289,11 +289,14 @@ div[data-theme="grey"] { --shape-bg: var(--theme-grey-bg); --shape-border: var(-
     inset: 2.5px;
     background-color: var(--shape-bg, var(--bg-secondary));
 }
-.box-default[data-shape="diamond"]::before, .box-default[data-shape="diamond"]::after {
-    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+/* Rounded-corner paths are JS-generated per box size (clip-path: polygon()
+   cannot round corners); both shapes share one 4-vertex path structure so
+   the diamond<->triangle change still morphs. */
+.box-default[data-shape="diamond"]::before, .box-default[data-shape="triangle"]::before {
+    clip-path: var(--shape-clip);
 }
-.box-default[data-shape="triangle"]::before, .box-default[data-shape="triangle"]::after {
-    clip-path: polygon(50% 0%, 50% 0%, 100% 100%, 0% 100%);
+.box-default[data-shape="diamond"]::after, .box-default[data-shape="triangle"]::after {
+    clip-path: var(--shape-clip-inner);
 }
 .box-default[data-shape="diamond"] > .markdown-content,
 .box-default[data-shape="triangle"] > .markdown-content { width: 55%; height: auto; }
