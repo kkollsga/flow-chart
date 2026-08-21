@@ -92,17 +92,8 @@ class SVGExportManager {
         // applies CSS classes reliably, so every colour below is a literal
         // presentation attribute instead.
         
-        // Create a defs section for markers (arrowheads)
-        const defs = document.createElementNS(svgNamespace, "defs");
-        
-        // Add theme-specific arrow markers for all themes
-        Object.keys(COLOR_THEMES).forEach(themeKey => {
-            // Create markers for both light and dark modes
-            this.createArrowMarkers(defs, themeKey, 'light');
-            this.createArrowMarkers(defs, themeKey, 'dark');
-        });
-        
-        svg.appendChild(defs);
+        // No <defs>/<marker> either: PowerPoint does not paint marker-end, so
+        // each arrowhead is emitted below as an explicit <polygon> in place.
         
         // Add project title at the top
         this.addProjectTitle(svg, svgNamespace, minX, minY, width);
@@ -110,28 +101,40 @@ class SVGExportManager {
         // Create a group for connections
         const connectionsGroup = document.createElementNS(svgNamespace, "g");
         
-        // Add all connections
+        // Add all connections. Stroke colour, width and dash pattern are read
+        // off the live path - the app applies them through a theme attribute
+        // and pattern/thickness classes, none of which survive export - so the
+        // exported line is styled with exactly what the screen is showing.
+        // Reading the live element is also what makes dark mode correct: the
+        // theme stroke var only resolves against body, which carries
+        // .dark-mode, so the old documentElement lookup always yielded the
+        // light-mode colour.
         connections.forEach(connection => {
-            const connectionGroup = document.createElementNS(svgNamespace, "g");
-            const themeKey = connection.data.themeKey || 'default';
+            const d = connection.element.getAttribute("d");
+            const ends = this.parseLineEndpoints(d);
+            if (!ends) return;
             
-            // Set basic class to identify the element
-            connectionGroup.setAttribute("class", `connection-group theme-${themeKey}`);
+            const live = getComputedStyle(connection.element);
+            const strokeColor = live.stroke;
+            const strokeWidth = parseFloat(live.strokeWidth) || 2;
+            const dashArray = this.normalizeDashArray(live.strokeDasharray);
             
-            // Create the connection path
             const path = document.createElementNS(svgNamespace, "path");
-            path.setAttribute("d", connection.element.getAttribute("d"));
-            path.setAttribute("class", `connection-path pattern-${connection.data.pattern} thickness-${connection.data.thickness}`);
+            path.setAttribute("d", d);
+            path.setAttribute("fill", "none");
+            path.setAttribute("stroke", strokeColor);
+            path.setAttribute("stroke-width", strokeWidth);
+            if (dashArray) path.setAttribute("stroke-dasharray", dashArray);
+            connectionsGroup.appendChild(path);
             
-            // Set markers based on directionality, with mode-specific IDs
-            const mode = isDarkMode ? 'dark' : 'light';
+            // The end arrowhead is always drawn; the start one only when the
+            // connection is bidirectional - same rule the live markers follow.
+            const endHead = this.buildArrowhead(svgNamespace, ends.end, ends.start, strokeWidth, strokeColor);
+            if (endHead) connectionsGroup.appendChild(endHead);
             if (connection.data.bidirectional) {
-                path.setAttribute("marker-start", `url(#arrowhead-start-${themeKey}-${mode})`);
+                const startHead = this.buildArrowhead(svgNamespace, ends.start, ends.end, strokeWidth, strokeColor);
+                if (startHead) connectionsGroup.appendChild(startHead);
             }
-            path.setAttribute("marker-end", `url(#arrowhead-end-${themeKey}-${mode})`);
-            
-            connectionGroup.appendChild(path);
-            connectionsGroup.appendChild(connectionGroup);
         });
         
         svg.appendChild(connectionsGroup);
@@ -610,48 +613,56 @@ class SVGExportManager {
         return { fill: style.backgroundColor, stroke: style.borderTopColor };
     }
     
-    // Create arrow markers for both directions
-    createArrowMarkers(defs, themeKey, mode) {
-        const svgNamespace = "http://www.w3.org/2000/svg";
-        const theme = COLOR_THEMES[themeKey] || COLOR_THEMES.default;
+    // Connection paths are always "M sx sy L ex ey" (Connection.update builds
+    // them); anything else is left alone rather than guessed at.
+    parseLineEndpoints(d) {
+        if (!d) return null;
+        const m = /^\s*M\s*(-?[\d.]+)[\s,]+(-?[\d.]+)\s*L\s*(-?[\d.]+)[\s,]+(-?[\d.]+)\s*$/.exec(d);
+        if (!m) return null;
+        const n = m.slice(1).map(Number);
+        if (n.some(v => !isFinite(v))) return null;
+        return { start: { x: n[0], y: n[1] }, end: { x: n[2], y: n[3] } };
+    }
+    
+    // getComputedStyle reports the dash pattern in CSS px ("10px, 5px"); the
+    // SVG attribute wants bare user units, and "none" means no attribute.
+    normalizeDashArray(value) {
+        if (!value || value === 'none') return null;
+        const nums = value.match(/-?[\d.]+/g);
+        if (!nums || nums.length === 0) return null;
+        return nums.join(', ');
+    }
+    
+    // One arrowhead as an explicit polygon, reproducing what the live
+    // <marker> draws. The app's end marker is markerWidth=10 markerHeight=7
+    // refX=9 refY=3.5 orient=auto with polygon "0 0, 10 3.5, 0 7"; markerUnits
+    // defaults to strokeWidth, so one marker unit == one stroke-width in user
+    // space and refX=9 puts the marker origin 9 units behind the vertex. That
+    // maps the three polygon points to: tip at vertex + 1*sw along the
+    // direction, and a base 9*sw behind it, 3.5*sw either side. The start
+    // marker (refX=1, polygon "10 0, 0 3.5, 10 7") is the same triangle
+    // mirrored, which is what passing the endpoints the other way round gives.
+    buildArrowhead(svgNamespace, vertex, from, strokeWidth, fill) {
+        const dx = vertex.x - from.x;
+        const dy = vertex.y - from.y;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        if (!isFinite(len) || len < 0.001) return null;
+        const ux = dx / len, uy = dy / len;   // along the path, towards the vertex
+        const nx = -uy, ny = ux;               // perpendicular
+        const sw = strokeWidth;
+        const tipX = vertex.x + ux * sw, tipY = vertex.y + uy * sw;
+        const baseX = vertex.x - ux * 9 * sw, baseY = vertex.y - uy * 9 * sw;
+        const half = 3.5 * sw;
+        const points = [
+            [tipX, tipY],
+            [baseX + nx * half, baseY + ny * half],
+            [baseX - nx * half, baseY - ny * half]
+        ].map(([x, y]) => `${svgRound(x)},${svgRound(y)}`).join(' ');
         
-        // Get the CSS variable for this theme and mode
-        const strokeVarName = theme[mode].stroke.replace('var(', '').replace(')', '');
-        
-        // Extract the actual color value from the CSS variable
-        const strokeColor = getComputedStyle(document.documentElement)
-            .getPropertyValue(strokeVarName)
-            .trim();
-        
-        // End marker
-        const arrowEndMarker = document.createElementNS(svgNamespace, "marker");
-        arrowEndMarker.setAttribute("id", `arrowhead-end-${themeKey}-${mode}`);
-        arrowEndMarker.setAttribute("markerWidth", "10");
-        arrowEndMarker.setAttribute("markerHeight", "7");
-        arrowEndMarker.setAttribute("refX", "9");
-        arrowEndMarker.setAttribute("refY", "3.5");
-        arrowEndMarker.setAttribute("orient", "auto");
-        
-        const arrowEndPolygon = document.createElementNS(svgNamespace, "polygon");
-        arrowEndPolygon.setAttribute("points", "0 0, 10 3.5, 0 7");
-        arrowEndPolygon.setAttribute("fill", strokeColor);
-        arrowEndMarker.appendChild(arrowEndPolygon);
-        defs.appendChild(arrowEndMarker);
-        
-        // Start marker
-        const arrowStartMarker = document.createElementNS(svgNamespace, "marker");
-        arrowStartMarker.setAttribute("id", `arrowhead-start-${themeKey}-${mode}`);
-        arrowStartMarker.setAttribute("markerWidth", "10");
-        arrowStartMarker.setAttribute("markerHeight", "7");
-        arrowStartMarker.setAttribute("refX", "1");
-        arrowStartMarker.setAttribute("refY", "3.5");
-        arrowStartMarker.setAttribute("orient", "auto");
-        
-        const arrowStartPolygon = document.createElementNS(svgNamespace, "polygon");
-        arrowStartPolygon.setAttribute("points", "10 0, 0 3.5, 10 7");
-        arrowStartPolygon.setAttribute("fill", strokeColor);
-        arrowStartMarker.appendChild(arrowStartPolygon);
-        defs.appendChild(arrowStartMarker);
+        const polygon = document.createElementNS(svgNamespace, "polygon");
+        polygon.setAttribute("points", points);
+        polygon.setAttribute("fill", fill);
+        return polygon;
     }
     
     // Add the project title to the SVG

@@ -10,6 +10,13 @@ get an entry here; git history is their record.
 
 ## [Unreleased]
 
+### Changed
+- SVG exports are now PowerPoint-compatible: text is written as real SVG
+  text (previously embedded HTML that PowerPoint left blank), every color is
+  baked in directly, and arrowheads are drawn explicitly. Text, box colors,
+  and shapes in PowerPoint now match the app. Exports carry the light or
+  dark look active at export time (no longer both).
+
 ## [0.1.5] — 2026-08-20
 
 ### Fixed
