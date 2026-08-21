@@ -10,6 +10,8 @@ get an entry here; git history is their record.
 
 ## [Unreleased]
 
+## [0.1.6] — 2026-08-21
+
 ### Changed
 - SVG exports are now PowerPoint-compatible: text is written as real SVG
   text (previously embedded HTML that PowerPoint left blank), every color is
