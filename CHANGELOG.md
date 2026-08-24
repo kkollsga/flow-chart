@@ -10,6 +10,8 @@ get an entry here; git history is their record.
 
 ## [Unreleased]
 
+## [0.1.7] — 2026-08-24
+
 ### Added
 - A copy button next to the SVG export button puts the SVG straight on the
   clipboard, ready to paste into PowerPoint — no file needed.
