@@ -102,7 +102,17 @@ class ProjectManager {
         // Export to SVG button
         document.getElementById('export-svg-button').addEventListener('click', (e) => {
             e.stopPropagation();
-            this.svgExportManager.exportSVG();
+            this.svgExportManager.exportSVGFile();
+        });
+
+        document.getElementById('copy-svg-button').addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const btn = document.getElementById('copy-svg-button');
+            const icon = btn.querySelector('i');
+            const ok = await this.svgExportManager.copySVGToClipboard();
+            // Brief feedback: swap to a check (or a cross on failure), then back.
+            icon.className = ok ? 'fas fa-check' : 'fas fa-times';
+            setTimeout(() => { icon.className = 'fas fa-copy'; }, 1200);
         });
     }
     

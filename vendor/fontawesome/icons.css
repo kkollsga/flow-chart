@@ -18,6 +18,7 @@
   font-weight: 900;
 }
 .fa-check:before { content: "\f00c"; }
+.fa-copy:before { content: "\f0c5"; }
 .fa-times:before { content: "\f00d"; }
 .fa-print:before { content: "\f02f"; }
 .fa-plus:before { content: "\f067"; }

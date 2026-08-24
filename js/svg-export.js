@@ -213,6 +213,12 @@ class SVGExportManager {
                     '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' +
                     svgString;
         
+        return svgString;
+    }
+
+    exportSVGFile() {
+        const svgString = this.exportSVG();
+
         // Create a blob and download the SVG
         const blob = new Blob([svgString], {type: "image/svg+xml"});
         const url = URL.createObjectURL(blob);
@@ -228,6 +234,29 @@ class SVGExportManager {
         downloadLink.click();
         document.body.removeChild(downloadLink);
         URL.revokeObjectURL(url);
+    }
+
+    // Copy the SVG to the clipboard for direct pasting (e.g. into PowerPoint).
+    // Writes image/svg+xml when the browser supports it (Chromium 124+) plus a
+    // text/plain fallback carrying the markup; on older browsers, plain text
+    // alone. Returns a promise resolving true on success.
+    async copySVGToClipboard() {
+        const svgString = this.exportSVG();
+        const items = { 'text/plain': new Blob([svgString], { type: 'text/plain' }) };
+        if (typeof ClipboardItem !== 'undefined' &&
+            typeof ClipboardItem.supports === 'function' &&
+            ClipboardItem.supports('image/svg+xml')) {
+            items['image/svg+xml'] = new Blob([svgString], { type: 'image/svg+xml' });
+        }
+        try {
+            await navigator.clipboard.write([new ClipboardItem(items)]);
+            return true;
+        } catch (e) {
+            console.error('Copy SVG failed:', e);
+            // Last resort: plain-text write API
+            try { await navigator.clipboard.writeText(svgString); return true; }
+            catch (e2) { console.error('Copy SVG text fallback failed:', e2); return false; }
+        }
     }
     // --- Native SVG content extraction ---------------------------------
     // These read geometry back from the rendered DOM. Every layout decision

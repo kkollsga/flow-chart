@@ -105,10 +105,15 @@
                 <!-- Export SVG Section -->
                 <div>
                     <label class="block mb-1 settings-section-header text-sm">Export</label>
-                    <button id="export-svg-button" class="px-3 py-1 rounded hover:bg-black hover:bg-opacity-10 transition-colors flex items-center" title="Export to SVG">
-                        <i class="fas fa-print mr-1"></i>
-                        <span>SVG</span>
-                    </button>
+                    <div class="flex items-center">
+                        <button id="export-svg-button" class="px-3 py-1 rounded hover:bg-black hover:bg-opacity-10 transition-colors flex items-center" title="Export to SVG">
+                            <i class="fas fa-print mr-1"></i>
+                            <span>SVG</span>
+                        </button>
+                        <button id="copy-svg-button" class="px-3 py-1 rounded hover:bg-black hover:bg-opacity-10 transition-colors flex items-center" title="Copy SVG to clipboard">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
